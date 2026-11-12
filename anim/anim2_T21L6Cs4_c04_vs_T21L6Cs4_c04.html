@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scenario playback, animated</title>
+<!-- The viewer build (logs/msl_viewer, from melee-sim-light tools/viewer) must sit beside this page's folder and the
+     page must be opened over http (watch_scenarios.bat), not as a file. -->
+<script src="viewer/index.js"></script>
+<style>
+:root{--bg:#f3f3f8;--surface:#fff;--ink:#1b1a2e;--muted:#5d5c74;--line:#d9d8e6;--bot:#4b3fb0;--good:#1f8f61;--bad:#c63b3b}
+@media (prefers-color-scheme: dark){:root{--bg:#14131f;--surface:#1e1d2e;--ink:#ecebf7;--muted:#a3a1bd;--line:#34334a;
+  --bot:#a79bff;--good:#4fcf9a;--bad:#f07a7a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,sans-serif;padding:16px}
+.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h1{font-size:1.25rem;margin:0}
+p{margin:0;color:var(--muted);font-size:.9rem}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+button{font:500 .88rem system-ui,sans-serif;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:4px;padding:8px 12px;cursor:pointer;min-height:38px}
+button[aria-pressed="true"]{background:var(--bot);border-color:var(--bot);color:var(--surface)}
+button.ok{border-bottom:3px solid var(--good)} button.no{border-bottom:3px solid var(--bad)}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-height:240px}
+slippi-viewer{width:100%;display:block}
+.result{font-weight:600;font-size:1rem}
+.result.ok{color:var(--good)} .result.no{color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title">Scenario playback</h1>
+  <p id="sub"></p>
+  <div class="row" id="tabs" role="group" aria-label="Scenario"></div>
+  <div class="row" id="picks" role="group" aria-label="Sample"></div>
+  <p class="result" id="result"></p>
+  <div class="stage"><slippi-viewer zips-base-url="viewer/public"></slippi-viewer></div>
+  <p id="status"></p>
+  <p>The model is player 1, the opponent player 2. Frame 0 is the saved position. Same samples as the block
+    playback page of this model.</p>
+</div>
+<script type="module">
+const D = {"model":"T21L6Cs4_c04","opponent":"T21L6Cs4_c04","scenarios":["edgeguard","recovery","follow-up","whiff punish","first hit","shield"],"about":{"edgeguard":"The opponent starts off the stage; the model is on the stage. Success: the opponent loses the stock before it is back on the stage and able to act.","recovery":"The model starts off the stage. Success: it is back on the stage and able to act before it loses the stock.","follow-up":"Starts on the frame a hit by the model's side landed. Success: at least one more hit before the opponent is back in control.","whiff punish":"The opponent has just missed with an attack and cannot act yet; the model is free and close. Success: the opponent is hit or grabbed before it can act again.","first hit":"Both stand free, 20 to 60 units apart. Success: the model lands the first hit within 5 seconds.","shield":"An attack by the opponent is 8 or 9 frames from landing on the model, which is free on the ground. Success: the model is not hit in the next half second."},"samples":[{"scenario":"edgeguard","ok":false,"result":"opponent got back","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_edgeguard_1.msltrace.json"},{"scenario":"edgeguard","ok":false,"result":"opponent got back","from":"T21L6Cs3_c04 vs T22EmbSmall3_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_edgeguard_2.msltrace.json"},{"scenario":"edgeguard","ok":false,"result":"opponent got back","from":"T22Base5_c04 vs 9","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_edgeguard_3.msltrace.json"},{"scenario":"edgeguard","ok":false,"result":"opponent got back","from":"SimBase_c08 vs T22Base6_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_edgeguard_4.msltrace.json"},{"scenario":"recovery","ok":true,"result":"back on the stage","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_recovery_1.msltrace.json"},{"scenario":"recovery","ok":true,"result":"back on the stage","from":"T21L6Cs3_c04 vs T22EmbSmall3_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_recovery_2.msltrace.json"},{"scenario":"recovery","ok":true,"result":"back on the stage","from":"T22Base5_c04 vs 9","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_recovery_3.msltrace.json"},{"scenario":"recovery","ok":true,"result":"back on the stage","from":"SimBase_c08 vs T22Base6_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_recovery_4.msltrace.json"},{"scenario":"follow-up","ok":false,"result":"0% extra damage","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_follow-up_1.msltrace.json"},{"scenario":"follow-up","ok":false,"result":"0% extra damage","from":"SimBase_c08 vs T22Base6_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_follow-up_2.msltrace.json"},{"scenario":"follow-up","ok":true,"result":"18% extra damage, took the stock","from":"T22Base5_c04 vs 9","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_follow-up_3.msltrace.json"},{"scenario":"follow-up","ok":false,"result":"0% extra damage","from":"T22Base5_c04 vs 9","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_follow-up_4.msltrace.json"},{"scenario":"whiff punish","ok":false,"result":"no punish (opponent free at frame 8)","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_whiff_punish_1.msltrace.json"},{"scenario":"whiff punish","ok":false,"result":"no punish (opponent free at frame 9)","from":"T21L6Cs3_c04 vs T22EmbSmall3_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_whiff_punish_2.msltrace.json"},{"scenario":"whiff punish","ok":false,"result":"no punish (opponent free at frame 10)","from":"T22Base5_c04 vs 9","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_whiff_punish_3.msltrace.json"},{"scenario":"whiff punish","ok":false,"result":"no punish (opponent free at frame 15)","from":"SimBase_c08 vs T22Base6_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_whiff_punish_4.msltrace.json"},{"scenario":"first hit","ok":true,"result":"the model hit first","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_first_hit_1.msltrace.json"},{"scenario":"first hit","ok":true,"result":"the model hit first","from":"T21L6Cs3_c04 vs T22EmbSmall3_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_first_hit_2.msltrace.json"},{"scenario":"first hit","ok":false,"result":"no hit in 5 s","from":"T22Base5_c04 vs 9","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_first_hit_3.msltrace.json"},{"scenario":"first hit","ok":true,"result":"the model hit first","from":"SimBase_c08 vs T22Base6_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_first_hit_4.msltrace.json"},{"scenario":"shield","ok":false,"result":"hit at frame 7","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_shield_1.msltrace.json"},{"scenario":"shield","ok":false,"result":"hit at frame 7","from":"T21L6Cs3_c04 vs T22EmbSmall3_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_shield_2.msltrace.json"},{"scenario":"shield","ok":false,"result":"hit at frame 8","from":"T22Base5_c04 vs 9","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_shield_3.msltrace.json"},{"scenario":"shield","ok":false,"result":"hit at frame 7","from":"SimBase_c08 vs T22Base6_c04","file":"traces/T21L6Cs4_c04_vs_T21L6Cs4_c04_v2_shield_4.msltrace.json"}]};
+// Our own traces (scenario_eval.trace_of: every frame a full row) turned into the replay data slippi-viewer plays.
+const HURT = ['vulnerable', 'invulnerable', 'intangible'];
+const BTN = {a: false, b: false, x: false, y: false, z: false, start: false, dPadLeft: false, dPadRight: false,
+  dPadDown: false, dPadUp: false};
+function playerSetting(i, name){
+  return {playerIndex: i, port: i + 1, externalCharacterId: 0, internalCharacterIds: [2], playerType: 0,
+    startStocks: 4, costumeIndex: i, teamShade: 0, handicap: 9, teamId: i ? 2 : 0, staminaMode: false,
+    silentCharacter: false, lowGravity: false, invisible: false, blackStockIcon: false, metal: false,
+    startGameOnWarpPlatform: false, rumbleEnabled: false, cpuLevel: 0, offenseRatio: 1, defenseRatio: 1,
+    modelScale: 1, controllerFix: 'UCF', nametag: '', displayName: name, connectCode: ''};
+}
+function toReplay(trace){
+  const F = trace.frames.playerFields, ix = {};
+  F.forEach((n, k) => { ix[n] = k; });
+  const frames = trace.frames.rows.map(row => {
+    const n = row[1];
+    return {frameNumber: n, randomSeed: 0, items: [], stage: {frameNumber: n}, players: row[3].map((r, p) => ({
+      frameNumber: n, playerIndex: p,
+      inputs: {frameNumber: n, playerIndex: p, isNana: false,
+        physical: {...BTN, rTriggerAnalog: 0, rTriggerDigital: false, lTriggerAnalog: 0, lTriggerDigital: false},
+        processed: {...BTN, rTriggerDigital: false, lTriggerDigital: false, joystickX: 0, joystickY: 0, cStickX: 0,
+          cStickY: 0, anyTrigger: 0}},
+      state: {frameNumber: n, playerIndex: p, isNana: false, internalCharacterId: 2, actionStateId: r[ix.actionId],
+        xPosition: r[ix.x], yPosition: r[ix.y], facingDirection: r[ix.facing], percent: r[ix.percent],
+        shieldSize: r[ix.shield], lastHittingAttackId: 0, currentComboCount: 0, lastHitBy: 0,
+        stocksRemaining: r[ix.stocks], actionStateFrameCounter: r[ix.actionFrame], hitstunRemaining: r[ix.hitstun],
+        isGrounded: !!r[ix.grounded], lastGroundId: 0, jumpsRemaining: r[ix.jumps], lCancelStatus: null,
+        hurtboxCollisionState: HURT[r[ix.hurtbox]] || 'vulnerable', selfInducedAirXSpeed: 0, selfInducedAirYSpeed: 0,
+        attackBasedXSpeed: 0, attackBasedYSpeed: 0, selfInducedGroundXSpeed: 0, hitlagRemaining: r[ix.hitlag],
+        isReflectActive: false, isFastfalling: false, isShieldActive: !!r[ix.shielding],
+        isInHitstun: !!r[ix.inHitstun], isHittingShield: false, isPowershieldActive: false, isDead: !!r[ix.dead],
+        isOffscreen: false}}))};
+  });
+  return {settings: {replayFormatVersion: '3.9.0.0', startTimestamp: '2026-11-12T00:00:00Z', isTeams: false,
+      stageId: 32, isPal: false, isFrozenStadium: false, platform: 'dolphin', consoleNickname: 'simulator',
+      timerType: 'counting down', characterUiPlacesCount: 2, gameType: 'stock', friendlyFireOn: false,
+      isBreakTheTargetsOrTitleDemo: false, isClassicOrAdventureMode: false, isHomeRunContestOrEventMatch: false,
+      isSingleButtonMode: false, timerCountsDuringPause: false, bombRain: false, itemSpawnRate: 'off',
+      selfDestructScoreValue: -1, timerStart: 480, damageRatio: 1,
+      playerSettings: [playerSetting(0, 'model'), playerSetting(1, 'opponent')]},
+    frames, ending: {gameEndMethod: 'GAME!', quitInitiator: -1}};
+}
+const SC = D.scenarios || ['edgeguard', 'recovery', 'follow-up'];
+const viewer = document.querySelector('slippi-viewer');
+const tabs = document.getElementById('tabs'), picks = document.getElementById('picks');
+const status = document.getElementById('status');
+document.getElementById('title').textContent = D.model + ' in the scenario starts';
+document.getElementById('sub').textContent = 'Opponent: ' + D.opponent + '. Captain Falcon against Captain Falcon, Final Destination.';
+function btn(parent, label, on){ const b = document.createElement('button'); b.textContent = label;
+  b.addEventListener('click', on); parent.appendChild(b); return b; }
+async function choose(s, k){
+  const list = D.samples.filter(x => x.scenario === s);
+  picks.replaceChildren();
+  list.forEach((x, i) => { const b = btn(picks, 'sample ' + (i + 1), () => choose(s, i));
+    b.className = x.ok ? 'ok' : 'no'; b.setAttribute('aria-pressed', i === k); });
+  for(const b of tabs.children) b.setAttribute('aria-pressed', b.dataset.s === s);
+  const cur = list[k], r = document.getElementById('result');
+  r.textContent = 'Result: ' + cur.result; r.className = 'result ' + (cur.ok ? 'ok' : 'no');
+  status.textContent = 'Loading...';
+  try {
+    const trace = await (await fetch(cur.file)).json();
+    const data = toReplay(trace);
+    viewer.setReplayData(data);
+    status.textContent = data.frames.length + ' frames. Saved from a game of ' + cur.from + '.';
+  } catch (e) { console.error(e); status.textContent = 'Could not load the trace: ' + e.message; }
+}
+SC.forEach(s => { btn(tabs, s, () => choose(s, 0)).dataset.s = s; });
+customElements.whenDefined('slippi-viewer').then(() => choose(SC[0], 0));
+</script>
+</body>
+</html>

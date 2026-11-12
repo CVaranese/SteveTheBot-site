@@ -10,6 +10,8 @@ Copies:
 Then commit and push; GitHub Pages serves the main branch.
 """
 import html
+import json
+import re
 import shutil
 import sys
 import time
@@ -53,13 +55,47 @@ def copy_pages(src_dir, pattern, dest):
     return [(dest + '/' + p.name, p) for p in pages]
 
 
+def animated_pages():
+    """anim/: the scenario samples with character animation. Each page of logs/t28/anim*.html is rendered again
+    from the current template (sim/scenario_anim_page.html) with the site's paths; the recordings it plays, the
+    slippi-viewer build (MIT) and Captain Falcon's display files are copied beside it."""
+    out = HERE / 'anim'
+    if out.exists():
+        shutil.rmtree(out)
+    viewer = SRC / 'logs' / 'msl_viewer' / 'slippi-viewer'
+    pages = sorted((SRC / 'logs' / 't28').glob('anim*.html'))
+    if not pages or not (viewer / 'dist' / 'index.js').is_file():
+        return []
+    (out / 'viewer' / 'public' / 'zips').mkdir(parents=True)
+    (out / 'traces').mkdir()
+    shutil.copyfile(viewer / 'dist' / 'index.js', out / 'viewer' / 'index.js')
+    shutil.copyfile(viewer / 'LICENSE', out / 'viewer' / 'LICENSE')
+    for z in (viewer / 'public' / 'zips').glob('*.zip'):
+        shutil.copyfile(z, out / 'viewer' / 'public' / 'zips' / z.name)
+    template = (SRC / 'sim' / 'scenario_anim_page.html').read_text(encoding='utf-8')
+    template = template.replace('../msl_viewer/slippi-viewer/dist/index.js', 'viewer/index.js') \
+                       .replace('../msl_viewer/slippi-viewer/public', 'viewer/public')
+    done = []
+    for p in pages:
+        m = re.search(r'const D = (\{.*?\});\n', p.read_text(encoding='utf-8'), re.S)
+        if not m:
+            continue
+        data = json.loads(m.group(1))
+        for s in data['samples']:
+            shutil.copyfile(SRC / 'logs' / 't28' / s['file'], out / s['file'])
+        (out / p.name).write_text(template.replace('/*DATA*/null', json.dumps(data, separators=(',', ':'))),
+                                  encoding='utf-8')
+        done.append(('anim/' + p.name, p))
+    return done
+
+
 def label(path):
     """'view_A_vs_B.html' or 'A_vs_B_seed1000.html' -> ('A', 'against B')."""
     stem = path.stem
     seed = ''
-    if stem.startswith('view2_'):
+    if stem.startswith(('view2_', 'anim2_')):
         stem, seed = stem[6:], ', six scenarios (version 2)'
-    elif stem.startswith('view_'):
+    elif stem.startswith(('view_', 'anim_')):
         stem, seed = stem[5:], ', three scenarios (version 1)'
     if '_seed' in stem:
         stem, seed = stem.rsplit('_seed', 1)
@@ -88,6 +124,7 @@ def main():
         (HERE / 'roadmap.html').write_text(text, encoding='utf-8')
     scenarios = copy_pages(SRC / 'logs' / 't28', 'view*.html', 'scenarios')
     reports = copy_pages(SRC / 'logs' / 't18', '*.html', 'reports')
+    animated = animated_pages()
     page = HEAD.replace('</head>', '<title>SteveTheBot</title><style>%s</style></head>' % STYLE) + """<main>
 <header><h1>SteveTheBot</h1>
 <p>A Captain Falcon that learns Super Smash Bros. Melee by reinforcement learning, on the way to Project+.
@@ -98,6 +135,10 @@ Code: <a href="https://github.com/CVaranese/SteveTheBot">github.com/CVaranese/St
 Version 2 adds whiff punish, first hit from neutral and shielding a move, and judges edgeguards by outcome.
 Drawn as blocks, not character animations.</p>
 %s</section>
+<section><h2>Scenario playback, animated</h2>
+<p>The same samples drawn with Captain Falcon's animations, through
+<a href="https://github.com/gcpreston/slippi-viewer">slippi-viewer</a>. The model is player 1.</p>
+%s</section>
 <section><h2>Game reports</h2>
 <p>One whole game as a timeline: what the model did, which inputs could have mattered, attacks and openings.
 These pages are 1 to 2 MB each.</p>
@@ -106,7 +147,7 @@ These pages are 1 to 2 MB each.</p>
 </main></body></html>
 """ % ('<a class="big" href="roadmap.html">Roadmap and progress<span>What each part of the system is now, what '
        'each change bought, and how the trainer works.</span></a>' if has_roadmap else '',
-       listing(scenarios), listing(reports), time.strftime('%d %b %Y'))
+       listing(scenarios), listing(animated), listing(reports), time.strftime('%d %b %Y'))
     (HERE / 'index.html').write_text(page, encoding='utf-8')
     (HERE / '.nojekyll').write_text('', encoding='utf-8')
     print('roadmap: %s, scenario pages: %d, game reports: %d' % (has_roadmap, len(scenarios), len(reports)))
