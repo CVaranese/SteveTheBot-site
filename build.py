@@ -56,9 +56,11 @@ def copy_pages(src_dir, pattern, dest):
 def label(path):
     """'view_A_vs_B.html' or 'A_vs_B_seed1000.html' -> ('A', 'against B')."""
     stem = path.stem
-    if stem.startswith('view_'):
-        stem = stem[5:]
     seed = ''
+    if stem.startswith('view2_'):
+        stem, seed = stem[6:], ', six scenarios (version 2)'
+    elif stem.startswith('view_'):
+        stem, seed = stem[5:], ', three scenarios (version 1)'
     if '_seed' in stem:
         stem, seed = stem.rsplit('_seed', 1)
         seed = ', seed ' + seed
@@ -84,7 +86,7 @@ def main():
         if '<!doctype' not in text[:200].lower():
             text = HEAD + text + '\n</body></html>\n'
         (HERE / 'roadmap.html').write_text(text, encoding='utf-8')
-    scenarios = copy_pages(SRC / 'logs' / 't28', 'view_*.html', 'scenarios')
+    scenarios = copy_pages(SRC / 'logs' / 't28', 'view*.html', 'scenarios')
     reports = copy_pages(SRC / 'logs' / 't18', '*.html', 'reports')
     page = HEAD.replace('</head>', '<title>SteveTheBot</title><style>%s</style></head>' % STYLE) + """<main>
 <header><h1>SteveTheBot</h1>
@@ -92,8 +94,9 @@ def main():
 Code: <a href="https://github.com/CVaranese/SteveTheBot">github.com/CVaranese/SteveTheBot</a>.</p></header>
 %s
 <section><h2>Scenario playback</h2>
-<p>A few saved positions per skill (edgeguard, recovery, follow-up), played on by one model. The same positions
-on every page. Drawn as blocks, not character animations.</p>
+<p>A few saved positions per skill, played on by one model. The same positions on every page of a version.
+Version 2 adds whiff punish, first hit from neutral and shielding a move, and judges edgeguards by outcome.
+Drawn as blocks, not character animations.</p>
 %s</section>
 <section><h2>Game reports</h2>
 <p>One whole game as a timeline: what the model did, which inputs could have mattered, attacks and openings.
