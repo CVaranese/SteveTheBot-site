@@ -6,7 +6,7 @@
 <title>Scenario playback, animated</title>
 <!-- The viewer build (logs/msl_viewer, from melee-sim-light tools/viewer) must sit beside this page's folder and the
      page must be opened over http (watch_scenarios.bat), not as a file. -->
-<script src="viewer/index.js"></script>
+<script src="../viewer/index.js"></script>
 <style>
 :root{--bg:#f3f3f8;--surface:#fff;--ink:#1b1a2e;--muted:#5d5c74;--line:#d9d8e6;--bot:#4b3fb0;--good:#1f8f61;--bad:#c63b3b}
 @media (prefers-color-scheme: dark){:root{--bg:#14131f;--surface:#1e1d2e;--ink:#ecebf7;--muted:#a3a1bd;--line:#34334a;
@@ -26,18 +26,33 @@ slippi-viewer{width:100%;display:block}
 .result{font-weight:600;font-size:1rem}
 .result.ok{color:var(--good)} .result.no{color:var(--bad)}
 </style>
-</head>
+<style>
+.stb-nav{--n-bg:#ffffff;--n-ink:#1b1a2e;--n-mut:#5d5c74;--n-line:#d9d8e6;--n-acc:#4b3fb0;
+  position:sticky;top:0;z-index:1000;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;
+  margin:0 0 14px;padding:8px 14px;background:var(--n-bg);border:1px solid var(--n-line);border-radius:8px;
+  font:500 14px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#1e1d2e;--n-ink:#ecebf7;--n-mut:#a3a1bd;--n-line:#34334a;
+  --n-acc:#a79bff}}
+.stb-nav a{color:var(--n-acc);text-decoration:none;padding:4px 0}
+.stb-nav a.stb-home{color:var(--n-ink);font-weight:700}
+.stb-nav a[aria-current="page"]{text-decoration:underline;text-underline-offset:4px}
+.stb-nav select{font:inherit;font-weight:400;color:var(--n-ink);background:var(--n-bg);border:1px solid var(--n-line);
+  border-radius:6px;padding:5px 8px;min-height:34px;max-width:100%;margin-left:auto}
+@media (max-width:560px){.stb-nav select{margin-left:0;width:100%}}
+</style></head>
 <body>
+<nav class="stb-nav" aria-label="Site"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../roadmap.html">Roadmap</a><a href="../index.html#scenarios">Scenarios</a><a href="../index.html#reports">Game reports</a><select aria-label="Go to page" onchange="if(this.value)location.href=this.value"><option value="">Go to page...</option><optgroup label="Start"><option value="../index.html">Start page</option><option value="../roadmap.html">Roadmap and progress</option></optgroup><optgroup label="Scenarios, version 2"><option value="../anim/anim2_SimBase_c08_vs_T21L6Cs4_c04.html">SimBase_c08, version 2</option><option value="../anim/anim2_T21L6Cs4_c04_vs_T21L6Cs4_c04.html">T21L6Cs4_c04, version 2</option><option value="../anim/anim2_T22EmbSmall3_c04_vs_T21L6Cs4_c04.html">T22EmbSmall3_c04, version 2</option></optgroup><optgroup label="Scenarios, version 1"><option value="../anim/anim_SimBase_c08_vs_T21L6Cs4_c04.html" selected>SimBase_c08, version 1</option><option value="../anim/anim_T21L6Cs4_c04_vs_T21L6Cs4_c04.html">T21L6Cs4_c04, version 1</option><option value="../anim/anim_T22EmbSmall3_c04_vs_T21L6Cs4_c04.html">T22EmbSmall3_c04, version 1</option></optgroup><optgroup label="Game reports"><option value="../reports/PPO8Bot_c04_edit_rec_vs_PPO8Self_c04_seed1000.html">PPO8Bot_c04_edit_rec (against PPO8Self c04)</option><option value="../reports/PPO8Bot_c04_vs_PPO8Self_c04_seed1000.html">PPO8Bot_c04 (against PPO8Self c04)</option><option value="../reports/PPO8Bot_c04_vs_scripted_bot_level_9_seed1000.html">PPO8Bot_c04 (against scripted bot level 9)</option><option value="../reports/PPO8Self_c04_vs_PPO8Self_c04_seed1000.html">PPO8Self_c04 (against PPO8Self c04)</option><option value="../reports/T9Prev_vs_PPO8Self_c04_seed1000.html">T9Prev (against PPO8Self c04)</option></optgroup></select></nav>
+
 <div class="wrap">
   <h1 id="title">Scenario playback</h1>
   <p id="sub"></p>
   <div class="row" id="tabs" role="group" aria-label="Scenario"></div>
   <div class="row" id="picks" role="group" aria-label="Sample"></div>
   <p class="result" id="result"></p>
-  <div class="stage"><slippi-viewer zips-base-url="viewer/public"></slippi-viewer></div>
+  <div class="stage"><slippi-viewer zips-base-url="../viewer/public"></slippi-viewer></div>
   <p id="status"></p>
-  <p>The model is player 1, the opponent player 2. Frame 0 is the saved position. Same samples as the block
-    playback page of this model.</p>
+  <p>The model is player 1, the opponent player 2. Frame 0 is the saved position. Every page of a version uses
+    the same saved positions.</p>
 </div>
 <script type="module">
 const D = {"model":"SimBase_c08","opponent":"T21L6Cs4_c04","samples":[{"scenario":"edgeguard","ok":false,"result":"no stock taken","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_edgeguard_1.msltrace.json"},{"scenario":"edgeguard","ok":true,"result":"opponent lost the stock","from":"T21L6Cs3_c04 vs T22EmbSmall3_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_edgeguard_2.msltrace.json"},{"scenario":"edgeguard","ok":false,"result":"no stock taken","from":"T22Base5_c04 vs 9","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_edgeguard_3.msltrace.json"},{"scenario":"edgeguard","ok":false,"result":"no stock taken","from":"SimBase_c08 vs T22Base6_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_edgeguard_4.msltrace.json"},{"scenario":"recovery","ok":false,"result":"did not get back","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_recovery_1.msltrace.json"},{"scenario":"recovery","ok":false,"result":"did not get back","from":"T21L6Cs3_c04 vs T22EmbSmall3_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_recovery_2.msltrace.json"},{"scenario":"recovery","ok":true,"result":"back on the stage","from":"T22Base5_c04 vs 9","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_recovery_3.msltrace.json"},{"scenario":"recovery","ok":true,"result":"back on the stage","from":"SimBase_c08 vs T22Base6_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_recovery_4.msltrace.json"},{"scenario":"follow-up","ok":false,"result":"0% extra damage","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_follow-up_1.msltrace.json"},{"scenario":"follow-up","ok":true,"result":"20% extra damage","from":"T21L6Cs4_c04 vs T21L6Cs4_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_follow-up_2.msltrace.json"},{"scenario":"follow-up","ok":false,"result":"0% extra damage","from":"SimBase_c08 vs T22Base6_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_follow-up_3.msltrace.json"},{"scenario":"follow-up","ok":false,"result":"0% extra damage","from":"SimBase_c08 vs T22Base6_c04","file":"traces/SimBase_c08_vs_T21L6Cs4_c04_follow-up_4.msltrace.json"}]};
