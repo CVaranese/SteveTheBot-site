@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>SteveTheBot Upgrade Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column in three parts: the roadmap (stage cards, now / next), progress (the same yardsticks
+   across every step), and how the trainer works (explanations with two small interactive figures). */
+:root{
+  --bg:#f3f3f8; --surface:#ffffff; --ink:#1b1a2e; --muted:#5d5c74; --line:#d9d8e6;
+  --accent:#4b3fb0; --accent-soft:#e7e4fa;
+  --a-green:#1f8f61; --b-red:#c63b3b; --c-yellow:#9a7200; --z-blue:#3565c4;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#14131f; --surface:#1e1d2e; --ink:#ecebf7; --muted:#a3a1bd; --line:#34334a;
+  --accent:#a79bff; --accent-soft:#2b2850;
+  --a-green:#4fcf9a; --b-red:#f07a7a; --c-yellow:#e8bf4a; --z-blue:#7fa6f5; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#14131f; --surface:#1e1d2e; --ink:#ecebf7; --muted:#a3a1bd; --line:#34334a;
+  --accent:#a79bff; --accent-soft:#2b2850;
+  --a-green:#4fcf9a; --b-red:#f07a7a; --c-yellow:#e8bf4a; --z-blue:#7fa6f5; color-scheme:dark }
+
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 56px}
+.wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:52px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.9rem,6vw,2.6rem);font-weight:700;letter-spacing:-.02em}
+h2{font-size:1.45rem;font-weight:600}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0;max-width:65ch}
+ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{color:var(--muted);font-size:1.05rem}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+section{display:flex;flex-direction:column;gap:16px}
+.sub{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+.note{font-size:.88rem;color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.part{border-top:2px solid var(--ink);padding-top:14px;display:flex;flex-direction:column;gap:6px}
+.part .num{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+
+/* where it stands */
+.now{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.now > div{padding:12px 14px;min-width:0;font-size:.92rem;display:flex;flex-direction:column;gap:4px}
+.now > div + div{border-left:1px solid var(--line)}
+.now .lab{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.now b.big{font-family:var(--display);font-size:1.15rem}
+@media (max-width:620px){ .now{grid-template-columns:1fr} .now > div + div{border-left:0;border-top:1px solid var(--line)} }
+
+/* roadmap stage cards */
+.flow{display:flex;flex-direction:column}
+.stage{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);background:var(--surface);border-radius:6px;position:relative}
+.stage + .stage{margin-top:22px}
+.stage + .stage::before{content:"";position:absolute;left:50%;top:-22px;height:22px;border-left:2px solid var(--line)}
+.stage-head{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.stage-head .n{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid currentColor}
+.stage-head h3{margin-right:auto}
+.tag.done{color:var(--a-green)} .tag.run{color:var(--z-blue)} .tag.next{color:var(--accent)} .tag.later{color:var(--c-yellow)} .tag.keep{color:var(--muted)}
+.cell{padding:12px 14px;min-width:0;font-size:.92rem;display:flex;flex-direction:column;gap:6px}
+.cell + .cell{border-left:1px solid var(--line)}
+.cell .lab{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.cell.next{background:var(--accent-soft)}
+.cell.next .lab{color:var(--accent)}
+.cell ul{padding-left:1.05em;gap:4px}
+.dec{font-family:var(--mono);font-size:.72rem;color:var(--a-green)}
+.loopback{margin-top:10px;font-family:var(--mono);font-size:.78rem;color:var(--muted);text-align:center}
+@media (max-width:560px){ .stage{grid-template-columns:1fr} .cell + .cell{border-left:0;border-top:1px solid var(--line)} }
+
+/* progress ladders */
+.ladder{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ladder .q{font-size:.88rem;color:var(--muted)}
+.rung{display:grid;grid-template-columns:minmax(0,15em) 1fr 4.6em;gap:4px 12px;align-items:center;font-size:.88rem}
+.rung .name{min-width:0}
+.rung .name small{display:block;color:var(--muted);font-size:.78rem}
+.rung .track{position:relative;height:16px;background:var(--bg);border-radius:3px}
+.rung .fill{position:absolute;left:0;top:2px;bottom:2px;border-radius:2px;background:var(--muted)}
+.rung.best .fill{background:var(--accent)}
+.rung.pending .track{background:repeating-linear-gradient(45deg,var(--bg) 0 6px,var(--accent-soft) 6px 12px)}
+.rung .dot{position:absolute;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--ink);opacity:.55}
+.rung .val{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;font-size:.85rem}
+.rung .delta{display:block;font-size:.72rem;color:var(--a-green)}
+.rung .delta.neg{color:var(--b-red)} .rung .delta.flat{color:var(--muted)}
+.ladder .scale{display:grid;grid-template-columns:minmax(0,15em) 1fr 4.6em;gap:12px;font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+.ladder .scale div{display:flex;justify-content:space-between}
+@media (max-width:560px){ .rung,.ladder .scale{grid-template-columns:1fr 4.2em} .rung .name{grid-column:1 / -1} .ladder .scale > span{display:none} }
+
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+.scroll table{min-width:600px}
+.chip{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.chip.kept{color:var(--a-green)} .chip.opt{color:var(--z-blue)} .chip.drop{color:var(--b-red)} .chip.test{color:var(--c-yellow)}
+
+/* how it works */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.eq{font-family:var(--mono);font-size:.82rem;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.steps li{min-width:0;border-top:2px solid var(--accent);padding-top:8px;font-size:.88rem;display:flex;flex-direction:column;gap:2px}
+.steps li b{font-family:var(--display);font-size:.98rem}
+.steps li .mono{font-size:.78rem;color:var(--muted)}
+.split{display:flex;height:22px;border-radius:3px;overflow:hidden;border:1px solid var(--line)}
+.split span{display:flex;align-items:center;padding:0 8px;font-family:var(--mono);font-size:.7rem;white-space:nowrap;overflow:hidden}
+.split .s-play{background:var(--accent-soft);color:var(--ink)} .split .s-train{background:var(--accent);color:var(--surface)}
+
+.net{display:flex;flex-direction:column;gap:10px}
+.net-row{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px}
+.net-name{font-family:var(--display);font-weight:600;font-size:1rem;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.net-name .mono{font-size:.78rem;color:var(--muted);font-weight:400}
+.layer{flex:1 1 110px;min-width:0;border:1px solid var(--line);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:.82rem}
+.layer b{font-family:var(--mono);font-size:1.1rem}
+.layer .act{font-family:var(--mono);font-size:.72rem;color:var(--accent)}
+.layer .w{font-family:var(--mono);font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.layer.opt{border-style:dashed}
+.layer.opt .act{color:var(--z-blue)}
+.arrow{align-self:center;color:var(--muted);font-family:var(--mono)}
+@media (max-width:560px){ .net-row{flex-direction:column} .arrow{transform:rotate(90deg)} }
+.stack{display:flex;height:26px;border-radius:3px;overflow:hidden;border:1px solid var(--line)}
+.stack > span{display:block;height:100%}
+.stack .s1{background:var(--z-blue)} .stack .s2{background:var(--accent-soft)} .stack .s3{background:var(--a-green)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.84rem}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle;border:1px solid var(--line)}
+
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:500 .85rem var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:7px 11px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:.9rem}
+.controls label{display:flex;align-items:center;gap:8px}
+input[type=range]{width:180px;max-width:100%;accent-color:var(--accent)}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.fig svg{display:block;width:100%;height:auto}
+.clip .ax{stroke:var(--muted);stroke-width:1}
+.clip .gd{stroke:var(--line);stroke-width:1}
+.clip .band{fill:var(--accent-soft)}
+.clip .raw{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3}
+.clip .obj{fill:none;stroke:var(--accent);stroke-width:2.5}
+.clip .dot{fill:var(--b-red)}
+.fig text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.gae .bar0{fill:var(--accent)} .gae .grid{stroke:var(--line);stroke-width:1}
+.gae .half{stroke:var(--b-red);stroke-width:1;stroke-dasharray:3 3}
+
+.ctl{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start}
+.ctl > *{min-width:0}
+@media (max-width:560px){ .ctl{grid-template-columns:1fr} .gate{max-width:200px;margin:0 auto} }
+.gate svg{display:block;width:100%;height:auto}
+.gate .rim{fill:none;stroke:var(--line);stroke-width:2}
+.gate .axis{stroke:var(--line);stroke-width:1}
+.gate .pt{fill:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.btn{font-family:var(--mono);font-size:.78rem;font-weight:600;border:2px solid currentColor;border-radius:999px;padding:2px 10px}
+.btn.a{color:var(--a-green)} .btn.b{color:var(--b-red)} .btn.c{color:var(--c-yellow)} .btn.z{color:var(--z-blue)} .btn.g{color:var(--muted)}
+.btn.off{opacity:.35;text-decoration:line-through}
+.src{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px;font-size:.9rem}
+.src .lbl{font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:14px">
+  <span class="eyebrow">SteveTheBot · updated 12 Nov 2026</span>
+  <h1>A Captain Falcon that learns Melee, on the way to Project+</h1>
+  <p class="lede">A reinforcement-learning bot from 2017, revived and retrained on a fast Melee simulator. This page has three parts: the roadmap (what each part of the system is now and what comes next), progress (every improvement scored against the same opponents), and how the trainer works.</p>
+  <div class="now">
+    <div><span class="lab">Best model</span><b class="big mono">T21L6Cs4</b><span>PPO, self-play, 58 min on the GPU. Wins 98 of 100 against a frozen model trained the old way at the same rate.</span></div>
+    <div><span class="lab">How it plays (watched)</span><span>Better than random. Well-timed aerials, but no follow-ups after a hit. Recovers well.</span></div>
+    <div><span class="lab">Decided 12 Nov</span><span>Plain inputs are the default again: the animation embedding fell behind plain runs once runs were doubled, so it is now opt-in. Input rescaling and the previous action stay optional. New result: doubling a run (2,940 to 5,880 updates) makes models much stronger, and they were still learning. In Dolphin against the level 9 CPU, T21L6Cs4 won 49 of 50 games. Next: replay imitation (T-4).</span></div>
+  </div>
+</header>
+
+<!-- ============================================================ PART 1: ROADMAP -->
+<section>
+  <div class="part"><span class="num">Part 1</span><h2>The roadmap, stage by stage</h2></div>
+  <p>The training loop runs top to bottom and repeats. Each stage shows what it is now and what comes next. Tags: <span class="tag done">changed</span> already improved, <span class="tag run">testing</span> runs in progress, <span class="tag next">next</span> chosen and queued, <span class="tag later">later</span> planned after that, <span class="tag keep">keep</span> no change planned.</p>
+  <div class="flow">
+    <div class="stage">
+      <div class="stage-head"><span class="n">0</span><h3>Where learning starts</h3><span class="tag next">next</span></div>
+      <div class="cell"><span class="lab">Now</span>Random starting weights. Everything the bot knows came from playing itself.</div>
+      <div class="cell next"><span class="lab">Next · T-4</span>Learn from human Melee Falcon replays first (imitation), then self-play from there. Human play is the likeliest source of combos and follow-ups, which self-play has not found.<span class="dec">Decided 11 Nov: start from replays; this comes after the current tuning.</span></div>
+    </div>
+    <div class="stage">
+      <div class="stage-head"><span class="n">1</span><h3>The game</h3><span class="tag done">changed</span><span class="tag later">later</span></div>
+      <div class="cell"><span class="lab">Now</span>A native Melee simulator instead of Dolphin: 64 matches at once per training run, up to 8 runs sharing the graphics card (7,000 to 11,800 decisions a second each with 8 at once; it varied between batches). Dolphin is kept for watching and for scoring against the real in-game CPU.</div>
+      <div class="cell next"><span class="lab">Later</span><ul><li>Faster match playing: playing the matches is 87% of each update and runs on one CPU core, with about 3 times headroom. Ideas: more matches per run, or the policy on the CPU during play.</li><li>Project+ through headless Dolphin and the state translator.</li></ul></div>
+    </div>
+    <div class="stage">
+      <div class="stage-head"><span class="n">2</span><h3>What the bot sees</h3><span class="tag next">next</span></div>
+      <div class="cell"><span class="lab">Now</span>796 numbers for the current frame: both players' position, damage, facing, animation, speeds. No memory of earlier frames.<span class="dec">Decided 11 Nov: the previous action stays an option, not the default (it cannot say whether a press took effect).</span></div>
+      <div class="cell next"><span class="lab">Done · T-12 · T-22 · decided 12 Nov</span><ul><li>Animation as 32 learned numbers (embedding), small start: at the new learning rate it won 50 and 49 against the best model, where plain runs won 4 to 34. Made the default on 12 Nov, then dropped the same day: at double run length it fell behind plain inputs (mean 41 vs 55 wins at 2,940 updates, 84 vs 98 at 5,880, against frozen T21L6Cs4). Now opt-in (<span class="mono">--embed 32 --embed-std 0.05</span>).</li><li>Input rescaling (built today): x, y and hitstun brought to the same size as the other inputs. No measurable effect (21 and 21). Stays an unused option.</li><li>Later: a memory of the last few seconds.</li></ul></div>
+    </div>
+    <div class="stage">
+      <div class="stage-head"><span class="n">3</span><h3>The network</h3><span class="tag done">changed</span><span class="tag later">later</span></div>
+      <div class="cell"><span class="lab">Now</span>Two separate networks, actor and critic, two hidden layers of 128 each (about 125,000 weights per network), with the four T-8 fixes: both hidden layers activated, no sigmoid in the critic, orthogonal starting weights, gradient clipping.</div>
+      <div class="cell next"><span class="lab">Later · T-10</span>One shared body with a policy head and a value head.</div>
+    </div>
+    <div class="stage">
+      <div class="stage-head"><span class="n">4</span><h3>The controller</h3><span class="tag next">next</span></div>
+      <div class="cell"><span class="lab">Now</span>One of 54 fixed actions every 2 frames: 9 stick positions times one button or none. All models trained so far use this.</div>
+      <div class="cell"><span class="lab">Built 12 Nov, not yet trained</span><ul><li>Each saved model has a small settings file: frames per action and delay. Missing means every 2 frames, no delay.</li><li><span class="mono">--frames-per-action 1 --delay 15</span>: a decision every frame. An action chosen on frame t reaches the controller on frame t+15, about a human reaction time (15 frames, Firoiu et al. 2018; your choice).</li><li>With a delay the network also sees the 15 actions still in flight, as 54-slot one-hots: 796 + 15 x 54 = 1,606 inputs.</li><li>Discount and GAE decay are scaled to the shorter step, so one update covers the same game time.</li><li>Self-play delays both sides. The scripted opponent is not delayed (it stands in for the in-game CPU).</li></ul><span class="dec">Tested that it runs; no trained model yet. A training batch (base, every frame, every frame + delay) is next.</span></div>
+      <div class="cell"><span class="lab">Measured 12 Nov</span>Choosing the same button action on consecutive decisions is one continuous hold, in Dolphin and the simulator: A held for 10 decisions gives one jab, X held gives one jump. The bot cannot press a button twice without another action in between.</div>
+      <div class="cell next"><span class="lab">Next</span><ul><li>Two heads: a button (6 choices), then a stick position given the button (17, with half tilts). Then a C-stick head.</li></ul><span class="dec">Decided 11 Nov; not built yet.</span></div>
+    </div>
+    <div class="stage">
+      <div class="stage-head"><span class="n">5</span><h3>The reward</h3><span class="tag keep">keep</span></div>
+      <div class="cell"><span class="lab">Now</span>+1 or −1 per stock, +0.01 or −0.01 per percent of damage.</div>
+      <div class="cell next"><span class="lab">Plan</span>Unchanged. The 2026 Faynt paper uses the same two terms.</div>
+    </div>
+    <div class="stage">
+      <div class="stage-head"><span class="n">6</span><h3>The learning step</h3><span class="tag done">changed</span><span class="tag next">next</span></div>
+      <div class="cell"><span class="lab">Now</span>PPO with GAE: 8,192 decisions per side per update, 4 passes over the batch, clip 0.2. Learning rate 6e-4 held constant.<span class="dec">Decided 11 Nov: 6e-4 constant is the default (it was 3e-4 falling to zero).</span></div>
+      <div class="cell next"><span class="lab">Next · T-22</span>Longer runs at 6e-4: they were still improving when they stopped. A rate twice as high again (1.2e-3) was tried and was not better: less steady, one run nearly collapsed.</div>
+    </div>
+    <div class="stage">
+      <div class="stage-head"><span class="n">7</span><h3>The opponent</h3><span class="tag later">later</span></div>
+      <div class="cell"><span class="lab">Now</span>Training: itself (self-play), or a simple scripted Falcon. Scoring: frozen copies of earlier models, the scripted bot at level 9, and the in-game CPU in Dolphin.</div>
+      <div class="cell next"><span class="lab">Later</span>A mix: self-play plus frozen past versions plus the scripted bot, so it cannot over-fit to one opponent.</div>
+    </div>
+    <div class="stage">
+      <div class="stage-head"><span class="n">8</span><h3>Seeing inside</h3><span class="tag done">changed</span><span class="tag later">later</span></div>
+      <div class="cell"><span class="lab">Now</span>A log per update, the scored benchmarks, and the game report: one game replayed with every possible action at every decision, to see which inputs could matter.</div>
+      <div class="cell next"><span class="lab">Later</span>The report averaged over 100 games and run on your own games. Then tools to ask the network what it would do in a chosen situation.</div>
+    </div>
+  </div>
+  <p class="loopback">↻ back to stage 1 for the next batch</p>
+</section>
+
+<!-- ============================================================ PART 2: PROGRESS -->
+<section>
+  <div class="part"><span class="num">Part 2</span><h2>Progress: what each step bought</h2></div>
+  <p>Every bar is "games won out of 100". A model wins a game by taking all 4 of the opponent's stocks first. Each chart keeps one opponent fixed, so the bars can be compared. Where a setting has several training runs (seeds), the bar is their mean and the dots are the single runs. The small number under each score is the gain over the row above (or over the plain runs, where the chart says so). Two runs with the same settings can end 10 to 30 wins apart, so small gaps are noise. All tested.</p>
+
+  <div class="ladder" id="lad-a">
+    <h3>Against a fixed opponent from the first PPO day</h3>
+    <p class="q">Opponent: frozen PPO8Self, a self-play model from the first PPO day that no longer learns. In the simulator, 100 games each.</p>
+  </div>
+
+  <div class="ladder" id="lad-b">
+    <h3>Against a stronger opponent, to separate the newest models</h3>
+    <p class="q">The first opponent is now too easy: everything since the learning-rate change wins 86 to 96 of 100. Opponent: frozen T21L6s3 (learning rate 6e-4, falling to zero). Its own seed-mates should land near 50.</p>
+  </div>
+
+  <div class="ladder" id="lad-d">
+    <h3>Against the best model: input changes at the new rate</h3>
+    <p class="q">Opponent: frozen T21L6Cs4, the strongest model so far. Each change is compared with plain runs from the same settings (the first row), not with the row above. Plain runs vary a lot here (4 to 34), so the gaps need two runs each.</p>
+  </div>
+
+  <div class="ladder" id="lad-c">
+    <h3>Against the real in-game CPU, level 9, in Dolphin</h3>
+    <p class="q">The fairest test: models trained only in the simulator, playing the game's own Captain Falcon CPU. 50 games each (old learner: 20). The newest models are not scored here yet; you watched one and saw it play better.</p>
+  </div>
+
+  <div class="sub">
+    <h3>Every enhancement tried, and what it did</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Change</th><th>Opponent</th><th>Before</th><th>After</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>PPO with GAE instead of the 2017 update (T-3)</td><td>frozen PPO8Self</td><td class="num">0</td><td class="num">48</td><td><span class="chip kept">kept</span></td></tr>
+        <tr><td>Network fixes (T-8)</td><td>CPU level 9</td><td class="num">50</td><td class="num">66</td><td><span class="chip kept">kept</span></td></tr>
+        <tr><td>Train against the scripted bot instead of itself</td><td>CPU level 9</td><td class="num">66</td><td class="num">96</td><td><span class="chip opt">option</span></td></tr>
+        <tr><td>Same change, other opponent</td><td>frozen PPO8Self</td><td class="num">55</td><td class="num">38</td><td></td></tr>
+        <tr><td>Sharper choices: output layer ×2.5, no training</td><td>frozen PPO8Self</td><td class="num">38</td><td class="num">70</td><td><span class="chip opt">tool</span></td></tr>
+        <tr><td>Previous action as an input (3 runs, old rate)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">67</td><td><span class="chip opt">option</span></td></tr>
+        <tr><td>Animation embedding, small start (3 runs, old rate)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">59</td><td><span class="chip opt">option</span></td></tr>
+        <tr><td>Animation embedding, large start (2 runs)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">34</td><td><span class="chip drop">dropped</span></td></tr>
+        <tr><td>Learning rate 3e-4 → 6e-4, still falling to zero (T-21, 4 runs)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">92</td><td><span class="chip kept">kept</span></td></tr>
+        <tr><td>Learning rate held constant instead (T-21, 2 runs)</td><td>frozen T21L6s3</td><td class="num">53</td><td class="num">97</td><td><span class="chip kept">default</span></td></tr>
+        <tr><td>Animation embedding, small start, at the new rate (2 runs)</td><td>frozen T21L6Cs4</td><td class="num">20</td><td class="num">50</td><td><span class="chip opt">option</span></td></tr>
+        <tr><td>Animation embedding vs plain, double-length runs (T-22, 5,880 updates)</td><td>frozen T21L6Cs4 (plain, then embedding)</td><td class="num">98</td><td class="num">84</td><td><span class="chip drop">dropped</span></td></tr>
+        <tr><td>Double run length: 5,880 instead of 2,940 updates (T-22)</td><td>own 2,940-update checkpoint</td><td class="num">n/a</td><td class="num">93 to 100</td><td><span class="chip kept">kept</span></td></tr>
+        <tr><td>In-game level 9 CPU, Dolphin: T21L6Cs4 (50 games)</td><td>CPU level 9</td><td class="num">66</td><td class="num">98</td><td></td></tr>
+        <tr><td>Input rescaling (T-12, 2 runs)</td><td>frozen T21L6Cs4</td><td class="num">20</td><td class="num">21</td><td><span class="chip drop">no effect</span></td></tr>
+        <tr><td>Learning rate 1.2e-3, constant (T-22, 2 runs)</td><td>frozen T21L6Cs4</td><td class="num">20</td><td class="num">25</td><td><span class="chip drop">not kept</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">"Before" is the model or mean the change was compared with at the time; numbers are wins out of 100. The level 9 CPU rows are 50 games, converted to out of 100. Full tables and every model: <span class="mono">notes/BENCHMARKS.md</span>.</p>
+  </div>
+
+  <div class="sub">
+    <h3>What it cost</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Model</th><th>Training</th><th>Wall time</th><th>Games played</th></tr></thead>
+      <tbody>
+        <tr><td>Steve (2017 learner)</td><td>Dolphin, against the CPU</td><td class="num">4 h 42 min</td><td class="num">1,795</td></tr>
+        <tr><td>SimBase c08 (2017 learner)</td><td>simulator, self-play</td><td class="num">28 min</td><td class="num">3,805</td></tr>
+        <tr><td>PPO8Self c04</td><td>simulator, PPO, self-play</td><td class="num">20 min</td><td class="num">3,692</td></tr>
+        <tr><td>T21L6Cs4 c04</td><td>simulator, PPO, 8 runs sharing the GPU</td><td class="num">57 min</td><td class="num">4,943</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">The newest runs are slower per run only because eight train at once; together they play about 56,000 decisions a second.</p>
+  </div>
+
+  <div class="sub">
+    <h3>One score per skill: the scenario yardstick (T-28)</h3>
+    <p>Whole-game wins mix every skill together and swing a lot between runs. The simulator can save a whole match and load it again exactly. So moments are saved from earlier games (an opponent knocked off the stage; the frame a first hit lands). Every model is then put into the same 300 saved positions and plays on. The result is one score per skill. The saved positions come from our own bots' games, not human games.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Score</th><th>What it measures</th><th>PPO models</th><th>Random play</th></tr></thead>
+      <tbody>
+        <tr><td>Recovery</td><td>Model starts offstage: share of starts where it gets back on the stage</td><td class="num">81% to 86%</td><td class="num">19%</td></tr>
+        <tr><td>Edgeguard</td><td>Opponent starts offstage: share where it loses the stock within 8 seconds</td><td class="num">21% to 28%</td><td class="num">14%</td></tr>
+        <tr><td>Follow-up</td><td>After a first hit: extra damage dealt</td><td class="num">8 to 12 percent</td><td class="num">3.6 percent</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Tested 2026-11-12, against the frozen T21L6Cs4. Recovery is learned. Edgeguard and follow-up are weak: in about half of the openings no second hit lands. This matches what you see when watching (recovery works, few follow-ups). Four runs with the same settings differ by only 5 to 6 points here, where their whole-game wins were 4% to 34%, so this score is steadier. Limits: models with a reaction delay are not supported yet. Queued, not built: three more scenarios (punish lag, tech chase, punish out of shield) and start positions from human replays (T-29). Using these starts in training is not decided. Source: <span class="mono">sim/scenario_eval.py</span>, <span class="mono">notes/BENCHMARKS.md</span> section 8.</p>
+  </div>
+</section>
+
+<!-- ============================================================ PART 3: HOW IT WORKS -->
+<section>
+  <div class="part"><span class="num">Part 3</span><h2>How the trainer works</h2></div>
+  <p>Each block explains one idea in the current trainer (<span class="mono">sim/ppo_run.py</span>), with this project's own numbers.</p>
+
+  <div class="sub">
+    <h3>One update, start to finish</h3>
+    <ol class="steps">
+      <li><b>Play</b><span>64 matches run at once. Every 2 frames the actor picks an action for each player. 128 decisions per match.</span><span class="mono">8,192 per side</span></li>
+      <li><b>Score</b><span>Each decision gets its reward, and the critic guesses the value of every state.</span><span class="mono">reward: stocks, damage</span></li>
+      <li><b>Judge</b><span>GAE turns rewards and guesses into an advantage: how much better each action went than expected.</span><span class="mono">λ 0.95, discount 0.995</span></li>
+      <li><b>Learn</b><span>4 passes over the batch in 4 slices. Actor and critic both take small gradient steps.</span><span class="mono">16 steps, lr 6e-4</span></li>
+    </ol>
+    <div class="split" role="img" aria-label="Share of one update's time: playing 87 percent, learning 13 percent"><span class="s-play" style="width:87%">play the matches 87%</span><span class="s-train" style="width:13%">learn 13%</span></div>
+    <p class="note">One update takes about half a second for a run alone on the GPU. A full run is 2,940 updates, about 3,800 to 4,900 games. Self-play learns from both players' views, since both are the same network.</p>
+  </div>
+
+  <div class="sub">
+    <h3>Two networks: one acts, one judges</h3>
+    <p>The <b>actor</b> reads the state and gives a probability for each of the 54 actions. The bot samples one, so it does not always do the same thing in the same spot. The <b>critic</b> reads the same state and guesses how much reward is coming. They share no weights.</p>
+    <div class="card net">
+      <div class="net-name">Actor <span class="mono">125,494 weights (default, plain) · 47,670 with the optional embedding</span></div>
+      <div class="net-row">
+        <div class="layer"><span class="act">input</span><b>796</b><span>the state</span></div>
+        <span class="arrow">→</span>
+        <div class="layer opt"><span class="act">embedding (optional, off by default)</span><b>92</b><span class="w">12,288 + 11,904 w · other options: rescale, prev. action</span></div>
+        <span class="arrow">→</span>
+        <div class="layer"><span class="act">dense + LeakyReLU</span><b>128</b><span class="w">102,016 w</span></div>
+        <span class="arrow">→</span>
+        <div class="layer"><span class="act">dense + LeakyReLU</span><b>128</b><span class="w">16,512 w</span></div>
+        <span class="arrow">→</span>
+        <div class="layer"><span class="act">dense + softmax</span><b>54</b><span class="w">6,966 w</span></div>
+      </div>
+      <div class="net-name" style="margin-top:6px">Critic <span class="mono">118,657 weights (default, plain) · 40,833 with the optional embedding</span></div>
+      <div class="net-row">
+        <div class="layer"><span class="act">input</span><b>796</b><span>the same state</span></div>
+        <span class="arrow">→</span>
+        <div class="layer"><span class="act">dense + LeakyReLU</span><b>128</b><span class="w">102,016 w</span></div>
+        <span class="arrow">→</span>
+        <div class="layer"><span class="act">dense + LeakyReLU</span><b>128</b><span class="w">16,512 w</span></div>
+        <span class="arrow">→</span>
+        <div class="layer"><span class="act">dense, linear</span><b>1</b><span class="w">129 w</span></div>
+      </div>
+    </div>
+    <div class="stack" role="img" aria-label="Share of the 796 inputs: 768 animation one-hot, 28 other numbers">
+      <span class="s1" style="width:0.5%"></span><span class="s2" style="width:48.2%"></span><span class="s3" style="width:1.3%"></span>
+      <span class="s1" style="width:0.5%"></span><span class="s2" style="width:48.2%"></span><span class="s3" style="width:1.3%"></span>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--z-blue)"></i>4 per player: x, y, damage, facing</span>
+      <span><i style="background:var(--accent-soft)"></i>384 per player: which animation, one slot each</span>
+      <span><i style="background:var(--a-green)"></i>10 per player: frame in animation, hitlag, hitstun, jumps, speeds and more</span>
+    </div>
+    <p>768 of the 796 inputs say which animation each player is in, one slot per animation. So the first layer is mostly a lookup table from animation to 128 features, which is why it holds 81% of the weights. New models use plain inputs. An optional <b>embedding</b> can go in front (<span class="mono">--embed 32 --embed-std 0.05</span>; it was the default for a few hours on 12 Nov and was dropped, see the progress table): each 384-slot block becomes 32 learned numbers from one table shared by both players, so the first layer sees 92 numbers and the weight counts above shrink (the layer sizes drawn here are the models without it; counts recomputed from <span class="mono">Model.py</span>). The other front layers stay optional: <b>rescaling</b> shrinks x, y and hitstun (which spread up to 6 times wider than the other inputs) so no input drowns out the rest. Both are stored inside the saved model, so older models load unchanged.</p>
+  </div>
+
+  <div class="sub">
+    <h3>The advantage, and how GAE estimates it</h3>
+    <p>Learning needs to know whether an action was good. The raw reward is too noisy (a stock is lost seconds after the mistake), so the trainer asks: did things go <b>better or worse than the critic expected</b>? That difference is the advantage A. A positive A makes the action more likely next time, a negative one less likely.</p>
+    <div class="eq">δ<sub>t</sub> = r<sub>t</sub> + γ·V(s<sub>t+1</sub>) − V(s<sub>t</sub>)   ·   A<sub>t</sub> = δ<sub>t</sub> + (γλ)·δ<sub>t+1</sub> + (γλ)²·δ<sub>t+2</sub> + …</div>
+    <p>δ is a one-step surprise: the reward plus the critic's new guess, minus its old guess. GAE adds up the surprises that follow, each weighted less. λ sets the trade: near 0 trusts the critic (low noise, but biased when the critic is wrong), near 1 trusts the real rewards (unbiased, noisy). The discount γ says how much future reward counts at all.</p>
+    <div class="card fig gae">
+      <div class="controls">
+        <label for="lam">λ <input type="range" id="lam" min="0" max="1" step="0.05" value="0.95"> <span class="mono" id="lamv">0.95</span></label>
+      </div>
+      <svg viewBox="0 0 420 150" role="img" aria-label="How much each later one-step surprise counts in the advantage, by decisions ahead">
+        <line class="grid" x1="40" y1="20" x2="410" y2="20"></line>
+        <line class="grid" x1="40" y1="120" x2="410" y2="120"></line>
+        <g id="gbars"></g>
+        <line class="half" id="ghalf" x1="0" y1="14" x2="0" y2="120"></line>
+        <text x="4" y="24">1</text><text x="4" y="124">0</text>
+        <text x="40" y="138">now</text><text x="410" y="138" text-anchor="end">60 decisions (2 s) ahead</text>
+      </svg>
+      <p class="note" id="gnote"></p>
+    </div>
+  </div>
+
+  <div class="sub">
+    <h3>The PPO clip: learn a lot from each batch, but not too far</h3>
+    <p>The 2017 learner used each batch once and threw it away. PPO goes over the same batch 4 times. That is only safe if the policy cannot drift far from the one that played the games, so PPO compares the new and old probability of each action (the ratio r) and stops rewarding changes past a band of ±ε.</p>
+    <div class="eq">r = π<sub>new</sub>(a) / π<sub>old</sub>(a)   ·   actor loss = −min(r·A, clip(r, 1−ε, 1+ε)·A) − 0.01·entropy</div>
+    <div class="card fig clip">
+      <div class="seg" role="group" aria-label="Sign of the advantage">
+        <button id="adv-pos" aria-pressed="true">Went better than expected (A &gt; 0)</button>
+        <button id="adv-neg" aria-pressed="false">Worse than expected (A &lt; 0)</button>
+      </div>
+      <div class="controls">
+        <label for="eps">Clip ε <input type="range" id="eps" min="0.05" max="0.5" step="0.05" value="0.2"> <span class="mono" id="epsv">0.20</span></label>
+      </div>
+      <svg viewBox="0 0 420 200" role="img" aria-label="PPO clipped objective against the probability ratio">
+        <rect class="band" id="cband" x="0" y="15" width="0" height="160"></rect>
+        <line class="gd" x1="40" y1="15" x2="410" y2="15"></line>
+        <line class="ax" x1="40" y1="95" x2="410" y2="95"></line>
+        <line class="ax" x1="40" y1="15" x2="40" y2="175"></line>
+        <line class="gd" x1="40" y1="175" x2="410" y2="175"></line>
+        <path class="raw" id="craw" d=""></path>
+        <path class="obj" id="cobj" d=""></path>
+        <circle class="dot" cx="225" cy="0" r="4" id="cdot"></circle>
+        <text x="40" y="190" text-anchor="middle">0</text>
+        <text x="225" y="190" text-anchor="middle">r = 1 (no change)</text>
+        <text x="410" y="190" text-anchor="end">2</text>
+        <text x="4" y="19">+2</text><text x="12" y="99">0</text><text x="8" y="179">−2</text>
+      </svg>
+      <p class="note" id="cnote"></p>
+    </div>
+  </div>
+
+  <div class="sub">
+    <h3>The learning rate, and how to tell it is too small</h3>
+    <p>The learning rate is the size of each weight change. Too large and training swings or collapses; too small and the network barely moves. The usual check is <b>approx_kl</b>: how far one update moved the policy, measured as a divergence between the old and new action probabilities. PPO runs commonly sit near 0.01.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Setting</th><th>approx_kl, early</th><th>approx_kl, at the end</th><th>Entropy at the end</th><th>vs frozen T21L6s3</th></tr></thead>
+      <tbody>
+        <tr><td>3e-4, falling to zero (old default)</td><td class="num">0.0011</td><td class="num">0.0001</td><td class="num">3.44</td><td class="num">27</td></tr>
+        <tr><td>6e-4, falling to zero</td><td class="num">0.0026</td><td class="num">0.0002</td><td class="num">3.28</td><td class="num">53</td></tr>
+        <tr><td>3e-4, constant</td><td class="num">0.0015</td><td class="num">0.0017</td><td class="num">3.17</td><td class="num">48</td></tr>
+        <tr><td>6e-4, constant (new default)</td><td class="num">0.0031</td><td class="num">0.0041</td><td class="num">2.76</td><td class="num">97</td></tr>
+        <tr><td>1.2e-3, constant</td><td class="num">0.0061</td><td class="num">0.0076</td><td class="num">2.23</td><td class="num">68</td></tr>
+      </tbody>
+    </table></div>
+    <p>The old default moved the policy about ten times less than usual, and lowering the rate to zero meant the second half of each run learned almost nothing. Two settings with the same total step size over the run (3e-4 constant and 6e-4 falling to zero) ended about equal; doubling the total won 97 of 100. Doubling again (1.2e-3) did not help: the policy narrowed fast (one run's entropy fell to 1.95) and scored worse. That is the other side of the trade: steps too large lock in early habits. So 6e-4 stays. Longer runs were the next lever, and they work: at 5,880 updates every model beat its own 2,940-update checkpoint, 93 to 100 games of 100, and the runs were still learning at the end. The last column of this table is the first T-21 runs only.</p>
+  </div>
+
+  <div class="sub">
+    <h3>Entropy: how random the bot still is</h3>
+    <p>Entropy measures how spread out the action choice is. Picking uniformly among 54 actions gives 3.99; always picking one action gives 0. The trainer adds a small bonus for entropy (0.01) so the bot keeps trying things instead of settling early. The 2017 learner stayed at 3.93, close to random. The first PPO models ended near 3.3, and the new default ends at 2.7 to 2.8, the lowest so far. The game report found that much of the remaining randomness is harmless: in 57% to 70% of decisions the character is mid-move and no input could change anything.</p>
+  </div>
+
+  <div class="sub">
+    <h3>Self-play, frozen opponents and seeds</h3>
+    <ul>
+      <li><b>Self-play:</b> the same network plays both sides, so its opponent improves with it. The risk is learning to beat only itself, which is why scores also use other opponents.</li>
+      <li><b>Frozen opponent:</b> a saved model that no longer learns. It is a fixed bar to measure against. When everything beats it, a stronger one is frozen (this happened today).</li>
+      <li><b>Seeds:</b> the same training repeated with different luck. Identical settings have ended 10 to 13 wins apart on an easy opponent and up to 30 apart on the hardest, so each setting gets at least two runs, and plain runs in the same batch, before a decision.</li>
+      <li><b>Rule for a new default:</b> fixed before the runs, so results cannot bend it. The one in use (mean of at least 60 against frozen PPO8Self) has stopped working, because that opponent is now too easy. Approved 12 Nov: against frozen T21L6Cs4, a change must beat plain runs from the same batch by at least 10 wins on average, with no run below the lowest plain run.</li>
+    </ul>
+  </div>
+
+  <div class="sub">
+    <h3>The controller</h3>
+    <p>How an action becomes buttons. The current design and the two-head design decided for next. Dots are the stick positions the bot can choose.</p>
+    <div class="seg" role="group" aria-label="Controller design">
+      <button id="d-now" aria-pressed="true">Now: 54 flat</button>
+      <button id="d-step" aria-pressed="false">Next: two heads</button>
+      <button id="d-faynt" aria-pressed="false">Faynt 2026, for scale</button>
+    </div>
+    <div class="card ctl">
+      <div class="gate">
+        <svg viewBox="0 0 200 200" role="img" aria-label="Stick positions">
+          <polygon class="rim" points="100,14 160.8,39.2 186,100 160.8,160.8 100,186 39.2,160.8 14,100 39.2,39.2"></polygon>
+          <line class="axis" x1="14" y1="100" x2="186" y2="100"></line>
+          <line class="axis" x1="100" y1="14" x2="100" y2="186"></line>
+          <g id="pts"></g>
+        </svg>
+      </div>
+      <div>
+        <h3 id="ctl-title"></h3>
+        <div class="btns" id="ctl-btns"></div>
+        <p id="ctl-text" style="font-size:.93rem"></p>
+        <p class="note" id="ctl-note" style="margin-top:8px"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Sources</span>
+  <ul class="src">
+    <li><a href="https://arxiv.org/abs/1707.06347">Proximal Policy Optimization, 2017</a> <span class="lbl">title checked</span></li>
+    <li><a href="https://arxiv.org/abs/1506.02438">High-Dimensional Continuous Control Using Generalized Advantage Estimation (GAE), 2015</a> <span class="lbl">from memory</span></li>
+    <li><a href="https://iclr-blog-track.github.io/2022/03/25/ppo-implementation-details/">The 37 Implementation Details of PPO, 2022</a> <span class="lbl">read in part</span></li>
+    <li><a href="https://arxiv.org/abs/1702.06230">Beating the World's Best at Super Smash Bros. Melee (Phillip), 2017</a> <span class="lbl">read</span></li>
+    <li><a href="https://ericyuegu.com/behavior-cloning-melee">Training AI to play Super Smash Bros. Melee (HAL), 2025</a> <span class="lbl">read</span></li>
+    <li><a href="https://arxiv.org/abs/2610.02144">Faynt: Scaling and Optimizing Policies for Competitive Melee, 2026</a> <span class="lbl">first half read</span></li>
+  </ul>
+  <p class="note">Facts about this project are read from its code and test logs (<span class="mono">notes/BENCHMARKS.md</span>, <span class="mono">notes/experiments/</span>); last checked 12 Nov 2026. "approx_kl near 0.01 is common" is from memory. The earlier literature timeline and research detail moved to the notes.</p>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // ---- progress ladders: [name, detail, runs (wins of 100), opts] ----
+  var ladders = {
+    'lad-a': [
+      ['Random play', 'no training', [0]],
+      ['2017 learner', 'SimBase c08, 48,000 updates', [0]],
+      ['PPO + GAE', 'PPOSelf c04, the 2017 network', [48]],
+      ['+ network fixes', 'T-8; 5 runs at the old rate', [55,54,47,52,64]],
+      ['+ learning rate 6e-4', 'T-21; still falling to zero; 4 runs', [91,95,92,88]],
+      ['+ held constant', 'T-21; the new default; 2 runs', [96,95], {best:true}]
+    ],
+    'lad-b': [
+      ['Old default', '3e-4 falling to zero; 2 runs', [17,36]],
+      ['3e-4 constant', '2 runs', [52,44]],
+      ['6e-4 falling to zero', 'seed-mates of the opponent; 3 runs', [53,60,47]],
+      ['6e-4 constant', 'the new default; 4 runs', [96,98,70,86], {best:true}]
+    ],
+    'lad-d': [
+      ['Plain, 6e-4 constant', 'the default; 3 runs (the 4th is the opponent)', [34,4,21], {ref:true}],
+      ['+ animation embedding', 'small start; 2 runs; dropped after the double-length batch', [50,49]],
+      ['+ input rescaling', '2 runs', [21,21]],
+      ['learning rate 1.2e-3', 'twice the default; 2 runs', [9,41]]
+    ],
+    'lad-c': [
+      ['2017 learner', 'SimBase c08, 20 games', [0]],
+      ['PPO + GAE, self-play', 'PPOSelf c04', [50]],
+      ['+ network fixes', 'PPO8Self c04', [66]],
+      ['trained vs scripted bot', 'PPO8Bot c04', [96]],
+      ['+ hand edits', 'sharpen and recovery circuit, no training', [100], {best:true}],
+      ['T-21 models', 'not scored yet', null]
+    ]
+  };
+  function mean(a){ return a.reduce(function(x,y){return x+y;},0)/a.length; }
+  Object.keys(ladders).forEach(function(id){
+    var box=document.getElementById(id), prev=null, ref=null;
+    ladders[id].forEach(function(r){
+      var row=document.createElement('div'); row.className='rung'+(r[3]&&r[3].best?' best':'')+(r[2]?'':' pending');
+      var nm=document.createElement('div'); nm.className='name'; nm.textContent=r[0];
+      var sm=document.createElement('small'); sm.textContent=r[1]; nm.appendChild(sm);
+      var tr=document.createElement('div'); tr.className='track';
+      var val=document.createElement('div'); val.className='val';
+      if(r[2]){
+        var m=mean(r[2]);
+        var f=document.createElement('div'); f.className='fill'; f.style.width=m+'%'; tr.appendChild(f);
+        if(r[2].length>1) r[2].forEach(function(v){ var d=document.createElement('span'); d.className='dot'; d.style.left=v+'%'; tr.appendChild(d); });
+        val.textContent=(Math.round(m*10)/10).toString();
+        var base = ref!==null ? ref : prev;
+        if(base!==null){
+          var dd=Math.round(m-base), s=document.createElement('span');
+          s.className='delta'+(dd<0?' neg':(Math.abs(dd)<5?' flat':''));
+          s.textContent=(dd>0?'+':dd<0?'−':'±')+Math.abs(dd);
+          val.appendChild(s);
+        }
+        prev=m; if(r[3]&&r[3].ref) ref=m;
+      } else { val.textContent='—'; }
+      row.appendChild(nm); row.appendChild(tr); row.appendChild(val); box.appendChild(row);
+    });
+    var sc=document.createElement('div'); sc.className='scale';
+    sc.innerHTML='<span></span><div><span>0</span><span>50</span><span>100</span></div><span></span>';
+    box.appendChild(sc);
+  });
+
+  // ---- GAE weights: (gamma*lambda)^k for k decisions ahead ----
+  var lamEl=document.getElementById('lam'), gb=document.getElementById('gbars'), NS='http://www.w3.org/2000/svg';
+  function drawGae(){
+    var l=+lamEl.value, g=0.995, w=g*l, n=60, bw=370/n;
+    while(gb.firstChild) gb.removeChild(gb.firstChild);
+    for(var k=0;k<n;k++){
+      var h=100*Math.pow(w,k), rc=document.createElementNS(NS,'rect');
+      rc.setAttribute('class','bar0'); rc.setAttribute('x',(40+k*bw).toFixed(1)); rc.setAttribute('width',(bw*0.8).toFixed(1));
+      rc.setAttribute('y',(120-h).toFixed(1)); rc.setAttribute('height',h.toFixed(1)); gb.appendChild(rc);
+    }
+    var half = w>0 && w<1 ? Math.log(0.5)/Math.log(w) : (w>=1?Infinity:0);
+    var hx = isFinite(half) ? Math.min(410,40+half*bw) : 410;
+    var hl=document.getElementById('ghalf'); hl.setAttribute('x1',hx.toFixed(1)); hl.setAttribute('x2',hx.toFixed(1));
+    document.getElementById('lamv').textContent=l.toFixed(2);
+    document.getElementById('gnote').textContent = l===0
+      ? 'λ 0: the advantage is only the one-step surprise. It leans entirely on the critic\'s guess.'
+      : 'Each bar is how much a surprise k decisions later counts. At λ '+l.toFixed(2)+' a surprise counts half as much after about '+(isFinite(half)?Math.round(half):'∞')+' decisions ('+(isFinite(half)?(half*2/60).toFixed(1):'∞')+' s of game). The trainer uses 0.95: about 12 decisions, 0.4 s. The red line marks that half point.';
+  }
+  lamEl.addEventListener('input',drawGae); drawGae();
+
+  // ---- PPO clip chart (exact formula, A = +1 or -1) ----
+  var advSign=1, epsEl=document.getElementById('eps');
+  function X(r){return 40+r*185;} function Y(v){return 95-v*40;}
+  function drawClip(){
+    var e=+epsEl.value, A=advSign, raw=[], obj=[];
+    for(var i=0;i<=200;i++){
+      var r=i/100, c=Math.min(Math.max(r,1-e),1+e);
+      raw.push(X(r).toFixed(1)+','+Y(r*A).toFixed(1));
+      obj.push(X(r).toFixed(1)+','+Y(Math.min(r*A,c*A)).toFixed(1));
+    }
+    document.getElementById('craw').setAttribute('d','M'+raw.join(' L'));
+    document.getElementById('cobj').setAttribute('d','M'+obj.join(' L'));
+    var b=document.getElementById('cband'); b.setAttribute('x',X(1-e)); b.setAttribute('width',X(1+e)-X(1-e));
+    document.getElementById('cdot').setAttribute('cy',Y(A));
+    document.getElementById('epsv').textContent=e.toFixed(2);
+    document.getElementById('cnote').textContent = A>0
+      ? 'The solid line is what PPO maximises; the dashed line is the same without the clip. A > 0: making the action more likely helps until r reaches '+(1+e).toFixed(2)+', then the line goes flat and the update stops pushing. Making it less likely is never capped, so a mistake can still be undone.'
+      : 'The solid line is what PPO maximises; the dashed line is the same without the clip. A < 0: making the action less likely helps until r falls to '+(1-e).toFixed(2)+', then the line goes flat. Making it more likely is always fully penalised.';
+    document.getElementById('adv-pos').setAttribute('aria-pressed',A>0?'true':'false');
+    document.getElementById('adv-neg').setAttribute('aria-pressed',A<0?'true':'false');
+  }
+  document.getElementById('adv-pos').addEventListener('click',function(){advSign=1;drawClip();});
+  document.getElementById('adv-neg').addEventListener('click',function(){advSign=-1;drawClip();});
+  epsEl.addEventListener('input',drawClip); drawClip();
+
+  // ---- controller designs ----
+  var C=100, R=78;
+  function ring(n,r,off){var a=[];for(var i=0;i<n;i++){var t=(i/n)*2*Math.PI+(off||0);a.push([C+r*Math.cos(t),C-r*Math.sin(t)]);}return a;}
+  var designs={
+    now:{title:'One list of 54 actions',
+      pts:[[C,C]].concat(ring(8,R)), size:6,
+      btns:[['A','a'],['B','b'],['X','g'],['Z','z'],['L','g'],['none','g'],['C-stick','c off'],['two at once','g off']],
+      text:'9 stick positions times one button or none, chosen every 2 frames. The stick is centred or pushed all the way.',
+      note:'It cannot walk or half-tilt the stick, cannot press two buttons in one action, and has no C-stick or light shield.'},
+    step:{title:'A button head, then a stick head',
+      pts:[[C,C]].concat(ring(8,R)).concat(ring(8,R*0.5)), size:5.5,
+      btns:[['A','a'],['B','b'],['X','g'],['Z','z'],['L','g'],['none','g'],['C-stick: after','c']],
+      text:'The network picks a button (6 choices), then a stick position given that button (17 choices): 102 combinations from two small choices. The every-frame and delay part is built separately (see stage 4); the two heads are not.',
+      note:'Half tilts allow walking and tilt attacks. A C-stick head comes after. Decided 11 Nov; not built yet.'},
+    faynt:{title:'728 button classes, 85 stick positions',
+      pts:[[C,C]].concat(ring(4,R*0.3)).concat(ring(16,R*0.65)).concat(ring(64,R)), size:2.6,
+      btns:[['A','a'],['B','b'],['X or Y','g'],['Z','z'],['L or R: off, light, full','g'],['C-stick: 13','c']],
+      text:'One head picks the combined buttons, trigger level and C-stick position; a second picks the main stick. A new command every frame.',
+      note:'Trained on human replays first, which is what makes this many choices learnable. Ring sizes drawn schematically.'}
+  };
+  var g=document.getElementById('pts');
+  function show(k){
+    var d=designs[k]; while(g.firstChild) g.removeChild(g.firstChild);
+    d.pts.forEach(function(p){var c=document.createElementNS(NS,'circle');c.setAttribute('class','pt');c.setAttribute('cx',p[0].toFixed(1));c.setAttribute('cy',p[1].toFixed(1));c.setAttribute('r',d.size);g.appendChild(c);});
+    document.getElementById('ctl-title').textContent=d.title;
+    document.getElementById('ctl-text').textContent=d.text;
+    document.getElementById('ctl-note').textContent=d.note;
+    var b=document.getElementById('ctl-btns'); b.textContent='';
+    d.btns.forEach(function(x){var s=document.createElement('span');s.className='btn '+x[1];s.textContent=x[0];b.appendChild(s);});
+    ['now','step','faynt'].forEach(function(n){document.getElementById('d-'+n).setAttribute('aria-pressed', n===k?'true':'false');});
+  }
+  ['now','step','faynt'].forEach(function(n){document.getElementById('d-'+n).addEventListener('click',function(){show(n);});});
+  show('now');
+})();
+</script>
+
+</body></html>
