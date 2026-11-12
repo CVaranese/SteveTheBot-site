@@ -188,7 +188,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">2</span><h3>What the bot sees</h3><span class="tag next">next</span></div>
-      <div class="cell"><span class="lab">Now</span>796 numbers for the current frame: both players' position, damage, facing, animation, speeds. No memory of earlier frames.<span class="dec">Decided 11 Nov: the previous action stays an option, not the default (it cannot say whether a press took effect).</span></div>
+      <div class="cell"><span class="lab">Now</span>796 numbers for the current frame: both players' position, damage, facing, animation, speeds. No memory of earlier frames. New PPO models also see the 11 actions they have already chosen but not yet sent (see stage 4): 54 numbers each, 1,390 inputs in all. Older models see the 796 only.<span class="dec">Decided 11 Nov: the previous action stays an option, not the default (it cannot say whether a press took effect).</span></div>
       <div class="cell next"><span class="lab">Done · T-12 · T-22 · decided 12 Nov</span><ul><li>Animation as 32 learned numbers (embedding), small start: at the new learning rate it won 50 and 49 against the best model, where plain runs won 4 to 34. Made the default on 12 Nov, then dropped the same day: at double run length it fell behind plain inputs (mean 41 vs 55 wins at 2,940 updates, 84 vs 98 at 5,880, against frozen T21L6Cs4). Now opt-in (<span class="mono">--embed 32 --embed-std 0.05</span>).</li><li>Input rescaling (built today): x, y and hitstun brought to the same size as the other inputs. No measurable effect (21 and 21). Stays an unused option.</li><li>Later: a memory of the last few seconds.</li></ul></div>
     </div>
     <div class="stage">
@@ -197,9 +197,9 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
       <div class="cell next"><span class="lab">Later · T-10</span>One shared body with a policy head and a value head.</div>
     </div>
     <div class="stage">
-      <div class="stage-head"><span class="n">4</span><h3>The controller</h3><span class="tag next">built, not default</span></div>
-      <div class="cell"><span class="lab">Now</span>One of 54 fixed actions every 2 frames: 9 stick positions times one button or none. All models trained so far use this.</div>
-      <div class="cell"><span class="lab">Built and tested 12 Nov</span><ul><li>Each saved model has a small settings file: frames per action and delay. Missing means every 2 frames, no delay.</li><li><span class="mono">--frames-per-action 1 --delay D</span>: a decision every frame. An action chosen on frame t reaches the controller on frame t+D, a human-like reaction time. Tested with D = 15 (Firoiu et al. 2018).</li><li>With a delay the network also sees the D actions still in flight, as 54-slot one-hots: at D = 15, 796 + 15 x 54 = 1,606 inputs.</li><li>Discount and GAE decay are scaled to the shorter step, so one update covers the same game time.</li><li>Self-play delays both sides. The scripted opponent is not delayed (it stands in for the in-game CPU).</li></ul><span class="dec">Trained and tested, 2,940 updates, two seeds each. Wins vs level 9 scripted bot / frozen T21L6Cs4 (of 100) / level 9 in-game CPU in Dolphin (of 50): every 2 frames 84 and 94 / 27 and 9 / 42; every frame, no delay 94 and 87 / 11 and 7 / 46; every frame + delay 15: 1 and 2 / 0 and 0 / 10. A delay of 15 is far weaker against opponents that have no delay. Your decision: every frame with a 0.19 s delay, 11 frames (<span class="mono">--delay 11</span>), used for the two-head tests below. The trainer's defaults stay every 2 frames, no delay.</span></div>
+      <div class="stage-head"><span class="n">4</span><h3>The controller</h3><span class="tag done">timing changed</span><span class="tag next">heads not default</span></div>
+      <div class="cell"><span class="lab">Now · changed 12 Nov</span>One of 54 fixed actions: 9 stick positions times one button or none. New PPO models (<span class="mono">sim/ppo_run.py</span>) now choose an action <b>every frame</b>, and each action reaches the controller <b>11 frames (0.19 s) later</b>, like a human reaction time. Models trained before this, and the old 2017 learner, choose every 2 frames with no delay.<div class="note">Cost, measured in T-16 with a delay of 15 (not 11): far weaker than no delay (level 9 in-game CPU in Dolphin, 10 of 50 wins vs 42 to 46). So this default trades current strength for human-like timing. A model trained with 11 frames at the new default has not been scored against the in-game CPU yet.</div></div>
+      <div class="cell"><span class="lab">Built and tested 12 Nov</span><ul><li>Each saved model has a small settings file: frames per action and delay. Missing means every 2 frames, no delay.</li><li><span class="mono">--frames-per-action 1 --delay D</span>: a decision every frame. An action chosen on frame t reaches the controller on frame t+D, a human-like reaction time. Tested with D = 15 (Firoiu et al. 2018). The default for new PPO models is now D = 11.</li><li>With a delay the network also sees the D actions still in flight, as 54-slot one-hots: at D = 11, 796 + 11 x 54 = 1,390 inputs (at D = 15 it was 1,606).</li><li>Discount and GAE decay are scaled to the shorter step, so one update covers the same game time.</li><li>Self-play delays both sides. The scripted opponent is not delayed (it stands in for the in-game CPU).</li></ul><span class="dec">Trained and tested, 2,940 updates, two seeds each. Wins vs level 9 scripted bot / frozen T21L6Cs4 (of 100) / level 9 in-game CPU in Dolphin (of 50): every 2 frames 84 and 94 / 27 and 9 / 42; every frame, no delay 94 and 87 / 11 and 7 / 46; every frame + delay 15: 1 and 2 / 0 and 0 / 10. A delay of 15 is far weaker against opponents that have no delay. Your decision: every frame with a 0.19 s delay, 11 frames (<span class="mono">--delay 11</span>), used for the two-head tests below and, since the last change, the default of <span class="mono">ppo_run.py</span> for new models. Resumed models keep their own settings; <span class="mono">--frames-per-action 2 --delay 0</span> gives the old behaviour.</span></div>
       <div class="cell"><span class="lab">Measured 12 Nov</span>Choosing the same button action on consecutive decisions is one continuous hold, in Dolphin and the simulator: A held for 10 decisions gives one jab, X held gives one jump. The bot cannot press a button twice without another action in between.</div>
       <div class="cell next"><span class="lab">Next</span><ul><li>Two heads: a button (6 choices), then a stick position given the button (17, with half tilts). Then a C-stick head.</li></ul><span class="dec">Decided 11 Nov.</span></div>
       <div class="cell"><span class="lab">Built and tested 12 Nov: two heads</span><ul><li>A second action set of 102 pairs: 6 buttons (none, A, B, X, Z, L) times 17 stick positions (centre, 8 full, 8 half-tilted). The two-head network picks a button, then a stick position given that button. Probability of a pair = P(button) x P(stick given button).</li><li>A control model uses one flat list over the same 102 pairs. Choose with <span class="mono">--controller flat54|flat102|heads102</span>; the default is flat54, unchanged.</li><li>Half tilts checked in the simulator: half right walks; half right + A is a forward tilt; half up + A an up tilt; half down + A a down tilt. Half down alone does not crouch and half up does not jump.</li></ul></div>
@@ -322,9 +322,9 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
   <div class="sub">
     <h3>One update, start to finish</h3>
     <ol class="steps">
-      <li><b>Play</b><span>64 matches run at once. Every 2 frames the actor picks an action for each player. 128 decisions per match.</span><span class="mono">8,192 per side</span></li>
+      <li><b>Play</b><span>64 matches run at once. The actor picks an action for each player: every frame at the new default, 256 decisions per match (every 2 frames: 128). Same game time either way.</span><span class="mono">16,384 per side (8,192 at 2 frames)</span></li>
       <li><b>Score</b><span>Each decision gets its reward, and the critic guesses the value of every state.</span><span class="mono">reward: stocks, damage</span></li>
-      <li><b>Judge</b><span>GAE turns rewards and guesses into an advantage: how much better each action went than expected.</span><span class="mono">λ 0.95, discount 0.995</span></li>
+      <li><b>Judge</b><span>GAE turns rewards and guesses into an advantage: how much better each action went than expected.</span><span class="mono">λ 0.95, discount 0.995 per 2 frames (scaled for every frame)</span></li>
       <li><b>Learn</b><span>4 passes over the batch in 4 slices. Actor and critic both take small gradient steps.</span><span class="mono">16 steps, lr 6e-4</span></li>
     </ol>
     <div class="split" role="img" aria-label="Share of one update's time: playing 87 percent, learning 13 percent"><span class="s-play" style="width:87%">play the matches 87%</span><span class="s-train" style="width:13%">learn 13%</span></div>
@@ -335,9 +335,9 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     <h3>Two networks: one acts, one judges</h3>
     <p>The <b>actor</b> reads the state and gives a probability for each of the 54 actions. The bot samples one, so it does not always do the same thing in the same spot. The <b>critic</b> reads the same state and guesses how much reward is coming. They share no weights.</p>
     <div class="card net">
-      <div class="net-name">Actor <span class="mono">125,494 weights (default, plain) · 47,670 with the optional embedding</span></div>
+      <div class="net-name">Actor <span class="mono">125,494 weights (796 inputs, models without delay) · 201,526 (1,390 inputs, new default) · 47,670 with the optional embedding, no delay</span></div>
       <div class="net-row">
-        <div class="layer"><span class="act">input</span><b>796</b><span>the state</span></div>
+        <div class="layer"><span class="act">input</span><b>796</b><span>the state (1,390 with the 11 queued actions, new models)</span></div>
         <span class="arrow">→</span>
         <div class="layer opt"><span class="act">embedding (optional, off by default)</span><b>92</b><span class="w">12,288 + 11,904 w · other options: rescale, prev. action</span></div>
         <span class="arrow">→</span>
@@ -347,7 +347,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
         <span class="arrow">→</span>
         <div class="layer"><span class="act">dense + softmax</span><b>54</b><span class="w">6,966 w</span></div>
       </div>
-      <div class="net-name" style="margin-top:6px">Critic <span class="mono">118,657 weights (default, plain) · 40,833 with the optional embedding</span></div>
+      <div class="net-name" style="margin-top:6px">Critic <span class="mono">118,657 weights (796 inputs) · 194,689 (1,390 inputs, new default) · 40,833 with the optional embedding, no delay</span></div>
       <div class="net-row">
         <div class="layer"><span class="act">input</span><b>796</b><span>the same state</span></div>
         <span class="arrow">→</span>
@@ -609,7 +609,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     now:{title:'One list of 54 actions',
       pts:[[C,C]].concat(ring(8,R)), size:6,
       btns:[['A','a'],['B','b'],['X','g'],['Z','z'],['L','g'],['none','g'],['C-stick','c off'],['two at once','g off']],
-      text:'9 stick positions times one button or none, chosen every 2 frames. The stick is centred or pushed all the way.',
+      text:'9 stick positions times one button or none, chosen every frame and sent 11 frames later in new models (every 2 frames, no delay in older ones). The stick is centred or pushed all the way.',
       note:'It cannot walk or half-tilt the stick, cannot press two buttons in one action, and has no C-stick or light shield.'},
     step:{title:'A button head, then a stick head',
       pts:[[C,C]].concat(ring(8,R)).concat(ring(8,R*0.5)), size:5.5,
