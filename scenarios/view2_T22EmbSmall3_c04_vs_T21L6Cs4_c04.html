@@ -27,7 +27,14 @@ canvas{width:100%;height:auto;display:block;background:var(--sky);border:1px sol
 input[type=range]{flex:1 1 200px;accent-color:var(--bot);min-width:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px;
   display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:.9rem}
+.card > div{min-width:0}
+/* every readout line keeps one fixed height and is cut with "..." when too long, so nothing moves during playback */
+.card b,.card .num,.card .who{display:block;height:1.5em;line-height:1.5em;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
 .card b{font-weight:600}
+#about{min-height:4.5em}
+#clock{display:inline-block;min-width:4.6em;text-align:right}
+#result{min-height:1.5em}
 .who{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
 .who.bot{color:var(--bot)} .who.opp{color:var(--muted)}
 .num{font-variant-numeric:tabular-nums;font-family:ui-monospace,Consolas,monospace}
@@ -53,9 +60,9 @@ input[type=range]{flex:1 1 200px;accent-color:var(--bot);min-width:0}
   </div>
   <div class="row" id="speeds" role="group" aria-label="Speed"></div>
   <div class="card">
-    <div><span class="who bot">the model</span><br><b id="a0"></b><br><span class="num" id="s0"></span><br>
+    <div><span class="who bot">the model</span><b id="a0"></b><span class="num" id="s0"></span>
       <span class="num" id="in0"></span></div>
-    <div><span class="who opp">the opponent</span><br><b id="a1"></b><br><span class="num" id="s1"></span></div>
+    <div><span class="who opp">the opponent</span><b id="a1"></b><span class="num" id="s1"></span></div>
   </div>
   <p class="result" id="result"></p>
   <p class="note">Positions and states are the simulator's own, drawn as blocks: there are no character animations.

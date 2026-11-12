@@ -89,6 +89,23 @@ def animated_pages():
     return done
 
 
+def block_pages():
+    """scenarios/: the block playback pages, rendered again from the current template with each page's own data."""
+    out = HERE / 'scenarios'
+    out.mkdir(exist_ok=True)
+    for old in out.glob('*.html'):
+        old.unlink()
+    template = (SRC / 'sim' / 'scenario_view_page.html').read_text(encoding='utf-8')
+    done = []
+    for p in sorted((SRC / 'logs' / 't28').glob('view*.html')):
+        m = re.search(r'var D = (\{.*?\});\n\(function', p.read_text(encoding='utf-8'), re.S)
+        if not m:
+            continue
+        (out / p.name).write_text(template.replace('/*DATA*/null', m.group(1)), encoding='utf-8')
+        done.append(('scenarios/' + p.name, p))
+    return done
+
+
 def label(path):
     """'view_A_vs_B.html' or 'A_vs_B_seed1000.html' -> ('A', 'against B')."""
     stem = path.stem
@@ -122,7 +139,7 @@ def main():
         if '<!doctype' not in text[:200].lower():
             text = HEAD + text + '\n</body></html>\n'
         (HERE / 'roadmap.html').write_text(text, encoding='utf-8')
-    scenarios = copy_pages(SRC / 'logs' / 't28', 'view*.html', 'scenarios')
+    scenarios = block_pages()
     reports = copy_pages(SRC / 'logs' / 't18', '*.html', 'reports')
     animated = animated_pages()
     page = HEAD.replace('</head>', '<title>SteveTheBot</title><style>%s</style></head>' % STYLE) + """<main>
