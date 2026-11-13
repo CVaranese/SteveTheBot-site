@@ -12464,6 +12464,12 @@
     element.clear = () => {
       setReplayPointerWrapper(null);
     };
+    createEffect(() => {
+      const frame = replayStore.frame;
+      element.dispatchEvent(new CustomEvent("framechange", {
+        detail: frame
+      }));
+    });
     return createComponent(MiniApp, {
       get zipsBaseUrl() {
         return props.zipsBaseUrl;

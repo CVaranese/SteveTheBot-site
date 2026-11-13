@@ -45,6 +45,9 @@ ul{list-style:none;margin:8px 0 0;padding:0;background:var(--surface);border:1px
 li{padding:10px 14px;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between}
 li + li{border-top:1px solid var(--line)}
 li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
 details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
 .big{display:block;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;
   font-weight:600;text-decoration:none}
@@ -52,27 +55,92 @@ details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9r
 footer{color:var(--muted);font-size:.85rem}
 """
 
-# The bar on top of every page. Its own class names and colours, so it looks the same whatever the page's style.
+# The bar on top of every page (STYLE.md, "The page bar"). Fixed to the top edge of the window, full width, one
+# height on every page, with a spacer of the same height, so the page's own padding and layout never move it.
+# Its own class names and colours, so it looks the same whatever the page's style.
+NAV_H = 48
 NAV_STYLE = """<style>
-.stb-nav{--n-bg:#ffffff;--n-ink:#1b1a2e;--n-mut:#5d5c74;--n-line:#d9d8e6;--n-acc:#4b3fb0;
-  position:sticky;top:0;z-index:1000;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;
-  margin:0 0 14px;padding:8px 14px;background:var(--n-bg);border:1px solid var(--n-line);border-radius:8px;
-  font:500 14px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--n-ink);box-sizing:border-box}
-@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#1e1d2e;--n-ink:#ecebf7;--n-mut:#a3a1bd;--n-line:#34334a;
-  --n-acc:#a79bff}}
-.stb-nav a{color:var(--n-acc);text-decoration:none;padding:4px 0}
+.stb-nav{--n-bg:#ffffff;--n-ink:#1b1a2e;--n-line:#d9d8e6;--n-acc:#4b3fb0;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:%(h)dpx;background:var(--n-bg);
+  border-bottom:1px solid var(--n-line);font:500 14px/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#1e1d2e;--n-ink:#ecebf7;--n-line:#34334a;--n-acc:#a79bff}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1100px;height:100%%;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:16px}
+.stb-nav a{color:var(--n-acc);text-decoration:none;white-space:nowrap}
 .stb-nav a.stb-home{color:var(--n-ink);font-weight:700}
 .stb-nav a[aria-current="page"]{text-decoration:underline;text-underline-offset:4px}
-.stb-nav select{font:inherit;font-weight:400;color:var(--n-ink);background:var(--n-bg);border:1px solid var(--n-line);
-  border-radius:6px;padding:5px 8px;min-height:34px;max-width:100%;margin-left:auto}
-@media (max-width:560px){.stb-nav select{margin-left:0;width:100%}}
-</style>"""
+.stb-nav select{font:400 14px system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--n-ink);background:var(--n-bg);
+  border:1px solid var(--n-line);border-radius:6px;height:34px;padding:0 8px;margin-left:auto;min-width:0;
+  max-width:340px;flex:0 1 340px}
+.stb-space{height:%(h)dpx}
+html{scroll-padding-top:%(h)dpx}
+@media (max-width:640px){.stb-nav .stb-link{display:none}.stb-nav select{flex:1 1 auto;max-width:none}}
+</style>""" % {'h': NAV_H}
+
+# What the model names mean (STYLE.md, "Model names"). Shown on the start page; every model a page shows must have
+# an entry here, or the build stops. Names are shown without the checkpoint suffix (_c04, _c08): every model on the
+# site is the one saved at the end of its training run. A model that is not would need its own entry saying where.
+NAME_PARTS = [
+    ('T<number> at the start', 'The task that trained it (T21 is task T-21). Older models have no task number.'),
+    ('s<digit> or a last digit', 'The random seed: the same settings trained again from a different random start. '
+                                 'Two seeds of one setting can differ a lot, so one run says little on its own.'),
+    ('Self / Bot', 'Trained by playing against itself, or against the level 3 scripted bot.'),
+    ('No checkpoint suffix', 'Training saves copies part-way (files named _c01, _c02, ...). Every model on this site '
+                             'is the copy saved at the end of its run, so the suffix is left out.'),
+]
+NAMES = {
+    'SimBase': 'The 2017 learner (actor-critic), moved unchanged into the simulator and trained against itself for '
+               '48,000 updates (28 minutes). The starting point everything else is compared with.',
+    'PPO8Self': 'PPO, the first new training method, with the repaired network of task T-8; trained against itself '
+                'for 20 minutes.',
+    'PPO8Bot': 'As PPO8Self, but trained against the level 3 scripted bot.',
+    'PPO8Bot_edit_rec': 'PPO8Bot with its weights edited by hand, no training: choices made sharper, plus a '
+                        'hand-wired recovery circuit.',
+    'T9Prev': 'Task T-9 input experiment: self-play like PPO8Self, plus the bot\'s own previous button press as '
+              'an input.',
+    'T21L6Cs4': 'Task T-21: self-play at twice the usual learning rate (L6: 0.0006), held constant for the whole '
+                'run (C), random seed 4. The strongest model of its batch, and the opponent in the scenario tests.',
+    'T21L6Cs3': 'As T21L6Cs4, random seed 3.',
+    'T22Base5': 'Task T-22: the T21L6Cs4 settings again (usual inputs), random seed 5.',
+    'T22Base6': 'As T22Base5, random seed 6.',
+    'T22EmbSmall3': 'Task T-22: the T21L6Cs4 settings plus an animation embedding (each animation turned into 32 '
+                    'learned numbers, started small), random seed 3.',
+    'scripted bot level 9': 'Not a network: a hand-written Falcon that recovers and attacks. Level 9 is its '
+                            'hardest setting.',
+}
+
+
+SHOWN = set()   # every model name a built page shows, checked against NAMES
+
+
+def show(name):
+    """The name as the site shows it: without the end-of-run checkpoint suffix (_c04, _c08)."""
+    if name.startswith('scripted'):
+        return name.replace('_', ' ')
+    return re.sub(r'_c\d\d(?=_|$)', '', name)
+
+
+def names_section():
+    parts = ''.join('<li><b>%s</b><span>%s</span></li>' % (html.escape(k), html.escape(v)) for k, v in NAME_PARTS)
+    used = sorted(set(show(n) for n in SHOWN), key=lambda n: (n.startswith('scripted'), n.lower()))
+    rows = ''.join('<li><b>%s</b><span>%s</span></li>' % (html.escape(n), html.escape(NAMES[n])) for n in used)
+    return ('<section id="names"><h2>Model names</h2><p>What the names on these pages mean. More detail, and every '
+            'other model, on the <a href="roadmap.html">roadmap</a>.</p>\n<h3>Parts of a name</h3>'
+            '<ul class="legend">%s</ul>\n<h3>The models on this site</h3><ul class="legend">%s</ul></section>'
+            % (parts, rows))
+
+
+def check_names(names):
+    missing = sorted(set(show(n) for n in names) - set(NAMES))
+    if missing:
+        raise SystemExit('no legend entry in build.py NAMES for: %s' % ', '.join(missing))
 
 
 def nav(root, here, groups):
     """root: the path from this page to the site root ('' or '../'); here: this page's path from the root;
     groups: [(group title, [(path from root, label)])]."""
-    def link(path, text, cls=''):
+    def link(path, text, cls=' class="stb-link"'):
         cur = ' aria-current="page"' if path == here else ''
         return '<a%s href="%s%s"%s>%s</a>' % (cls, root, path, cur, text)
     opts = ['<option value="">Go to page...</option>']
@@ -84,11 +152,12 @@ def nav(root, here, groups):
             sel = ' selected' if path == here else ''
             opts.append('<option value="%s%s"%s>%s</option>' % (root, html.escape(path), sel, html.escape(text)))
         opts.append('</optgroup>')
-    return ('<nav class="stb-nav" aria-label="Site">' + link('index.html', 'SteveTheBot', ' class="stb-home"') +
+    return ('<nav class="stb-nav" aria-label="Site"><div class="stb-in">' +
+            link('index.html', 'SteveTheBot', ' class="stb-home"') +
             link('roadmap.html', 'Roadmap') + link('index.html#scenarios', 'Scenarios') +
-            link('index.html#reports', 'Game reports') +
+            link('index.html#reports', 'Game reports') + link('index.html#names', 'Model names') +
             '<select aria-label="Go to page" onchange="if(this.value)location.href=this.value">' + ''.join(opts) +
-            '</select></nav>\n')
+            '</select></div></nav><div class="stb-space"></div>\n')
 
 
 def add_nav(path, groups):
@@ -143,6 +212,12 @@ def animated_pages():
         data = json.loads(m.group(1))
         for s in data['samples']:
             shutil.copyfile(SRC / 'logs' / 't28' / s['file'], out / s['file'])
+            # 'A_c04 vs 9' -> 'A against scripted bot level 9' (the game the start position was saved from)
+            pair = [('scripted bot level ' + x if x.isdigit() else x) for x in s['from'].split(' vs ')]
+            SHOWN.update(pair)
+            s['from'] = ' against '.join(show(x) for x in pair)
+        SHOWN.update([data['model'], data['opponent']])
+        data['model'], data['opponent'] = show(data['model']), show(data['opponent'])
         (out / p.name).write_text(template.replace('/*DATA*/null', json.dumps(data, separators=(',', ':'))),
                                   encoding='utf-8')
         done.append(('anim/' + p.name, p))
@@ -165,6 +240,11 @@ def report_pages():
                 break
         if data is None or data == '"__DATA__"':
             continue
+        d = json.loads(data)
+        SHOWN.update(d['players'])
+        d['players'] = [show(x) for x in d['players']]
+        d['title'] = ' against '.join(d['players'])
+        data = json.dumps(d, separators=(',', ':'), ensure_ascii=False)
         (out / p.name).write_text(template.replace('"__DATA__"', data, 1), encoding='utf-8')
         done.append(('reports/' + p.name, p))
     return done
@@ -199,7 +279,7 @@ def label(path):
         stem, seed = stem.rsplit('_seed', 1)
         seed = ', seed ' + seed
     a, _, b = stem.partition('_vs_')
-    return a, 'against ' + b.replace('_', ' ') + seed
+    return show(a), 'against ' + show(b) + seed
 
 
 def listing(pages):
@@ -224,6 +304,7 @@ def main():
     animated = animated_pages() if has_viewer else []
     reports = report_pages()
     forward_block_pages(animated)
+    check_names(SHOWN)
     v2 = [a for a in animated if a[1].name.startswith('anim2_')]
     v1 = [a for a in animated if not a[1].name.startswith('anim2_')]
 
@@ -243,12 +324,13 @@ sample by sample. The model is player 1.</p>
 <p>One whole game as a timeline: what the model did, which inputs could have mattered, attacks and openings, with
 the game itself playing beside it. These pages are 1 to 3 MB each.</p>
 %s</section>
+%s
 <footer>Gameplay is drawn with <a href="https://github.com/gcpreston/slippi-viewer">slippi-viewer</a> (MIT).
 Rebuilt %s.</footer>
 </main></body></html>
 """ % ('<a class="big" href="roadmap.html">Roadmap and progress<span>What each part of the system is now, what '
        'each change bought, and how the trainer works.</span></a>' if has_roadmap else '',
-       listing(v2), listing(v1), listing(reports), time.strftime('%d %b %Y'))
+       listing(v2), listing(v1), listing(reports), names_section(), time.strftime('%d %b %Y'))
     (HERE / 'index.html').write_text(page, encoding='utf-8')
     (HERE / '.nojekyll').write_text('', encoding='utf-8')
 

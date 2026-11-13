@@ -12,7 +12,8 @@ https://cvaranese.github.io/SteveTheBot-site/ .
   the gameplay on both, and Captain Falcon's display files.
 - `scenarios/`: old addresses of the block-drawn scenario pages; they forward to `anim/`.
 
-Every page has the same bar at the top: links to the start page and the roadmap, and a page finder.
+Every page has the same bar at the top: links to the start page and the roadmap, and a page finder. The rules every
+page follows (bar, colours, layout, model names) are in [STYLE.md](STYLE.md).
 
 To update: `python build.py` (renders the current pages from a SteveTheBot checkout beside this folder and rebuilds
 `index.html`), then commit and push.
