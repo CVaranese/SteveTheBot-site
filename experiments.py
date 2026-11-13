@@ -702,11 +702,30 @@ def _check(sim, dol):
                                          'models ' + ', '.join(missing) if missing else ''] if x))
 
 
+def _check_watch(pages):
+    """Every variant of every experiment needs one model with something to watch (a game page or scenario
+    playback). An entry whose models cannot be shown says why in 'no_game'."""
+    missing = []
+    for e in EXPERIMENTS:
+        if e.get('no_game'):
+            continue
+        for what, models in e['variants']:
+            if models == ['random']:              # random play is not a saved model; the game report cannot play it
+                continue
+            if models and not any(pages.get(show(m)) for m in models):
+                missing.append('%s: %s (%s)' % (e['title'], what, ', '.join(models)))
+    if missing:
+        raise SystemExit('experiments.py: variants with no game to watch. Make one page per variant with '
+                         'research/game_pages/make_pages.sh in the main repo (or give the entry a no_game reason):'
+                         '\n  ' + '\n  '.join(missing))
+
+
 def build(here, src, head, site_style, pages=None):
     """Write experiments.html; return the raw model names it shows (for the name check)."""
     pages = pages or {}
     sim, dol = _sim_scores(src), _dolphin_scores(src)
     _check(sim, dol)
+    _check_watch(pages)
     entries = sorted(EXPERIMENTS, key=lambda e: e['date'], reverse=True)   # stable: file order within a day
     shown = {m for e in entries for _w, ms in e['variants'] for m in ms}
     for e in entries:
