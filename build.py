@@ -272,7 +272,17 @@ def main():
     reports = report_pages()
     forward_block_pages(animated)
     check_names(SHOWN)
-    ranked = rankings.build(HERE, SRC, HEAD, STYLE)
+    model_pages = {}   # shown model name -> its scenario and report pages, linked from the rankings
+    for href, p in sorted(animated, key=lambda a: not a[1].name.startswith('anim2_')) + reports:
+        name, rest = label(p)
+        if href.startswith('anim/'):
+            short = 'Scenarios' + (' v1' if not p.name.startswith('anim2_') else '')
+            long_ = 'Scenarios' + (' (version 1)' if not p.name.startswith('anim2_') else '') + ' ' + \
+                rest.split(',')[0]
+        else:
+            short, long_ = 'Game ' + rest.split(',')[0].replace('against ', 'vs '), 'Game report ' + rest
+        model_pages.setdefault(name, []).append((href, short, long_))
+    ranked = rankings.build(HERE, SRC, HEAD, STYLE, model_pages)
     check_names(ranked)
     v2 =[a for a in animated if a[1].name.startswith('anim2_')]
     v1 = [a for a in animated if not a[1].name.startswith('anim2_')]

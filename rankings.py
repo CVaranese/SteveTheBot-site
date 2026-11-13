@@ -67,16 +67,24 @@ def _dolphin_scores(src):
     return out
 
 
-def _table(rows, best_note):
+def _links(pages, short):
+    """Links to a model's scenario and game-report pages; pages: [(href, short text, long text)]."""
+    return ' '.join('<a class="pg" href="%s">%s</a>' % (html.escape(h), html.escape(s if short else l))
+                    for h, s, l in pages)
+
+
+def _table(rows, best_note, pages):
     body = []
     for i, (name, g, won, lead, day) in enumerate(rows):
         pct = 100.0 * won / g
         body.append('<tr%s><td class="n">%d</td><td><a href="#m-%s">%s</a></td><td class="n">%d%%</td>'
-                    '<td class="n">%+.2f</td><td class="n">%d</td><td class="d">%s</td></tr>' % (
+                    '<td class="n">%+.2f</td><td class="n">%d</td><td class="d">%s</td><td>%s</td></tr>' % (
                         ' class="top"' if i == 0 else '', i + 1, html.escape(name), html.escape(name), round(pct),
-                        lead, g, time.strftime('%d %b', time.strptime(day, '%Y-%m-%d'))))
+                        lead, g, time.strftime('%d %b', time.strptime(day, '%Y-%m-%d')),
+                        _links(pages.get(name, []), True)))
     return ('<div class="tw"><table><thead><tr><th class="n">#</th><th>Model</th><th class="n">Won</th>'
-            '<th class="n">Stock lead</th><th class="n">Games</th><th class="d">First scored</th></tr></thead>'
+            '<th class="n">Stock lead</th><th class="n">Games</th><th class="d">First scored</th>'
+            '<th>Watch</th></tr></thead>'
             '<tbody>%s</tbody></table></div><p class="small">%s</p>' % (''.join(body), best_note))
 
 
@@ -101,13 +109,18 @@ tr.top td{font-weight:700}
 .legend li{display:block;scroll-margin-top:60px}
 .legend b{display:block}
 .legend span{display:block;color:var(--muted);font-size:.9rem}
+a.pg{display:inline-block;font-size:.8rem;padding:1px 7px;margin:1px 2px 1px 0;border:1px solid var(--line);
+  border-radius:10px;text-decoration:none;font-weight:400}
+.legend .pages{margin-top:3px}
 details>summary{cursor:pointer}
 details.board>summary h2{display:inline}
 """
 
 
-def build(here, src, head, site_style):
-    """Write rankings.html; return the raw model names it shows (for the name check)."""
+def build(here, src, head, site_style, pages=None):
+    """Write rankings.html; return the raw model names it shows (for the name check). pages: {shown name: [(href,
+    short text, long text)]}, the model's scenario and game-report pages, linked from its row and legend entry."""
+    pages = pages or {}
     sim, dol = _sim_scores(src), _dolphin_scores(src)
     shown, sections, best = set(), [], []
     for bid, title, about, source, need, open_ in BOARDS:
@@ -131,15 +144,18 @@ def build(here, src, head, site_style):
         best.append('<a href="#%s"><span>%s</span><b>%s</b><span>won %d%%, stock lead %+.2f</span></a>' % (
             bid, html.escape(title), html.escape(rows[0][0]), round(100 * rows[0][2] / rows[0][1]), rows[0][3]))
         sections.append('<details class="board" id="%s"%s><summary><h2>%s</h2></summary><p>%s</p>%s</details>' % (
-            bid, ' open' if open_ else '', html.escape(title), html.escape(about), _table(rows, note)))
-    legend = ''.join('<li id="m-%s"><b>%s</b><span>%s</span></li>' % (
-        html.escape(n), html.escape(n), html.escape(explain(n) or '')) for n in
+            bid, ' open' if open_ else '', html.escape(title), html.escape(about), _table(rows, note, pages)))
+    legend = ''.join('<li id="m-%s"><b>%s</b><span>%s</span>%s</li>' % (
+        html.escape(n), html.escape(n), html.escape(explain(n) or ''),
+        '<div class="pages">%s</div>' % _links(pages[n], False) if pages.get(n) else '') for n in
         sorted({show(m) for m in shown}, key=lambda n: (n == 'random', n.lower())))
     page = head.replace('</head>', '<title>SteveTheBot rankings</title><style>%s%s</style></head>' % (
         site_style, STYLE)) + """<main>
 <header><h1>Rankings</h1>
 <p>The best models so far, one ranking per opponent. Each model plays the same games (fixed seeds) against the same
-opponent. Only the copy saved at the end of each training run is ranked. Built from the score logs; rebuilt %s.</p>
+opponent. Only the copy saved at the end of each training run is ranked. Built from the score logs; rebuilt %s.
+The Watch column links the model's scenario playback (edgeguard, recovery and the rest) and whole-game reports,
+where they exist.</p>
 </header>
 <section><h2>Best against each opponent</h2><div class="best">%s</div></section>
 %s

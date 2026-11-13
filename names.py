@@ -81,6 +81,11 @@ PATTERNS = [
                                 'seed %s.' % m[1]),
     (r'T17H102s(\d)', lambda m: 'Task T-17: as T17F102, but chosen in two steps (button, then stick), random '
                                 'seed %s.' % m[1]),
+    (r'T4V1s(\d)', lambda m: 'Task T-4 (learning from replays), the comparison runs: self-play, a decision every '
+                             'frame with an 11-frame reaction delay, the usual inputs (version 1), random seed %s.'
+                             % m[1]),
+    (r'T4V2s(\d)', lambda m: 'Task T-4: as T4V1, but with input version 2, built only from what both the simulator '
+                             'and human replays record, random seed %s.' % m[1]),
 ]
 
 
