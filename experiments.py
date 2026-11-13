@@ -131,7 +131,7 @@ EXPERIMENTS = [
     dict(tasks=['T-37'], date='2026-11-13', title='Memory of past frames', topic='inputs',
          short='No: both history inputs score below plain inputs at the usual length.',
          question='Does adding the last few game states to the input (frame history) make a stronger bot?',
-         cols=['t4v2', 'bot9', ('vs plain, double length', ['T37Plain7_c08', 'T37Plain8_c08'])],
+         cols=['t4v2', 'cpu9', 'bot9', ('vs plain, double length', ['T37Plain7_c08', 'T37Plain8_c08'])],
          variants=[
              ('Plain inputs (no history)', ['T37Plain7_c04', 'T37Plain8_c04']),
              ('4 past states, 8 frames apart', ['T37H4s8_7_c04', 'T37H4s8_8_c04']),
@@ -142,7 +142,9 @@ EXPERIMENTS = [
          ],
          verdict='No. At 2,940 updates both history inputs score below plain (36 and 41 against 48). At double '
                  'length (5,880 updates) 4 states 8 apart catches up (58 against 62, even head to head) and 8 states '
-                 '4 apart stays behind (45; 36 head to head).',
+                 '4 apart stays behind (45; 36 head to head). Against the level 9 CPU in Dolphin (50 games each) '
+                 'plain inputs also win most: 4 and 4 at 2,940 updates and 8 and 7 at double length, against 1 to 5 '
+                 'for the history runs.',
          decision='No recurrent or transformer core is built for now; the imitation work (T-4) uses the plain '
                   'network, with a history twin for comparison.'),
     dict(tasks=['T-4'], date='2026-11-13', title='Imitation with frame history', topic='replays',
