@@ -86,6 +86,11 @@ PATTERNS = [
                              % m[1]),
     (r'T4V2s(\d)', lambda m: 'Task T-4: as T4V1, but with input version 2, built only from what both the simulator '
                              'and human replays record, random seed %s.' % m[1]),
+    (r'T37Plain(\d)', lambda m: 'Task T-37 (memory of past frames), the comparison runs: as T4V2, no frame history, '
+                                'random seed %s.' % m[1]),
+    (r'T37H(\d)s(\d)_(\d)', lambda m: 'Task T-37: as T37Plain, but the input also holds the game state from the '
+                                      'last %s states, %s frames apart (frame history), random seed %s.'
+                                      % (m[1], m[2], m[3])),
 ]
 
 
