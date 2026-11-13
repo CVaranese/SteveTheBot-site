@@ -42,6 +42,26 @@ OPP = {
 }
 
 EXPERIMENTS = [
+    dict(tasks=['T-40'], date='2026-11-13', title='Matches per run',
+         question='Does playing more matches at once in one training run learn as well per game and per hour?',
+         cols=['t4v2', ('vs plain 64 matches', ['T40M64s7_c08', 'T40M64s8_c08'])],
+         variants=[
+             ('64 matches at once (the usual)', ['T40M64s7_c08', 'T40M64s8_c08']),
+             ('128 matches at once', ['T40M128s7_c08', 'T40M128s8_c08']),
+             ('256 matches at once', ['T40M256s7_c08', 'T40M256s8_c08']),
+         ],
+         facts=(['Setting', 'Runs that fit in memory', 'Decisions per second, all runs', 'Hours to the usual length',
+                 'Wins of 200, half way', 'Wins of 200, end'],
+                [['64 matches', '8', '126,000', '0.85', '97.5', '96.5'],
+                 ['128 matches', '6', '151,000', '0.53', '81', '107.5'],
+                 ['256 matches', '4 (5 may fit)', '110,000', '0.49', '70.5', '94.5']]),
+         verdict='All three end level against frozen T4V2 (50 games against each of the four; two seeds each, which '
+                 'differ by up to 32 of 200). Per game played, 64 matches learns fastest in the middle of the run; '
+                 'per hour of a full machine, 64 and 128 are level and 256 is behind. Memory, not the processor, '
+                 'limits how many runs fit, and a run costs about 1.2 GB plus 6 MB per match, so 6 runs of 128 '
+                 'matches play 13% to 20% more than 8 of 64 (two measurements). Speed-ups that keep the learning identical gave 9% for one run '
+                 'alone.',
+         decision='Pending: 128 matches as the screening setting (each batch about 0.6 h instead of 0.9) or keep 64.'),
     dict(tasks=['T-4'], date='2026-11-13', title='PPO from imitation (the human line)',
          question='Does starting PPO from a network that copied human Falcon replays beat starting from scratch?',
          cols=['t4v2', 'bot9', ('vs plain start', ['T4HumP1_c04', 'T4HumP2_c04'])],

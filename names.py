@@ -111,6 +111,8 @@ PATTERNS += [
                               'random seed %s.' % m[1]),
     (r'T4HumK([ab])(\d)', lambda m: 'As T4HumP, plus a penalty for drifting away from the imitation policy (KL '
                                     'coefficient %s), random seed %s.' % ({'a': '0.1', 'b': '1.0'}[m[1]], m[2])),
+    (r'T40M(\d+)s(\d)', lambda m: 'Task T-40 (matches per run): as T4V2, but %s matches played at once in one run '
+                                  '(64 is the usual), the same total game time, random seed %s.' % (m[1], m[2])),
 ]
 
 # Runs scored both at the usual length (_c04, 2,940 updates) and continued to double length (_c08, 5,880 updates).
@@ -144,7 +146,7 @@ def show(name):
 
 def last_copy(run):
     """The checkpoint number saved at the end of a run (from the model folders, 2026-11-12)."""
-    if run.startswith(('SimBase', 'T22Long')):
+    if run.startswith(('SimBase', 'T22Long', 'T40M')):
         return 8
     if re.match(r'(T9|T12|T19h|T19L6|T19L12)(?!\d)', run):
         return 1
