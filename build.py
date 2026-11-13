@@ -23,6 +23,9 @@ import sys
 import time
 from pathlib import Path
 
+import rankings
+from names import NAME_PARTS, explain, show
+
 HERE = Path(__file__).resolve().parent
 SRC = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else HERE.parent / 'SteveTheBot'
 HEAD = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' \
@@ -78,63 +81,26 @@ html{scroll-padding-top:%(h)dpx}
 @media (max-width:640px){.stb-nav .stb-link{display:none}.stb-nav select{flex:1 1 auto;max-width:none}}
 </style>""" % {'h': NAV_H}
 
-# What the model names mean (STYLE.md, "Model names"). Shown on the start page; every model a page shows must have
-# an entry here, or the build stops. Names are shown without the checkpoint suffix (_c04, _c08): every model on the
-# site is the one saved at the end of its training run. A model that is not would need its own entry saying where.
-NAME_PARTS = [
-    ('T<number> at the start', 'The task that trained it (T21 is task T-21). Older models have no task number.'),
-    ('s<digit> or a last digit', 'The random seed: the same settings trained again from a different random start. '
-                                 'Two seeds of one setting can differ a lot, so one run says little on its own.'),
-    ('Self / Bot', 'Trained by playing against itself, or against the level 3 scripted bot.'),
-    ('No checkpoint suffix', 'Training saves copies part-way (files named _c01, _c02, ...). Every model on this site '
-                             'is the copy saved at the end of its run, so the suffix is left out.'),
-]
-NAMES = {
-    'SimBase': 'The 2017 learner (actor-critic), moved unchanged into the simulator and trained against itself for '
-               '48,000 updates (28 minutes). The starting point everything else is compared with.',
-    'PPO8Self': 'PPO, the first new training method, with the repaired network of task T-8; trained against itself '
-                'for 20 minutes.',
-    'PPO8Bot': 'As PPO8Self, but trained against the level 3 scripted bot.',
-    'PPO8Bot_edit_rec': 'PPO8Bot with its weights edited by hand, no training: choices made sharper, plus a '
-                        'hand-wired recovery circuit.',
-    'T9Prev': 'Task T-9 input experiment: self-play like PPO8Self, plus the bot\'s own previous button press as '
-              'an input.',
-    'T21L6Cs4': 'Task T-21: self-play at twice the usual learning rate (L6: 0.0006), held constant for the whole '
-                'run (C), random seed 4. The strongest model of its batch, and the opponent in the scenario tests.',
-    'T21L6Cs3': 'As T21L6Cs4, random seed 3.',
-    'T22Base5': 'Task T-22: the T21L6Cs4 settings again (usual inputs), random seed 5.',
-    'T22Base6': 'As T22Base5, random seed 6.',
-    'T22EmbSmall3': 'Task T-22: the T21L6Cs4 settings plus an animation embedding (each animation turned into 32 '
-                    'learned numbers, started small), random seed 3.',
-    'scripted bot level 9': 'Not a network: a hand-written Falcon that recovers and attacks. Level 9 is its '
-                            'hardest setting.',
-}
-
-
-SHOWN = set()   # every model name a built page shows, checked against NAMES
-
-
-def show(name):
-    """The name as the site shows it: without the end-of-run checkpoint suffix (_c04, _c08)."""
-    if name.startswith('scripted'):
-        return name.replace('_', ' ')
-    return re.sub(r'_c\d\d(?=_|$)', '', name)
+# What the model names mean: names.py (STYLE.md, "Model names"). Every model a page shows must be explained there,
+# or the build stops.
+SHOWN = set()   # every model name a built page shows, checked with names.explain
 
 
 def names_section():
     parts = ''.join('<li><b>%s</b><span>%s</span></li>' % (html.escape(k), html.escape(v)) for k, v in NAME_PARTS)
     used = sorted(set(show(n) for n in SHOWN), key=lambda n: (n.startswith('scripted'), n.lower()))
-    rows = ''.join('<li><b>%s</b><span>%s</span></li>' % (html.escape(n), html.escape(NAMES[n])) for n in used)
-    return ('<section id="names"><h2>Model names</h2><p>What the names on these pages mean. More detail, and every '
-            'other model, on the <a href="roadmap.html">roadmap</a>.</p>\n<h3>Parts of a name</h3>'
+    rows = ''.join('<li><b>%s</b><span>%s</span></li>' % (html.escape(n), html.escape(explain(n))) for n in used)
+    return ('<section id="names"><h2>Model names</h2><p>What the names on these pages mean. The models in the '
+            'rankings are explained on the <a href="rankings.html#names">rankings page</a>.</p>\n'
+            '<h3>Parts of a name</h3>'
             '<ul class="legend">%s</ul>\n<h3>The models on this site</h3><ul class="legend">%s</ul></section>'
             % (parts, rows))
 
 
 def check_names(names):
-    missing = sorted(set(show(n) for n in names) - set(NAMES))
+    missing = sorted(n for n in set(show(n) for n in names) if not explain(n))
     if missing:
-        raise SystemExit('no legend entry in build.py NAMES for: %s' % ', '.join(missing))
+        raise SystemExit('no explanation in names.py (NAMES or PATTERNS) for: %s' % ', '.join(missing))
 
 
 def nav(root, here, groups):
@@ -154,7 +120,8 @@ def nav(root, here, groups):
         opts.append('</optgroup>')
     return ('<nav class="stb-nav" aria-label="Site"><div class="stb-in">' +
             link('index.html', 'SteveTheBot', ' class="stb-home"') +
-            link('roadmap.html', 'Roadmap') + link('index.html#scenarios', 'Scenarios') +
+            link('roadmap.html', 'Roadmap') + link('rankings.html', 'Rankings') +
+            link('index.html#scenarios', 'Scenarios') +
             link('index.html#reports', 'Game reports') + link('index.html#names', 'Model names') +
             '<select aria-label="Go to page" onchange="if(this.value)location.href=this.value">' + ''.join(opts) +
             '</select></div></nav><div class="stb-space"></div>\n')
@@ -305,7 +272,9 @@ def main():
     reports = report_pages()
     forward_block_pages(animated)
     check_names(SHOWN)
-    v2 = [a for a in animated if a[1].name.startswith('anim2_')]
+    ranked = rankings.build(HERE, SRC, HEAD, STYLE)
+    check_names(ranked)
+    v2 =[a for a in animated if a[1].name.startswith('anim2_')]
     v1 = [a for a in animated if not a[1].name.startswith('anim2_')]
 
     page = HEAD.replace('</head>', '<title>SteveTheBot</title><style>%s</style></head>' % STYLE) + """<main>
@@ -328,8 +297,10 @@ the game itself playing beside it. These pages are 1 to 3 MB each.</p>
 <footer>Gameplay is drawn with <a href="https://github.com/gcpreston/slippi-viewer">slippi-viewer</a> (MIT).
 Rebuilt %s.</footer>
 </main></body></html>
-""" % ('<a class="big" href="roadmap.html">Roadmap and progress<span>What each part of the system is now, what '
-       'each change bought, and how the trainer works.</span></a>' if has_roadmap else '',
+""" % (('<a class="big" href="roadmap.html">Roadmap and progress<span>What each part of the system is now, what '
+        'each change bought, and how the trainer works.</span></a>\n' if has_roadmap else '') +
+       '<a class="big" href="rankings.html">Rankings<span>The best models so far, one ranking per opponent, from '
+       'every scored game.</span></a>',
        listing(v2), listing(v1), listing(reports), names_section(), time.strftime('%d %b %Y'))
     (HERE / 'index.html').write_text(page, encoding='utf-8')
     (HERE / '.nojekyll').write_text('', encoding='utf-8')
@@ -343,11 +314,12 @@ Rebuilt %s.</footer>
                                       else ' (' + rest.split(', ')[0] + ')')))
         return out
     groups = [('Start', [('index.html', 'Start page')] + ([('roadmap.html', 'Roadmap and progress')]
-                                                           if has_roadmap else [])),
+                                                           if has_roadmap else []) +
+               [('rankings.html', 'Rankings')]),
               ('Scenarios, version 2', entries(v2, True)),
               ('Scenarios, version 1', entries(v1, True)),
               ('Game reports', entries(reports, False))]
-    for path in [HERE / 'index.html'] + ([HERE / 'roadmap.html'] if has_roadmap else []) + \
+    for path in [HERE / 'index.html', HERE / 'rankings.html'] + ([HERE / 'roadmap.html'] if has_roadmap else []) + \
             [HERE / h for h, _ in animated + reports]:
         add_nav(path, groups)
     print('roadmap: %s, animated scenario pages: %d, game reports: %d' % (has_roadmap, len(animated), len(reports)))

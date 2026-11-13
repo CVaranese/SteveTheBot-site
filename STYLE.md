@@ -7,8 +7,8 @@ writes a page template (in the SteveTheBot repo: `sim/scenario_anim_page.html`, 
 ## The page bar *(build)*
 
 - Every page except the forwarding stubs in `scenarios/` gets the same bar, inserted by `build.py` right after
-  `<body>`: SteveTheBot (start page), Roadmap, Scenarios, Game reports, Model names, and a "Go to page" list of every
-  page, grouped.
+  `<body>`: SteveTheBot (start page), Roadmap, Rankings, Scenarios, Game reports, Model names, and a "Go to page"
+  list of every page, grouped.
 - Fixed to the top edge of the window, full width, **48 px high on every page and every screen width**, followed by
   a 48 px spacer, so a page's own padding or layout never moves it. Contents sit in a centred column 1100 px wide.
 - Under 640 px wide only "SteveTheBot" and the page list show (the list holds every other link), so the bar never
@@ -48,11 +48,26 @@ writes a page template (in the SteveTheBot repo: `sim/scenario_anim_page.html`, 
 - Names are shown **without the checkpoint suffix** (`_c04`, `_c08`): every model on the site is the copy saved at
   the end of its training run. File names and addresses keep the suffix. A model that is not from the end of its
   run must say where it is from in its legend entry.
-- Every model a page names (including the games scenario starts were saved from) needs an entry in `NAMES` in
-  `build.py`; the build stops otherwise. The entries and the name parts (`NAME_PARTS`) are shown in the "Model
-  names" section of the start page. Write each entry so it makes sense without knowing the code: what was trained,
+- Every model a page names (including the games scenario starts were saved from, and every ranked model) needs an
+  explanation in `names.py`: an exact entry in `NAMES` or a family in `PATTERNS`; the build stops otherwise. The
+  start page's "Model names" section shows the name parts (`NAME_PARTS`) and the models of the scenario and report
+  pages; the rankings page lists its own models at the bottom, and each ranked name links there. Write each entry so it makes sense without knowing the code: what was trained,
   how it differs from its neighbour, the seed.
 - The scripted bot is written out: "scripted bot level 9".
+
+## Rankings *(build)*
+
+- `rankings.html` is built by `rankings.py` from the score logs, never typed by hand: `logs/yardstick.csv`
+  (simulator, written by `sim/eval_vs_bot.py`) and every `logs/**/*_cpu9_games.csv` (Dolphin, `run.py
+  --games-log`). Copy WSL rows of `yardstick.csv` back before building, or new scores are missing.
+- One ranking per opponent, in `BOARDS`: the level 9 in-game CPU in Dolphin first (the real game), then the
+  simulator opponents from hardest to easiest. Retired yardsticks stay, folded.
+- Only end-of-run models are ranked; repeated score runs are pooled; a model needs a minimum number of games
+  (20 in Dolphin, 50 in the simulator). Ranked by share won, then stock lead; rankings where most models win
+  nearly every game (`BY_LEAD`) go by stock lead first. Each ranking states the chance error for its usual number
+  of games.
+- A new opponent: add a `BOARDS` row with a plain description. A new model family: add an entry or pattern in
+  `names.py`.
 
 ## Before a push
 

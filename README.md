@@ -5,6 +5,8 @@ https://cvaranese.github.io/SteveTheBot-site/ .
 
 - `index.html`: the start page.
 - `roadmap.html`: the roadmap and progress page.
+- `rankings.html`: the best models, one ranking per opponent, built from the score logs by `rankings.py`.
+- `names.py`: what each model name means (used by every page).
 - `anim/`: scenario playback with character animation (saved start positions per model), recordings in
   `anim/traces/`.
 - `reports/`: game report timelines, with the game playing beside the timeline.
