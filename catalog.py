@@ -38,6 +38,8 @@ CATALOG = [
      'controls.'),
     ('T4V2s3_c04', 'Input version 2', 'Inputs rebuilt from what both the simulator and human replays record, the '
      'groundwork for learning from replays.'),
+    ('T4HumP1_c04', 'Start from human replays', 'First copies 1,236 human Falcon ditto replays (imitation), then '
+     'trains against itself with PPO from that start; the best delayed model against the in-game CPU.'),
 ]
 
 REF = 'T21L6Cs4_c04'
@@ -137,8 +139,10 @@ win share for the games played and the stock lead. Rebuilt %s. The per-opponent 
 <p class="small">CPU level 9: Melee's own hardest computer player, in Slippi Dolphin (20 to 100 games). Frozen
 T21L6Cs4 and scripted bot level 9: 100 games each in the simulator. Scenarios: the same saved positions for every
 model, 2 repeats. One number can move by about 5 points by chance alone. Models that act every frame with a reaction
-delay (rows 12 to 14) cannot be put into the scenario positions or the game report yet, and score near zero against
-undelayed models at the usual training length.</p></section>
+delay (rows 12 on) score near zero against undelayed models at the usual training length. In the scenarios they
+start each position with nothing in their delay queue, so they stand still for the first 11 to 15 frames: an attack
+already 8 or 9 frames away (Shielding) always lands, and their scenario numbers are not directly comparable with the
+rows above them.</p></section>
 <section><h2>The scenario columns</h2><dl class="cols">%s</dl></section>
 </main></body></html>
 """ % (time.strftime('%d %b %Y'), len(SCEN), scen_heads, '\n'.join(body), cols)

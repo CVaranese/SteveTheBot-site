@@ -58,6 +58,31 @@ RECENT = 6                                            # entries in "Recent exper
 EVAL_COLS = ['cpu9', 't4v2', 't21', 'ppo8', 'bot9']   # score columns of the evaluations table
 
 EXPERIMENTS = [
+    dict(tasks=['T-30'], date='2026-11-13', title='Scenarios for models with a reaction delay', topic='yardsticks',
+         short='Now scored; recovery splits them (21% to 85%), shielding is impossible for them.',
+         question='How do the models that decide every frame with a reaction delay do in the scenario positions?',
+         cols=[], variants=[],
+         facts=(['Model', 'Edgeguard', 'Recovery', 'Follow-up: one more hit', 'Whiff punish', 'First hit',
+                 'Shield: not hit'], [
+             ['T21L6Cs4 (no delay, for comparison)', '7%', '90%', '43%', '26%', '36%', '24%'],
+             ['T4V2s3', '6%', '34%', '36%', '15%', '31%', '1%'],
+             ['T4V2s5', '7%', '69%', '33%', '8%', '30%', '1%'],
+             ['T37Plain8 (double length)', '9%', '65%', '38%', '13%', '29%', '1%'],
+             ['T4ImFull (imitation only)', '9%', '24%', '23%', '8%', '19%', '0%'],
+             ['T4HumP1', '6%', '44%', '41%', '19%', '31%', '1%'],
+             ['T4HumP2', '7%', '54%', '41%', '14%', '32%', '1%'],
+             ['T4HumKa1', '7%', '85%', '33%', '12%', '30%', '1%'],
+             ['T4HumKa2', '8%', '85%', '32%', '12%', '28%', '0%'],
+         ]),
+         verdict='Every model now plays the positions with its own controls (scoring an old model again gave exactly '
+                 'its earlier numbers). Against the frozen T21L6Cs4, which has no delay, the delayed models lose the '
+                 'first hit about two times in three and rarely punish a whiff. Recovery splits them most and varies '
+                 'between seeds (T4V2: 34% to 69%); the small pull back to the human policy (T4HumKa) recovers in '
+                 '85% with both seeds. A delayed model starts each position with an empty delay queue and stands '
+                 'still for 11 frames, so it is always hit at the shield positions; these numbers are not directly '
+                 'comparable with models without a delay. 28 models scored; the full table is on the catalog for '
+                 'the catalog models.',
+         decision='Pending: none needed to use the scores.'),
     dict(tasks=['T-40'], date='2026-11-13', title='Matches per run', topic='speed',
          short='All three end level against frozen T4V2; per hour, 256 matches at once is behind.',
          question='Does playing more matches at once in one training run learn as well per game and per hour?',
