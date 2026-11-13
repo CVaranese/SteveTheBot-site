@@ -155,7 +155,8 @@ def build(here, src, head, site_style, pages=None):
 <p>The best models so far, one ranking per opponent. Each model plays the same games (fixed seeds) against the same
 opponent. Only the copy saved at the end of each training run is ranked. Built from the score logs; rebuilt %s.
 The Watch column links the model's scenario playback (edgeguard, recovery and the rest) and whole-game reports,
-where they exist.</p>
+where they exist. To compare one model per change across every yardstick, see
+<a href="catalog.html">How the bot got here</a>.</p>
 </header>
 <section><h2>Best against each opponent</h2><div class="best">%s</div></section>
 %s
