@@ -182,11 +182,11 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 <header style="display:flex;flex-direction:column;gap:14px">
   <span class="eyebrow">SteveTheBot · updated 12 Nov 2026</span>
   <h1>A Captain Falcon that learns Melee, on the way to Project+</h1>
-  <p class="lede">A reinforcement-learning bot from 2017, revived and retrained on a fast Melee simulator. This page has three parts: the roadmap (what each part of the system is now and what comes next), progress (every improvement scored against the same opponents), and how the trainer works.</p>
+  <p class="lede">A reinforcement-learning bot from 2017, revived and retrained on a fast Melee simulator. This page has three parts: the roadmap (what each part of the system is now and what comes next), progress (the newest results first), and how the trainer works. Model names are explained on the <a href="rankings.html#names">rankings page</a>.</p>
   <div class="now">
-    <div><span class="lab">Best model</span><b class="big mono">T21L6Cs4</b><span>PPO, self-play, 58 min on the GPU. Wins 98 of 100 against a frozen model trained the old way at the same rate.</span></div>
-    <div><span class="lab">How it plays (watched)</span><span>Better than random. Well-timed aerials, but no follow-ups after a hit. Recovers well.</span></div>
-    <div><span class="lab">Decided 12 Nov</span><span>Plain inputs are the default again: the animation embedding fell behind plain runs once runs were doubled, so it is now opt-in. Input rescaling and the previous action stay optional. New result: doubling a run (2,940 to 5,880 updates) makes models much stronger, and they were still learning. In Dolphin against the level 9 CPU, T21L6Cs4 won 49 of 50 games. Next: replay imitation (T-4).</span></div>
+    <div><span class="lab">Strongest in the simulator</span><b class="big mono">T22LongBase7</b><span>PPO, self-play, 72 min on the GPU, 5,880 updates (double the usual length). Wins 98 of 100 against the frozen T21L6Cs4, the best model before it. T22LongBase8 also wins 98. Not yet played in Dolphin.</span></div>
+    <div><span class="lab">How it plays (watched)</span><span>Better than random. Well-timed aerials, but no follow-ups or chasing after a hit. Recovers well. That was a 2,940-update model; the double-length ones have not been watched.</span></div>
+    <div><span class="lab">Now and next</span><span>In progress: learning from human Melee Falcon replays (T-4). The first imitation models play badly (0 wins), so imitation alone is not enough yet. In Dolphin against the level 9 CPU, the best score is a hand-edited model (50 of 50, no training); the best trained-only models win 49 of 50. Also open: memory of past frames (T-37) and scoring in Project+ (T-27).</span></div>
   </div>
 </header>
 
@@ -196,33 +196,30 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
   <p>The training loop runs top to bottom and repeats. Each stage shows what it is now and what comes next. Tags: <span class="tag done">changed</span> already improved, <span class="tag run">testing</span> runs in progress, <span class="tag next">next</span> chosen and queued, <span class="tag later">later</span> planned after that, <span class="tag keep">keep</span> no change planned.</p>
   <div class="flow">
     <div class="stage">
-      <div class="stage-head"><span class="n">0</span><h3>Where learning starts</h3><span class="tag next">next</span></div>
-      <div class="cell"><span class="lab">Now</span>Random starting weights. Everything the bot knows came from playing itself.</div>
-      <div class="cell next"><span class="lab">Next · T-4</span>Learn from human Melee Falcon replays first (imitation), then self-play from there. Human play is the likeliest source of combos and follow-ups, which self-play has not found.<span class="dec">Decided 11 Nov: start from replays; this comes after the current tuning.</span></div>
+      <div class="stage-head"><span class="n">0</span><h3>Where learning starts</h3><span class="tag run">testing</span></div>
+      <div class="cell"><span class="lab">Now</span>Random starting weights. Everything the bot knows came from playing itself. This is the "zero line".</div>
+      <div class="cell next"><span class="lab">In progress · T-4</span><ul><li>Learn from human Melee Falcon replays first (imitation), then self-play from there. Human play is the likeliest source of combos and follow-ups, which self-play has not found. The replays and the zero line are kept as two lines, each the other's control.</li><li>Data: HAL's public dataset, 1,264 Falcon-versus-Falcon games on Final Destination, used privately. The simulator cannot replay them exactly, so a second input layout ("input 2") was built from fields both have.</li><li>Tested: a first imitation model copies the inputs it was already holding and wins 0 games, even against the level 1 bot. Counting input changes five times more helped it predict them but not play. Guess, not measured: it meets states the replays rarely show.</li></ul><span class="dec">Decided 11 to 12 Nov: start from replays, in two lines.</span></div>
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">1</span><h3>The game</h3><span class="tag done">changed</span><span class="tag later">later</span></div>
       <div class="cell"><span class="lab">Now</span>A native Melee simulator instead of Dolphin: 64 matches at once per training run, up to 8 runs sharing the graphics card (7,000 to 11,800 decisions a second each with 8 at once; it varied between batches). Dolphin is kept for watching and for scoring against the real in-game CPU.</div>
-      <div class="cell next"><span class="lab">Later</span><ul><li>Faster match playing: playing the matches is 87% of each update and runs on one CPU core, with about 3 times headroom. Ideas: more matches per run, or the policy on the CPU during play.</li><li>Project+ through headless Dolphin and the state translator.</li></ul></div>
+      <div class="cell next"><span class="lab">Project+ · T-5, in progress</span><ul><li>Tested: Project+ runs in headless Dolphin at about 12 times real time, and a Melee-trained model has played whole Project+ games through a translator (91% of states map exactly).</li><li>Not done: scoring models against the Project+ CPU (T-27). Decided: no Melee strength bar before Project+ work.</li><li>Speed idea: playing the matches is 87% of each update, on one CPU core.</li></ul></div>
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">2</span><h3>What the bot sees</h3><span class="tag next">next</span></div>
-      <div class="cell"><span class="lab">Now</span>796 numbers for the current frame: both players' position, damage, facing, animation, speeds. No memory of earlier frames. New PPO models also see the 11 actions they have already chosen but not yet sent (see stage 4): 54 numbers each, 1,390 inputs in all. Older models see the 796 only.<span class="dec">Decided 11 Nov: the previous action stays an option, not the default (it cannot say whether a press took effect).</span></div>
-      <div class="cell next"><span class="lab">Done · T-12 · T-22 · decided 12 Nov</span><ul><li>Animation as 32 learned numbers (embedding), small start: at the new learning rate it won 50 and 49 against the best model, where plain runs won 4 to 34. Made the default on 12 Nov, then dropped the same day: at double run length it fell behind plain inputs (mean 41 vs 55 wins at 2,940 updates, 84 vs 98 at 5,880, against frozen T21L6Cs4). Now opt-in (<span class="mono">--embed 32 --embed-std 0.05</span>).</li><li>Input rescaling (built today): x, y and hitstun brought to the same size as the other inputs. No measurable effect (21 and 21). Stays an unused option.</li><li>Later: a memory of the last few seconds.</li></ul></div>
+      <div class="cell"><span class="lab">Now</span>796 numbers for the current frame: both players' position, damage, facing, animation, speeds. No memory of earlier frames. New PPO models also see the 11 actions they have already chosen but not yet sent (see stage 4): 54 numbers each, 1,390 inputs in all. Older models see the 796 only.<span class="dec">Plain inputs are the default. Tried and set aside: an animation embedding (fell behind plain inputs at double run length: 84 vs 98 wins), input rescaling (no effect), the previous action (not confirmed; it cannot say whether a press took effect).</span></div>
+      <div class="cell next"><span class="lab">Next</span><ul><li>Memory of the last few seconds, then a network that keeps a memory if that helps (T-37). The bot cannot see its own earlier moves or its opponent's habits now.</li><li>Input 2 (T-4): the same 796 layout, built from fields that replays and the simulator share. Not the default.</li></ul></div>
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">3</span><h3>The network</h3><span class="tag done">changed</span><span class="tag later">later</span></div>
-      <div class="cell"><span class="lab">Now</span>Two separate networks, actor and critic, two hidden layers of 128 each (about 125,000 weights per network), with the four T-8 fixes: both hidden layers activated, no sigmoid in the critic, orthogonal starting weights, gradient clipping.</div>
-      <div class="cell next"><span class="lab">Later · T-10</span>One shared body with a policy head and a value head.</div>
+      <div class="cell"><span class="lab">Now</span>Two separate networks, actor and critic, two hidden layers of 128 each (about 125,000 weights per network), with four fixes made when PPO was built: both hidden layers activated, no sigmoid in the critic, orthogonal starting weights, gradient clipping.</div>
+      <div class="cell next"><span class="lab">Later · T-10, T-37</span>Bigger layers (256) and one shared body with a policy head and a value head (T-10); a memory core (T-37). Not started.</div>
     </div>
     <div class="stage">
-      <div class="stage-head"><span class="n">4</span><h3>The controller</h3><span class="tag done">timing changed</span><span class="tag next">heads not default</span></div>
-      <div class="cell"><span class="lab">Now · changed 12 Nov</span>One of 54 fixed actions: 9 stick positions times one button or none. New PPO models (<span class="mono">sim/ppo_run.py</span>) now choose an action <b>every frame</b>, and each action reaches the controller <b>11 frames (0.19 s) later</b>, like a human reaction time. Models trained before this, and the old 2017 learner, choose every 2 frames with no delay.<div class="note">Cost, measured in T-16 with a delay of 15 (not 11): far weaker than no delay (level 9 in-game CPU in Dolphin, 10 of 50 wins vs 42 to 46). So this default trades current strength for human-like timing. A model trained with 11 frames at the new default has not been scored against the in-game CPU yet.</div></div>
-      <div class="cell"><span class="lab">Built and tested 12 Nov</span><ul><li>Each saved model has a small settings file: frames per action and delay. Missing means every 2 frames, no delay.</li><li><span class="mono">--frames-per-action 1 --delay D</span>: a decision every frame. An action chosen on frame t reaches the controller on frame t+D, a human-like reaction time. Tested with D = 15 (Firoiu et al. 2018). The default for new PPO models is now D = 11.</li><li>With a delay the network also sees the D actions still in flight, as 54-slot one-hots: at D = 11, 796 + 11 x 54 = 1,390 inputs (at D = 15 it was 1,606).</li><li>Discount and GAE decay are scaled to the shorter step, so one update covers the same game time.</li><li>Self-play delays both sides. The scripted opponent is not delayed (it stands in for the in-game CPU).</li></ul><span class="dec">Trained and tested, 2,940 updates, two seeds each. Wins vs level 9 scripted bot / frozen T21L6Cs4 (of 100) / level 9 in-game CPU in Dolphin (of 50): every 2 frames 84 and 94 / 27 and 9 / 42; every frame, no delay 94 and 87 / 11 and 7 / 46; every frame + delay 15: 1 and 2 / 0 and 0 / 10. A delay of 15 is far weaker against opponents that have no delay. Your decision: every frame with a 0.19 s delay, 11 frames (<span class="mono">--delay 11</span>), used for the two-head tests below and, since the last change, the default of <span class="mono">ppo_run.py</span> for new models. Resumed models keep their own settings; <span class="mono">--frames-per-action 2 --delay 0</span> gives the old behaviour.</span></div>
-      <div class="cell"><span class="lab">Measured 12 Nov</span>Choosing the same button action on consecutive decisions is one continuous hold, in Dolphin and the simulator: A held for 10 decisions gives one jab, X held gives one jump. The bot cannot press a button twice without another action in between.</div>
-      <div class="cell next"><span class="lab">Next</span><ul><li>Two heads: a button (6 choices), then a stick position given the button (17, with half tilts). Then a C-stick head.</li></ul><span class="dec">Decided 11 Nov.</span></div>
-      <div class="cell"><span class="lab">Built and tested 12 Nov: two heads</span><ul><li>A second action set of 102 pairs: 6 buttons (none, A, B, X, Z, L) times 17 stick positions (centre, 8 full, 8 half-tilted). The two-head network picks a button, then a stick position given that button. Probability of a pair = P(button) x P(stick given button).</li><li>A control model uses one flat list over the same 102 pairs. Choose with <span class="mono">--controller flat54|flat102|heads102</span>; the default is flat54, unchanged.</li><li>Half tilts checked in the simulator: half right walks; half right + A is a forward tilt; half up + A an up tilt; half down + A a down tilt. Half down alone does not crouch and half up does not jump.</li></ul></div>
-      <div class="cell"><span class="lab">Measured 12 Nov: two heads vs 54 actions</span>All runs: a decision every frame plus an 11-frame delay, 2,940 updates, two seeds each. The 54-action models beat both 102-pair kinds head to head: 74 wins of 100 against two heads, 72 against the flat 102 list. Two heads vs flat 102 was even (48 of 100). Against the level 9 in-game CPU (50 games) the three 102-pair models won 3, 2 and 1.<div class="note">Reading (a guess, not tested): at this training length the larger action set is not learned yet. The 54 actions stay the default. No decision yet on what to do next with the two heads.</div></div>
+      <div class="stage-head"><span class="n">4</span><h3>The controller</h3><span class="tag done">timing changed</span><span class="tag later">heads not default</span></div>
+      <div class="cell"><span class="lab">Now · changed 12 Nov</span>One of 54 fixed actions: 9 stick positions times one button or none. New PPO models (<span class="mono">sim/ppo_run.py</span>) choose an action <b>every frame</b>, and each action reaches the controller <b>11 frames (0.19 s) later</b>, like a human reaction time (your choice, 0.19 s x 60 frames, rounded). Models trained before this, and the old 2017 learner, choose every 2 frames with no delay.<div class="note">Cost: at the usual 2,940 updates a delayed model is far weaker than an undelayed one, because the opponents it is scored against have no delay. Tested with a delay of 15: 10 of 50 wins against the level 9 CPU in Dolphin, against 42 to 46 without. With the default delay of 11, T17F54 (below) won 3 of 50. The double-length models (T22Long) were trained without the delay.</div></div>
+      <div class="cell"><span class="lab">How timing works · tested</span><ul><li>Each saved model has a small settings file: frames per action and delay. Missing means every 2 frames, no delay.</li><li>An action chosen on frame t reaches the controller on frame t+11. Meanwhile the network also sees the 11 actions still in flight: 796 + 11 x 54 = 1,390 inputs.</li><li>Discount and GAE decay are scaled to the shorter step, so one update covers the same game time.</li><li>Self-play delays both sides. The scripted opponent is not delayed.</li><li>The same button on consecutive decisions is one continuous hold, in Dolphin and the simulator (A held gives one jab). The bot cannot press a button twice without another action between.</li></ul><span class="dec">Resumed models keep their own settings; <span class="mono">--frames-per-action 2 --delay 0</span> gives the old behaviour.</span></div>
+      <div class="cell next"><span class="lab">Tested 12 Nov: two heads (T-17)</span>A second action set of 102 pairs: 6 buttons x 17 stick positions (centre, 8 full, 8 half-tilted). A two-head network picks a button, then a stick position given that button. With delay 11, 2,940 updates, two seeds each, the 54 actions beat both two heads (74 wins of 100 head to head) and one flat list of the 102 pairs (72). Two heads vs the flat 102 list was even (48). Against the level 9 CPU in Dolphin the 102-pair models won 1 to 3 of 50.<div class="note">Reading (a guess, not tested): at this training length the larger action set is not learned yet. The 54 actions stay the default. No decision yet on what to do next with the two heads; a C-stick head was planned after them. The replay labels show what the 54 cannot say: the C-stick is used on 9.4% of human frames, and several buttons at once on 3.2%.</div></div>
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">5</span><h3>The reward</h3><span class="tag keep">keep</span></div>
@@ -231,18 +228,18 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">6</span><h3>The learning step</h3><span class="tag done">changed</span><span class="tag next">next</span></div>
-      <div class="cell"><span class="lab">Now</span>PPO with GAE: 8,192 decisions per side per update, 4 passes over the batch, clip 0.2. Learning rate 6e-4 held constant.<span class="dec">Decided 11 Nov: 6e-4 constant is the default (it was 3e-4 falling to zero).</span></div>
-      <div class="cell next"><span class="lab">Next · T-22</span>Longer runs at 6e-4: they were still improving when they stopped. A rate twice as high again (1.2e-3) was tried and was not better: less steady, one run nearly collapsed.</div>
+      <div class="cell"><span class="lab">Now</span>PPO with GAE: 16,384 decisions per side per update at the new every-frame default (8,192 every 2 frames; same game time), 4 passes over the batch, clip 0.2. Learning rate 6e-4 held constant.<span class="dec">Decided 11 Nov: 6e-4 constant is the default (it was 3e-4 falling to zero). Decided 12 Nov: screening runs stay at 2,940 updates; double length (5,880) is for a model to present.</span></div>
+      <div class="cell next"><span class="lab">Tested · next</span>Doubling a run to 5,880 updates made every model beat its own 2,940-update copy (93 to 100 of 100), and the runs were still improving. A rate twice as high (1.2e-3) was not better. Open (T-13, T-20, T-14): tune the play-time randomness before each score, ignore decisions where no input matters when learning, and mix opponents.</div>
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">7</span><h3>The opponent</h3><span class="tag later">later</span></div>
       <div class="cell"><span class="lab">Now</span>Training: itself (self-play), or a simple scripted Falcon. Scoring: frozen copies of earlier models, the scripted bot at level 9, and the in-game CPU in Dolphin.</div>
-      <div class="cell next"><span class="lab">Later</span>A mix: self-play plus frozen past versions plus the scripted bot, so it cannot over-fit to one opponent.</div>
+      <div class="cell next"><span class="lab">Later · T-14, T-36</span>A mix: self-play plus frozen past versions plus the scripted bot, so it cannot over-fit to one opponent. The imitation model and HAL's released model are candidate opponents.</div>
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">8</span><h3>Seeing inside</h3><span class="tag done">changed</span><span class="tag later">later</span></div>
-      <div class="cell"><span class="lab">Now</span>A log per update, the scored benchmarks, and the game report: one game replayed with every possible action at every decision, to see which inputs could matter.</div>
-      <div class="cell next"><span class="lab">Later</span>The report averaged over 100 games and run on your own games. Then tools to ask the network what it would do in a chosen situation.</div>
+      <div class="cell"><span class="lab">Now</span>A log per update, the scored benchmarks, the scenario yardstick (Part 2), and the game report: one game replayed with every possible action at every decision, to see which inputs could matter. Reports now play the game in the animated viewer on the project site.</div>
+      <div class="cell next"><span class="lab">Later · T-6</span>The report averaged over 100 games and run on your own games. Then tools to ask the network what it would do in a chosen situation.</div>
     </div>
   </div>
   <p class="loopback">↻ back to stage 1 for the next batch</p>
@@ -251,52 +248,37 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 <!-- ============================================================ PART 2: PROGRESS -->
 <section>
   <div class="part"><span class="num">Part 2</span><h2>Progress: what each step bought</h2></div>
-  <p>Every bar is "games won out of 100". A model wins a game by taking all 4 of the opponent's stocks first. Each chart keeps one opponent fixed, so the bars can be compared. Where a setting has several training runs (seeds), the bar is their mean and the dots are the single runs. The small number under each score is the gain over the row above (or over the plain runs, where the chart says so). Two runs with the same settings can end 10 to 30 wins apart, so small gaps are noise. All tested.</p>
-
-  <div class="ladder" id="lad-a">
-    <h3>Against a fixed opponent from the first PPO day</h3>
-    <p class="q">Opponent: frozen PPO8Self, a self-play model from the first PPO day that no longer learns. In the simulator, 100 games each.</p>
-  </div>
-
-  <div class="ladder" id="lad-b">
-    <h3>Against a stronger opponent, to separate the newest models</h3>
-    <p class="q">The first opponent is now too easy: everything since the learning-rate change wins 86 to 96 of 100. Opponent: frozen T21L6s3 (learning rate 6e-4, falling to zero). Its own seed-mates should land near 50.</p>
-  </div>
+  <p>Every bar is "games won out of 100". A model wins a game by taking all 4 of the opponent's stocks first. Each chart keeps one opponent fixed, so the bars can be compared. Where a setting has several training runs (seeds), the bar is their mean and the dots are the single runs. The small number under each score is the gain over the first row of the chart. Two runs with the same settings can end 10 to 30 wins apart, so small gaps are noise. All tested. Every model and score: <a href="rankings.html">rankings page</a>.</p>
 
   <div class="ladder" id="lad-d">
-    <h3>Against the best model: input changes at the new rate</h3>
-    <p class="q">Opponent: frozen T21L6Cs4, the strongest model so far. Each change is compared with plain runs from the same settings (the first row), not with the row above. Plain runs vary a lot here (4 to 34), so the gaps need two runs each.</p>
+    <h3>Newest: double-length runs against the previous best</h3>
+    <p class="q">Opponent: frozen T21L6Cs4, the best model of the 2,940-update runs. In the simulator, 100 games each. Each row is compared with the plain 2,940-update runs (first row). Longer runs (5,880 updates) win by a wide margin; the plain double-length runs are the strongest models so far. Set aside at the usual length: input rescaling (21 and 21) and a learning rate of 1.2e-3 (9 and 41).</p>
   </div>
 
   <div class="ladder" id="lad-c">
     <h3>Against the real in-game CPU, level 9, in Dolphin</h3>
-    <p class="q">The fairest test: models trained only in the simulator, playing the game's own Captain Falcon CPU. 50 games each (old learner: 20). The newest models are not scored here yet; you watched one and saw it play better.</p>
+    <p class="q">The fairest test: models trained only in the simulator, playing the game's own Captain Falcon CPU. 50 games each (old learner: 20). The double-length models are not scored here yet. The hand-edited model is the leader, with no training at all; it is a hand-changed copy of PPO8Bot, so read it as a tool, not a method.</p>
   </div>
 
   <div class="sub">
-    <h3>Every enhancement tried, and what it did</h3>
+    <h3>How we got here: the changes that mattered, oldest first</h3>
     <div class="scroll"><table>
       <thead><tr><th>Change</th><th>Opponent</th><th>Before</th><th>After</th><th>Status</th></tr></thead>
       <tbody>
         <tr><td>PPO with GAE instead of the 2017 update (T-3)</td><td>frozen PPO8Self</td><td class="num">0</td><td class="num">48</td><td><span class="chip kept">kept</span></td></tr>
         <tr><td>Network fixes (T-8)</td><td>CPU level 9</td><td class="num">50</td><td class="num">66</td><td><span class="chip kept">kept</span></td></tr>
         <tr><td>Train against the scripted bot instead of itself</td><td>CPU level 9</td><td class="num">66</td><td class="num">96</td><td><span class="chip opt">option</span></td></tr>
-        <tr><td>Same change, other opponent</td><td>frozen PPO8Self</td><td class="num">55</td><td class="num">38</td><td></td></tr>
-        <tr><td>Sharper choices: output layer ×2.5, no training</td><td>frozen PPO8Self</td><td class="num">38</td><td class="num">70</td><td><span class="chip opt">tool</span></td></tr>
-        <tr><td>Previous action as an input (3 runs, old rate)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">67</td><td><span class="chip opt">option</span></td></tr>
-        <tr><td>Animation embedding, small start (3 runs, old rate)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">59</td><td><span class="chip opt">option</span></td></tr>
-        <tr><td>Animation embedding, large start (2 runs)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">34</td><td><span class="chip drop">dropped</span></td></tr>
-        <tr><td>Learning rate 3e-4 → 6e-4, still falling to zero (T-21, 4 runs)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">92</td><td><span class="chip kept">kept</span></td></tr>
-        <tr><td>Learning rate held constant instead (T-21, 2 runs)</td><td>frozen T21L6s3</td><td class="num">53</td><td class="num">97</td><td><span class="chip kept">default</span></td></tr>
-        <tr><td>Animation embedding, small start, at the new rate (2 runs)</td><td>frozen T21L6Cs4</td><td class="num">20</td><td class="num">50</td><td><span class="chip opt">option</span></td></tr>
-        <tr><td>Animation embedding vs plain, double-length runs (T-22, 5,880 updates)</td><td>frozen T21L6Cs4 (plain, then embedding)</td><td class="num">98</td><td class="num">84</td><td><span class="chip drop">dropped</span></td></tr>
-        <tr><td>Double run length: 5,880 instead of 2,940 updates (T-22)</td><td>own 2,940-update checkpoint</td><td class="num">n/a</td><td class="num">93 to 100</td><td><span class="chip kept">kept</span></td></tr>
-        <tr><td>In-game level 9 CPU, Dolphin: T21L6Cs4 (50 games)</td><td>CPU level 9</td><td class="num">66</td><td class="num">98</td><td></td></tr>
-        <tr><td>Input rescaling (T-12, 2 runs)</td><td>frozen T21L6Cs4</td><td class="num">20</td><td class="num">21</td><td><span class="chip drop">no effect</span></td></tr>
-        <tr><td>Learning rate 1.2e-3, constant (T-22, 2 runs)</td><td>frozen T21L6Cs4</td><td class="num">20</td><td class="num">25</td><td><span class="chip drop">not kept</span></td></tr>
+        <tr><td>Hand-edited output layer ×2.5, no training</td><td>frozen PPO8Self</td><td class="num">38</td><td class="num">70</td><td><span class="chip opt">tool</span></td></tr>
+        <tr><td>Learning rate 3e-4 → 6e-4 (T-21, 4 runs)</td><td>frozen PPO8Self</td><td class="num">54</td><td class="num">92</td><td><span class="chip kept">kept</span></td></tr>
+        <tr><td>Rate held constant instead of falling to zero (T-21, 2 runs)</td><td>frozen T21L6s3</td><td class="num">53</td><td class="num">97</td><td><span class="chip kept">default</span></td></tr>
+        <tr><td>Animation embedding, previous action, input rescaling (T-9, T-12, T-22)</td><td>frozen PPO8Self, then T21L6Cs4</td><td class="num">n/a</td><td class="num">mixed</td><td><span class="chip drop">set aside</span></td></tr>
+        <tr><td>Double run length: 5,880 instead of 2,940 updates (T-22)</td><td>own 2,940-update copy</td><td class="num">n/a</td><td class="num">93 to 100</td><td><span class="chip kept">option, for a model to present</span></td></tr>
+        <tr><td>Every frame instead of every 2 (T-16, 2 runs)</td><td>level 9 CPU, Dolphin (of 50)</td><td class="num">42</td><td class="num">46</td><td><span class="chip kept">default, with delay</span></td></tr>
+        <tr><td>Reaction delay 15 (T-16)</td><td>level 9 CPU, Dolphin (of 50)</td><td class="num">46</td><td class="num">10</td><td><span class="chip test">costly; default is 11</span></td></tr>
+        <tr><td>Two heads or 102 pairs instead of 54 actions (T-17)</td><td>54 actions, head to head</td><td class="num">n/a</td><td class="num">26 to 28</td><td><span class="chip drop">not kept</span></td></tr>
       </tbody>
     </table></div>
-    <p class="note">"Before" is the model or mean the change was compared with at the time; numbers are wins out of 100. The level 9 CPU rows are 50 games, converted to out of 100. Full tables and every model: <span class="mono">notes/BENCHMARKS.md</span>.</p>
+    <p class="note">"Before" is the model or mean the change was compared with at the time; numbers are wins out of 100, except the rows marked "of 50" (Dolphin games). Rows against the level 9 CPU are 50 games, converted to out of 100. Every other test, and every model, is on the <a href="rankings.html">rankings page</a>.</p>
   </div>
 
   <div class="sub">
@@ -304,20 +286,20 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     <div class="scroll"><table>
       <thead><tr><th>Model</th><th>Training</th><th>Wall time</th><th>Games played</th></tr></thead>
       <tbody>
-        <tr><td>Steve (2017 learner)</td><td>Dolphin, against the CPU</td><td class="num">4 h 42 min</td><td class="num">1,795</td></tr>
-        <tr><td>SimBase c08 (2017 learner)</td><td>simulator, self-play</td><td class="num">28 min</td><td class="num">3,805</td></tr>
-        <tr><td>PPO8Self c04</td><td>simulator, PPO, self-play</td><td class="num">20 min</td><td class="num">3,692</td></tr>
-        <tr><td>T21L6Cs4 c04</td><td>simulator, PPO, 8 runs sharing the GPU</td><td class="num">57 min</td><td class="num">4,943</td></tr>
+        <tr><td>Steve (2017 learner, run in Dolphin)</td><td>Dolphin, against the CPU</td><td class="num">4 h 42 min</td><td class="num">1,795</td></tr>
+        <tr><td>SimBase (2017 learner)</td><td>simulator, self-play</td><td class="num">28 min</td><td class="num">3,805</td></tr>
+        <tr><td>PPO8Self</td><td>simulator, PPO, self-play</td><td class="num">20 min</td><td class="num">3,692</td></tr>
+        <tr><td>T21L6Cs4</td><td>simulator, PPO, 8 runs sharing the GPU</td><td class="num">57 min</td><td class="num">4,943</td></tr>
+        <tr><td>T22LongBase7</td><td>simulator, PPO, 8 runs sharing the GPU, double length</td><td class="num">72 min</td><td class="num">about 8,100</td></tr>
       </tbody>
     </table></div>
-    <p class="note">The newest runs are slower per run only because eight train at once; together they play about 56,000 decisions a second.</p>
+    <p class="note">The newest runs are slower per run only because eight train at once; together they play tens of thousands of decisions a second.</p>
   </div>
 
   <div class="sub">
-    <h3>One score per skill: the scenario yardstick (T-28)</h3>
-    <p>Whole-game wins mix every skill together and swing a lot between runs. The simulator can save a whole match and load it again exactly. So moments are saved from earlier games (an opponent knocked off the stage; the frame a first hit lands). Every model is then put into the same 300 saved positions and plays on. The result is one score per skill. The saved positions come from our own bots' games, not human games. This is <b>version 2</b>; the table below replaces version 1.</p>
-    <p><b>What version 1 got wrong.</b> Edgeguard and recovery were judged inside a time limit, and many starts were already lost before play began (the offstage player could not get back even with no one guarding). That made edgeguard look like 21% to 28%. Version 2 judges by outcome with no time limit: the offstage player gets back on the stage and can act, or loses the stock. Starts that were already lost are removed first: each offstage start is replayed with the best model recovering and nobody guarding. The critic's value guess was tried as the filter, but it matched the replays only weakly (correlation 0.59), so the replays are used. Three neutral tests were added.</p>
-    <p><b>A second fault, found after watching.</b> The user spotted an edgeguard sample that ended oddly. A check showed many starts were already safe, not only already lost: of 321 kept starts, 84 got back on the stage with no input at all, and 67 more were back in under a second with nobody guarding. The filter now keeps a start only if the best model can get back unopposed, has to act to do it, and needs at least a second. That leaves 170 of 380 starts.</p>
+    <h3>One score per skill: the scenario yardstick (T-28, T-31)</h3>
+    <p>Whole-game wins mix every skill together and swing a lot between runs. The simulator can save a whole match and load it again exactly. So moments are saved from earlier games (an opponent knocked off the stage; the frame a first hit lands). Every model is then put into the same saved positions and plays on. The result is one score per skill. The positions come from our own bots' games, not human games.</p>
+    <p>Edgeguard and recovery are judged by outcome: the offstage player gets back on the stage and can act, or loses the stock. Starts that are already lost or already safe are removed first, by replaying each one with the best model recovering and nobody guarding. A start stays only if the player has to act and needs at least a second. That leaves 170 of 380 starts. (The critic's value guess was tried as the filter and agreed with the replays too weakly, so it is not used.) Three neutral tests were added.</p>
     <div class="scroll"><table>
       <thead><tr><th>Score</th><th>What it measures</th><th>PPO models</th><th>Random play</th></tr></thead>
       <tbody>
@@ -329,7 +311,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
         <tr><td>Shield</td><td>An attack is 8 or 9 frames from landing: share of starts where the model is not hit</td><td class="num">15% to 24%</td><td class="num">35%</td></tr>
       </tbody>
     </table></div>
-    <p class="note">Tested 2026-11-12, against the frozen T21L6Cs4, mean of 2 repeats; 170 starts for Recovery and Edgeguard, 300 for the rest. The user watched the version 2 samples and accepted the scenarios ("I think they show it"). What it says: the bots do not edgeguard (version 1's number was mostly opponents already lost). Recovery is learned, and is now a sharp measure (random play gets 7%). First hit from neutral is the first score that separates the older PPO8Self from most newer models. On the shield test the models do worse than random, partly because the starts are moments where these same policies got hit (a selection bias). Limits: models with a reaction delay are not supported yet (T-30). Queued, not built: tech chase and human start positions (T-29). Animated viewing with character animation (T-32) is built and the user confirmed it works. Using these starts in training is not decided. Source: <span class="mono">sim/scenario_v2.py</span>, <span class="mono">notes/BENCHMARKS.md</span> sections 8c to 8e. Samples can be watched on the project site, as blocks and with character animation.</p>
+    <p class="note">Tested 2026-11-12, against the frozen T21L6Cs4, mean of 2 repeats; 170 starts for Recovery and Edgeguard, 300 for the rest. You watched the samples and accepted them ("I think they show it"). What it says: the bots barely edgeguard. Recovery is learned, and is a sharp measure (random play gets 7%). On the shield test the models do worse than random, partly because the starts are moments where these same policies got hit (a selection bias). Limits: models with a reaction delay are not supported yet (T-30), and the double-length models have not been scored on it. Queued, not built: tech chase and human start positions (T-29). Using these starts in training is not decided (T-38). Samples can be watched on the project site, as blocks and with character animation.</p>
   </div>
 </section>
 
@@ -347,7 +329,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
       <li><b>Learn</b><span>4 passes over the batch in 4 slices. Actor and critic both take small gradient steps.</span><span class="mono">16 steps, lr 6e-4</span></li>
     </ol>
     <div class="split" role="img" aria-label="Share of one update's time: playing 87 percent, learning 13 percent"><span class="s-play" style="width:87%">play the matches 87%</span><span class="s-train" style="width:13%">learn 13%</span></div>
-    <p class="note">One update takes about half a second for a run alone on the GPU. A full run is 2,940 updates, about 3,800 to 4,900 games. Self-play learns from both players' views, since both are the same network.</p>
+    <p class="note">One update takes about half a second for a run alone on the GPU. A usual run is 2,940 updates (about 3,800 to 4,900 games); the double-length option is 5,880. Self-play learns from both players' views, since both are the same network.</p>
   </div>
 
   <div class="sub">
@@ -386,7 +368,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
       <span><i style="background:var(--accent-soft)"></i>384 per player: which animation, one slot each</span>
       <span><i style="background:var(--a-green)"></i>10 per player: frame in animation, hitlag, hitstun, jumps, speeds and more</span>
     </div>
-    <p>768 of the 796 inputs say which animation each player is in, one slot per animation. So the first layer is mostly a lookup table from animation to 128 features, which is why it holds 81% of the weights. New models use plain inputs. An optional <b>embedding</b> can go in front (<span class="mono">--embed 32 --embed-std 0.05</span>; it was the default for a few hours on 12 Nov and was dropped, see the progress table): each 384-slot block becomes 32 learned numbers from one table shared by both players, so the first layer sees 92 numbers and the weight counts above shrink (the layer sizes drawn here are the models without it; counts recomputed from <span class="mono">Model.py</span>). The other front layers stay optional: <b>rescaling</b> shrinks x, y and hitstun (which spread up to 6 times wider than the other inputs) so no input drowns out the rest. Both are stored inside the saved model, so older models load unchanged.</p>
+    <p>768 of the 796 inputs say which animation each player is in, one slot per animation. So the first layer is mostly a lookup table from animation to 128 features, which is why it holds 81% of the weights. New models use plain inputs. An optional <b>embedding</b> can go in front (<span class="mono">--embed 32 --embed-std 0.05</span>; it was set aside, see the progress table): each 384-slot block becomes 32 learned numbers from one table shared by both players, so the first layer sees 92 numbers and the weight counts above shrink (the layer sizes drawn here are the models without it; counts recomputed from <span class="mono">Model.py</span>). Both options are stored inside the saved model, so older models load unchanged.</p>
   </div>
 
   <div class="sub">
@@ -453,30 +435,30 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
         <tr><td>1.2e-3, constant</td><td class="num">0.0061</td><td class="num">0.0076</td><td class="num">2.23</td><td class="num">68</td></tr>
       </tbody>
     </table></div>
-    <p>The old default moved the policy about ten times less than usual, and lowering the rate to zero meant the second half of each run learned almost nothing. Two settings with the same total step size over the run (3e-4 constant and 6e-4 falling to zero) ended about equal; doubling the total won 97 of 100. Doubling again (1.2e-3) did not help: the policy narrowed fast (one run's entropy fell to 1.95) and scored worse. That is the other side of the trade: steps too large lock in early habits. So 6e-4 stays. Longer runs were the next lever, and they work: at 5,880 updates every model beat its own 2,940-update checkpoint, 93 to 100 games of 100, and the runs were still learning at the end. The last column of this table is the first T-21 runs only.</p>
+    <p>The old default moved the policy about ten times less than usual, and lowering the rate to zero meant the second half of each run learned almost nothing. Doubling the total step size won 97 of 100. Doubling again (1.2e-3) did not help: the policy narrowed fast and scored worse, because steps that are too large lock in early habits. So 6e-4 stays, and longer runs were the next lever: at 5,880 updates every model beat its own 2,940-update copy, 93 to 100 of 100. The last column of this table is the first T-21 runs only (against frozen T21L6s3).</p>
   </div>
 
   <div class="sub">
     <h3>Entropy: how random the bot still is</h3>
-    <p>Entropy measures how spread out the action choice is. Picking uniformly among 54 actions gives 3.99; always picking one action gives 0. The trainer adds a small bonus for entropy (0.01) so the bot keeps trying things instead of settling early. The 2017 learner stayed at 3.93, close to random. The first PPO models ended near 3.3, and the new default ends at 2.7 to 2.8, the lowest so far. The game report found that much of the remaining randomness is harmless: in 57% to 70% of decisions the character is mid-move and no input could change anything.</p>
+    <p>Entropy measures how spread out the action choice is. Picking uniformly among 54 actions gives 3.99; always picking one action gives 0. The trainer adds a small bonus for entropy (0.01) so the bot keeps trying things instead of settling early. The 2017 learner stayed at 3.93, close to random. The first PPO models ended near 3.3, and the 6e-4 constant runs end at 2.7 to 2.8 (1.7 to 2.5 for the double-length runs). The game report found that much of the remaining randomness is harmless: in 57% to 70% of decisions the character is mid-move and no input could change anything.</p>
   </div>
 
   <div class="sub">
     <h3>Self-play, frozen opponents and seeds</h3>
     <ul>
       <li><b>Self-play:</b> the same network plays both sides, so its opponent improves with it. The risk is learning to beat only itself, which is why scores also use other opponents.</li>
-      <li><b>Frozen opponent:</b> a saved model that no longer learns. It is a fixed bar to measure against. When everything beats it, a stronger one is frozen (this happened today).</li>
+      <li><b>Frozen opponent:</b> a saved model that no longer learns. It is a fixed bar to measure against. When everything beats it, a stronger one is frozen (so the yardstick moved from PPO8Self to T21L6s3 to T21L6Cs4).</li>
       <li><b>Seeds:</b> the same training repeated with different luck. Identical settings have ended 10 to 13 wins apart on an easy opponent and up to 30 apart on the hardest, so each setting gets at least two runs, and plain runs in the same batch, before a decision.</li>
-      <li><b>Rule for a new default:</b> fixed before the runs, so results cannot bend it. The one in use (mean of at least 60 against frozen PPO8Self) has stopped working, because that opponent is now too easy. Approved 12 Nov: against frozen T21L6Cs4, a change must beat plain runs from the same batch by at least 10 wins on average, with no run below the lowest plain run.</li>
+      <li><b>Rule for a new default:</b> fixed before the runs, so results cannot bend it. Approved 12 Nov: against frozen T21L6Cs4, a change must beat plain runs from the same batch by at least 10 wins on average, with no run below the lowest plain run. The embedding passed it at 2,940 updates and was then set aside once runs were doubled, so close calls need more seeds, not longer runs.</li>
     </ul>
   </div>
 
   <div class="sub">
     <h3>The controller</h3>
-    <p>How an action becomes buttons. The current design and the two-head design decided for next. Dots are the stick positions the bot can choose.</p>
+    <p>How an action becomes buttons. The current design, the two-head design (tested, not the default) and, for scale, a published one. Dots are the stick positions the bot can choose.</p>
     <div class="seg" role="group" aria-label="Controller design">
       <button id="d-now" aria-pressed="true">Now: 54 flat</button>
-      <button id="d-step" aria-pressed="false">Next: two heads</button>
+      <button id="d-step" aria-pressed="false">Tested: two heads</button>
       <button id="d-faynt" aria-pressed="false">Faynt 2026, for scale</button>
     </div>
     <div class="card ctl">
@@ -508,7 +490,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     <li><a href="https://ericyuegu.com/behavior-cloning-melee">Training AI to play Super Smash Bros. Melee (HAL), 2025</a> <span class="lbl">read</span></li>
     <li><a href="https://arxiv.org/abs/2610.02144">Faynt: Scaling and Optimizing Policies for Competitive Melee, 2026</a> <span class="lbl">first half read</span></li>
   </ul>
-  <p class="note">Facts about this project are read from its code and test logs (<span class="mono">notes/BENCHMARKS.md</span>, <span class="mono">notes/experiments/</span>); last checked 12 Nov 2026. "approx_kl near 0.01 is common" is from memory. The earlier literature timeline and research detail moved to the notes.</p>
+  <p class="note">Facts about this project are read from its code and test logs (the project's score board and experiment write-ups, private); last checked 12 Nov 2026. "approx_kl near 0.01 is common" is from memory. HAL's dataset is used privately for imitation (T-4). The full model and score tables are on the <a href="rankings.html">rankings page</a>.</p>
 </section>
 
 </div>
@@ -517,35 +499,25 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 (function(){
   // ---- progress ladders: [name, detail, runs (wins of 100), opts] ----
   var ladders = {
-    'lad-a': [
-      ['Random play', 'no training', [0]],
-      ['2017 learner', 'SimBase c08, 48,000 updates', [0]],
-      ['PPO + GAE', 'PPOSelf c04, the 2017 network', [48]],
-      ['+ network fixes', 'T-8; 5 runs at the old rate', [55,54,47,52,64]],
-      ['+ learning rate 6e-4', 'T-21; still falling to zero; 4 runs', [91,95,92,88]],
-      ['+ held constant', 'T-21; the new default; 2 runs', [96,95], {best:true}]
-    ],
-    'lad-b': [
-      ['Old default', '3e-4 falling to zero; 2 runs', [17,36]],
-      ['3e-4 constant', '2 runs', [52,44]],
-      ['6e-4 falling to zero', 'seed-mates of the opponent; 3 runs', [53,60,47]],
-      ['6e-4 constant', 'the new default; 4 runs', [96,98,70,86], {best:true}]
-    ],
     'lad-d': [
-      ['Plain, 6e-4 constant', 'the default; 3 runs (the 4th is the opponent)', [34,4,21], {ref:true}],
-      ['+ animation embedding', 'small start; 2 runs; dropped after the double-length batch', [50,49]],
-      ['+ input rescaling', '2 runs', [21,21]],
-      ['learning rate 1.2e-3', 'twice the default; 2 runs', [9,41]]
+      ['Plain, 2,940 updates', '6e-4 constant; 3 runs', [34,4,21], {ref:true}],
+      ['+ animation embedding', 'small start; 2 runs; 2,940 updates', [50,49]],
+      ['Plain, double length', '5,880 updates; T22LongBase7, T22LongBase8', [98,98], {best:true}],
+      ['Embedding, double length', '5,880 updates; 6 runs, set aside', [53,90,94,90,96,81]]
     ],
     'lad-c': [
-      ['2017 learner', 'SimBase c08, 20 games', [0]],
-      ['PPO + GAE, self-play', 'PPOSelf c04', [50]],
-      ['+ network fixes', 'PPO8Self c04', [66]],
-      ['trained vs scripted bot', 'PPO8Bot c04', [96]],
-      ['+ hand edits', 'sharpen and recovery circuit, no training', [100], {best:true}],
-      ['T-21 models', 'not scored yet', null]
+      ['2017 learner', 'SimBase, 20 games', [0]],
+      ['PPO + GAE, self-play', 'PPOSelf', [50]],
+      ['+ network fixes', 'PPO8Self', [66]],
+      ['Trained vs scripted bot', 'PPO8Bot', [94]],
+      ['6e-4 constant, 2,940 updates', 'T21L6Cs4', [98]],
+      ['Every frame, no delay', 'T16F1s3', [92]],
+      ['Every frame, delay 15', 'T16F1D15s3', [20]],
+      ['Hand-edited PPO8Bot, no training', 'sharpen plus recovery circuit', [100], {best:true}],
+      ['Double-length runs', 'T22Long models: not scored yet', null]
     ]
   };
+  var noDelta = {'lad-c': true};
   function mean(a){ return a.reduce(function(x,y){return x+y;},0)/a.length; }
   Object.keys(ladders).forEach(function(id){
     var box=document.getElementById(id), prev=null, ref=null;
@@ -561,7 +533,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
         if(r[2].length>1) r[2].forEach(function(v){ var d=document.createElement('span'); d.className='dot'; d.style.left=v+'%'; tr.appendChild(d); });
         val.textContent=(Math.round(m*10)/10).toString();
         var base = ref!==null ? ref : prev;
-        if(base!==null){
+        if(base!==null && !noDelta[id]){
           var dd=Math.round(m-base), s=document.createElement('span');
           s.className='delta'+(dd<0?' neg':(Math.abs(dd)<5?' flat':''));
           s.textContent=(dd>0?'+':dd<0?'−':'±')+Math.abs(dd);
@@ -633,8 +605,8 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     step:{title:'A button head, then a stick head',
       pts:[[C,C]].concat(ring(8,R)).concat(ring(8,R*0.5)), size:5.5,
       btns:[['A','a'],['B','b'],['X','g'],['Z','z'],['L','g'],['none','g'],['C-stick: after','c']],
-      text:'The network picks a button (6 choices), then a stick position given that button (17 choices): 102 combinations from two small choices. Built 12 Nov (the every-frame and delay part is separate, see stage 4).',
-      note:'Half tilts allow walking and tilt attacks. Tested: the 54 actions beat it at 2,940 updates (74 of 100 head to head); the larger set is probably not learned yet (a guess). A C-stick head comes after.'},
+      text:'The network picks a button (6 choices), then a stick position given that button (17 choices): 102 combinations from two small choices. Built and tested 12 Nov (the every-frame and delay part is separate, see stage 4).',
+      note:'Half tilts allow walking and tilt attacks. Tested: the 54 actions beat it at 2,940 updates (74 of 100 head to head); the larger set is probably not learned yet (a guess). A C-stick head was planned after it.'},
     faynt:{title:'728 button classes, 85 stick positions',
       pts:[[C,C]].concat(ring(4,R*0.3)).concat(ring(16,R*0.65)).concat(ring(64,R)), size:2.6,
       btns:[['A','a'],['B','b'],['X or Y','g'],['Z','z'],['L or R: off, light, full','g'],['C-stick: 13','c']],
