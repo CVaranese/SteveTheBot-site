@@ -23,6 +23,12 @@ BOARDS = [
      'A saved copy of T21L6Cs4, the strongest model of its time, that does not learn. The hardest opponent '
      'the newer models are scored against; T21L6Cs4 itself is the reference and is not ranked.',
      'model_T21L6Cs4_c04_seeds1000', 50, True),
+    ('t4v2', 'Frozen T4V2, four seeds (simulator)',
+     'The four T4V2 runs (seeds 3 to 6), saved and not learning; 100 games against each, pooled. They play with the '
+     'current controls (a decision every frame, acting on what it saw 11 frames earlier, like a human reaction), so '
+     'this is the yardstick for models with those controls: they win almost nothing against frozen T21L6Cs4, which '
+     'reacts without delay. The T4V2 runs themselves are the opponent and are not ranked.',
+     ['model_T4V2s%d_c04_seeds1000' % s for s in (3, 4, 5, 6)], 400, True),
     ('ppo8', 'Frozen PPO8Self (simulator)',
      'A saved copy of PPO8Self that does not learn. The yardstick for the older models; the newer ones beat it '
      'almost every game, so it no longer tells them apart.', 'model_PPO8Self_c04_seeds1000', 50, False),
@@ -117,6 +123,41 @@ details.board>summary h2{display:inline}
 """
 
 
+def _head_to_head(src):
+    """Every score of one model against another frozen model that is not a ranking opponent above, newest first:
+    (html section, raw model names shown)."""
+    boards = set()
+    for b in BOARDS:
+        boards.update([b[3]] if isinstance(b[3], str) else b[3])
+    path = src / 'logs' / 'yardstick.csv'
+    if not path.is_file():
+        return '', set()
+    rows, shown = [], set()
+    for r in csv.DictReader(path.open(encoding='utf-8')):
+        y = r['yardstick']
+        if not y.startswith('model_') or y in boards:
+            continue
+        opp = y[len('model_'):-len('_seeds1000')] if y.endswith('_seeds1000') else y[len('model_'):]
+        shown.update([r['model'], opp])
+        rows.append((r['time'], r['model'], opp, int(r['games']), int(r['won']),
+                     float(r['taken_per_game']) - float(r['lost_per_game'])))
+    if not rows:
+        return '', set()
+    rows.sort(key=lambda r: r[0], reverse=True)
+    body = ''.join('<tr><td class="d">%s</td><td><a href="#m-%s">%s</a></td><td><a href="#m-%s">%s</a></td>'
+                   '<td class="n">%d%%</td><td class="n">%+.2f</td><td class="n">%d</td></tr>' % (
+                       time.strftime('%d %b', time.strptime(t[:10], '%Y-%m-%d')), html.escape(show(m)),
+                       html.escape(show(m)), html.escape(show(o)), html.escape(show(o)), round(100.0 * w / g), lead, g)
+                   for t, m, o, g, w, lead in rows)
+    return ('<details class="board" id="h2h" open><summary><h2>Head to head</h2></summary><p>One model against '
+            'another, frozen, outside the rankings above: comparisons inside one experiment (a variant against its '
+            'baseline, a long run against its own half-way copy). Newest first. Won: share of games the first model '
+            'won. The <a href="experiments.html">experiments page</a> groups these by experiment.</p>'
+            '<div class="tw"><table><thead><tr><th class="d">Scored</th><th>Model</th><th>Against</th>'
+            '<th class="n">Won</th><th class="n">Stock lead</th><th class="n">Games</th></tr></thead><tbody>%s'
+            '</tbody></table></div></details>' % body), shown
+
+
 def build(here, src, head, site_style, pages=None):
     """Write rankings.html; return the raw model names it shows (for the name check). pages: {shown name: [(href,
     short text, long text)]}, the model's scenario and game-report pages, linked from its row and legend entry."""
@@ -124,10 +165,21 @@ def build(here, src, head, site_style, pages=None):
     sim, dol = _sim_scores(src), _dolphin_scores(src)
     shown, sections, best = set(), [], []
     for bid, title, about, source, need, open_ in BOARDS:
-        scores = dol if source == 'dolphin' else sim.get(source, {})
+        opponents = set()
+        if source == 'dolphin':
+            scores = dol
+        else:
+            sources = [source] if isinstance(source, str) else source
+            scores = defaultdict(lambda: [0, 0, 0.0, 0.0, '9999'])
+            for y in sources:
+                for model, s in sim.get(y, {}).items():
+                    t = scores[model]
+                    t[:4] = [a + b for a, b in zip(t[:4], s[:4])]
+                    t[4] = min(t[4], s[4])
+            opponents = {y[len('model_'):-len('_seeds1000')] for y in sources if y.startswith('model_')}
         rows = []
         for model, (g, won, taken, lost, day) in scores.items():
-            if g < need or not end_of_run(model) or (bid == 't21' and show(model) == 'T21L6Cs4'):
+            if g < need or not end_of_run(model) or model in opponents:
                 continue
             shown.add(model)
             rows.append((show(model), g, won, (taken - lost) / g, day))
@@ -145,6 +197,8 @@ def build(here, src, head, site_style, pages=None):
             bid, html.escape(title), html.escape(rows[0][0]), round(100 * rows[0][2] / rows[0][1]), rows[0][3]))
         sections.append('<details class="board" id="%s"%s><summary><h2>%s</h2></summary><p>%s</p>%s</details>' % (
             bid, ' open' if open_ else '', html.escape(title), html.escape(about), _table(rows, note, pages)))
+    h2h, h2h_shown = _head_to_head(src)
+    shown |= h2h_shown
     legend = ''.join('<li id="m-%s"><b>%s</b><span>%s</span>%s</li>' % (
         html.escape(n), html.escape(n), html.escape(explain(n) or ''),
         '<div class="pages">%s</div>' % _links(pages[n], False) if pages.get(n) else '') for n in
@@ -160,8 +214,9 @@ where they exist. To compare one model per change across every yardstick, see
 </header>
 <section><h2>Best against each opponent</h2><div class="best">%s</div></section>
 %s
+%s
 <section id="names"><h2>The models in these rankings</h2><ul class="legend">%s</ul></section>
 </main></body></html>
-""" % (time.strftime('%d %b %Y'), ''.join(best), '\n'.join(sections), legend)
+""" % (time.strftime('%d %b %Y'), ''.join(best), '\n'.join(sections), h2h, legend)
     (here / 'rankings.html').write_text(page, encoding='utf-8')
     return shown

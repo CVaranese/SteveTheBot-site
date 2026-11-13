@@ -40,6 +40,15 @@ NAMES = {
                 'run (C), random seed 4. The strongest model of its batch, and the opponent in the scenario tests '
                 'and in one of the rankings.',
     'T22EmbSmall3': 'Task T-22: the T21L6Cs4 settings plus the small-start animation embedding, random seed 3.',
+    'Steve_2026-11-11_u21850': 'The 2017 learner trained in Dolphin against the level 3 in-game CPU, a copy saved '
+                               'part-way, at 21,850 updates (about 3.5 hours).',
+    'T4Im300': 'Task T-4: a network that only copies human play (imitation), trained on 254 Falcon ditto replays; '
+               'the copy saved after 2 of its checkpoints, the one played. No PPO.',
+    'T4Im300W5': 'As T4Im300, with frames where the human changes input counting 5 times in the training; the '
+                 'first checkpoint. No PPO.',
+    'T4ImFull': 'Task T-4: imitation of all 1,236 usable Falcon ditto replays on Final Destination, 20,000 updates. '
+                'No PPO; the start of T4HumP.',
+    'T4ImFullH4': 'As T4ImFull, with frame history (4 states, 8 frames apart). The start of T4HumH.',
     'scripted bot level 9': 'Not a network: a hand-written Falcon that recovers and attacks. Level 9 is its '
                             'hardest setting.',
 }
@@ -94,7 +103,26 @@ PATTERNS = [
 ]
 
 
+PATTERNS += [
+    (r'T4HumP(\d)', lambda m: 'Task T-4, the human line: PPO self-play (2,940 updates, current controls, input '
+                              'version 2) started from T4ImFull, the network that copied human replays, instead of '
+                              'from scratch; random seed %s.' % m[1]),
+    (r'T4HumH(\d)', lambda m: 'As T4HumP, but started from T4ImFullH4, the imitation network with frame history; '
+                              'random seed %s.' % m[1]),
+    (r'T4HumK([ab])(\d)', lambda m: 'As T4HumP, plus a penalty for drifting away from the imitation policy (KL '
+                                    'coefficient %s), random seed %s.' % ({'a': '0.1', 'b': '1.0'}[m[1]], m[2])),
+]
+
+# Runs scored both at the usual length (_c04, 2,940 updates) and continued to double length (_c08, 5,880 updates).
+# Both copies are shown, so the double-length one is told apart in its shown name.
+TWO_LENGTHS = r'T37'
+LONG = ' (double length)'
+
+
 def explain(name):
+    if name.endswith(LONG):
+        base = explain(name[:-len(LONG)])
+        return base and base + ' Trained twice as long: 5,880 updates instead of 2,940.'
     if name in NAMES:
         return NAMES[name]
     for pat, text in PATTERNS:
@@ -108,6 +136,9 @@ def show(name):
     """The name as the site shows it: without the end-of-run checkpoint suffix (_c04, _c08)."""
     if name.startswith('scripted'):
         return name.replace('_', ' ')
+    m = re.match(r'(.+?)_c08$', name)
+    if m and re.match(TWO_LENGTHS, m[1]):
+        return m[1] + LONG
     return re.sub(r'_c\d\d(?=_|$)', '', name)
 
 
@@ -115,7 +146,7 @@ def last_copy(run):
     """The checkpoint number saved at the end of a run (from the model folders, 2026-11-12)."""
     if run.startswith(('SimBase', 'T22Long')):
         return 8
-    if run.startswith(('T9', 'T12', 'T19h', 'T19L6', 'T19L12')):
+    if re.match(r'(T9|T12|T19h|T19L6|T19L12)(?!\d)', run):
         return 1
     return 4
 
@@ -123,4 +154,6 @@ def last_copy(run):
 def end_of_run(name):
     """True for a model saved at the end of its run (or one with no checkpoint suffix)."""
     m = re.match(r'(.+?)_c(\d\d)(?:_|$)', name)
+    if m and re.match(TWO_LENGTHS, m[1]) and int(m[2]) in (4, 8):
+        return True
     return not m or int(m[2]) == last_copy(m[1])

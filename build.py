@@ -11,6 +11,9 @@ Writes:
                    (animated replay when the report holds the animation data, blocks otherwise)
   viewer/          the slippi-viewer build (MIT) and Captain Falcon's display files, shared by anim/ and reports/
   scenarios/       old addresses of the block-drawn scenario pages, now forwarding to the animated ones
+  experiments.html every experiment, newest first (experiments.py: hand-kept text, scores from the score logs)
+  rankings.html    one ranking per opponent (rankings.py)
+  catalog.html     one model per change (catalog.py)
   index.html       the start page
 Every page gets the same bar at the top: links to the start page and the roadmap, and a page finder.
 Then commit and push; GitHub Pages serves the main branch.
@@ -24,6 +27,7 @@ import time
 from pathlib import Path
 
 import catalog
+import experiments
 import rankings
 from names import NAME_PARTS, explain, show
 
@@ -121,7 +125,8 @@ def nav(root, here, groups):
         opts.append('</optgroup>')
     return ('<nav class="stb-nav" aria-label="Site"><div class="stb-in">' +
             link('index.html', 'SteveTheBot', ' class="stb-home"') +
-            link('roadmap.html', 'Roadmap') + link('rankings.html', 'Rankings') + link('catalog.html', 'Catalog') +
+            link('roadmap.html', 'Roadmap') + link('experiments.html', 'Experiments') +
+            link('rankings.html', 'Rankings') + link('catalog.html', 'Catalog') +
             link('index.html#scenarios', 'Scenarios') +
             link('index.html#reports', 'Game reports') + link('index.html#names', 'Model names') +
             '<select aria-label="Go to page" onchange="if(this.value)location.href=this.value">' + ''.join(opts) +
@@ -286,6 +291,7 @@ def main():
     ranked = rankings.build(HERE, SRC, HEAD, STYLE, model_pages)
     check_names(ranked)
     check_names(catalog.build(HERE, SRC, HEAD, STYLE, model_pages))
+    check_names(experiments.build(HERE, SRC, HEAD, STYLE, model_pages))
     v2 =[a for a in animated if a[1].name.startswith('anim2_')]
     v1 = [a for a in animated if not a[1].name.startswith('anim2_')]
 
@@ -311,6 +317,8 @@ Rebuilt %s.</footer>
 </main></body></html>
 """ % (('<a class="big" href="roadmap.html">Roadmap and progress<span>What each part of the system is now, what '
         'each change bought, and how the trainer works.</span></a>\n' if has_roadmap else '') +
+       '<a class="big" href="experiments.html">Experiments<span>Every experiment, newest first: the question, the '
+       'variants tried, their scores, the verdict and what was decided.</span></a>\n' +
        '<a class="big" href="catalog.html">How the bot got here<span>One model per change made to the bot, in '
        'order, each scored on every yardstick, with links to watch it play.</span></a>\n'
        '<a class="big" href="rankings.html">Rankings<span>The best models so far, one ranking per opponent, from '
@@ -329,11 +337,12 @@ Rebuilt %s.</footer>
         return out
     groups = [('Start', [('index.html', 'Start page')] + ([('roadmap.html', 'Roadmap and progress')]
                                                            if has_roadmap else []) +
-               [('rankings.html', 'Rankings'), ('catalog.html', 'Model catalog')]),
+               [('experiments.html', 'Experiments'), ('rankings.html', 'Rankings'),
+                ('catalog.html', 'Model catalog')]),
               ('Scenarios, version 2', entries(v2, True)),
               ('Scenarios, version 1', entries(v1, True)),
               ('Game reports', entries(reports, False))]
-    for path in [HERE / 'index.html', HERE / 'rankings.html', HERE / 'catalog.html'] +([HERE / 'roadmap.html'] if has_roadmap else []) + \
+    for path in [HERE / 'index.html', HERE / 'experiments.html', HERE / 'rankings.html', HERE / 'catalog.html'] +([HERE / 'roadmap.html'] if has_roadmap else []) + \
             [HERE / h for h, _ in animated + reports]:
         add_nav(path, groups)
     print('roadmap: %s, animated scenario pages: %d, game reports: %d' % (has_roadmap, len(animated), len(reports)))

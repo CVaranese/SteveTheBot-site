@@ -7,7 +7,7 @@ writes a page template (in the SteveTheBot repo: `sim/scenario_anim_page.html`, 
 ## The page bar *(build)*
 
 - Every page except the forwarding stubs in `scenarios/` gets the same bar, inserted by `build.py` right after
-  `<body>`: SteveTheBot (start page), Roadmap, Rankings, Scenarios, Game reports, Model names, and a "Go to page"
+  `<body>`: SteveTheBot (start page), Roadmap, Experiments, Rankings, Catalog, Scenarios, Game reports, Model names, and a "Go to page"
   list of every page, grouped.
 - Fixed to the top edge of the window, full width, **48 px high on every page and every screen width**, followed by
   a 48 px spacer, so a page's own padding or layout never moves it. Contents sit in a centred column 1100 px wide.
@@ -68,6 +68,21 @@ writes a page template (in the SteveTheBot repo: `sim/scenario_anim_page.html`, 
   of games.
 - A new opponent: add a `BOARDS` row with a plain description. A new model family: add an entry or pattern in
   `names.py`.
+
+- Head-to-head scores (one model against a frozen model that is not a ranking opponent) are listed newest first
+  under the rankings, not ranked.
+
+## Experiments *(build)*
+
+- `experiments.html` is built by `experiments.py`: one entry per experiment in `EXPERIMENTS` (task ids, date,
+  question in one line, variants with their models, score columns, verdict, decision), newest first. The text is
+  kept by hand; the score cells are filled from the same score logs as the rankings, so new scores of a listed
+  model appear on the next build. A model not scored yet shows a dash.
+- **Every finished task that trains, scores or measures something adds its entry.** The build stops when a score
+  log holds a task number no entry covers, or an end-of-run model no entry lists.
+- Score cells are games won of 100, pooled over the variant's runs, with the single runs in small type below.
+  Results not in the score logs (imitation accuracy, scenario shares, speeds) go in the entry's `facts` table.
+- Public page: summaries and numbers only, never raw notes, local paths, replay player names or connect codes.
 
 ## Before a push
 
