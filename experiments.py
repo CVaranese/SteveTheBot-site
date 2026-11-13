@@ -47,6 +47,8 @@ EXPERIMENTS = [
          cols=['t4v2', 'bot9', ('vs plain start', ['T4HumP1_c04', 'T4HumP2_c04'])],
          variants=[
              ('From scratch (reference, T-37 plain runs)', ['T37Plain7_c04', 'T37Plain8_c04']),
+             ('The imitation network alone, no PPO (reference)', ['T4ImFull_c04']),
+             ('The imitation network with frame history alone, no PPO (reference)', ['T4ImFullH4_c04']),
              ('From the imitation network', ['T4HumP1_c04', 'T4HumP2_c04']),
              ('From the imitation network with frame history', ['T4HumH1_c04', 'T4HumH2_c04']),
              ('From imitation, small pull back to the human policy (KL 0.1)', ['T4HumKa1_c04', 'T4HumKa2_c04']),
@@ -54,10 +56,14 @@ EXPERIMENTS = [
          ],
          verdict='Starting from imitation helps: mean 62 wins of 100 against frozen T4V2, against 48 from scratch at '
                  'the same 2,940 updates, though the two seeds differ by 20 (72 and 52), so the gain is likely, not '
-                 'firm. The history start scores 47 and loses head to head to the plain start (34 of 100). How much '
-                 'human play survives the PPO training is not measured yet.',
-         decision='Pending: the user approved runs that pull the policy back toward the imitation network (a KL '
-                  'penalty, two strengths, two seeds each); their scores fill in the last two rows when they land.'),
+                 'firm. The imitation network alone wins almost nothing (1 of 100), so the gain comes only after PPO '
+                 'moves away from it. The history start scores 47 and loses head to head to the plain start (34 of '
+                 '100). Pulling the policy back toward the imitation network made it weaker: mean 38 with a small '
+                 'pull, as weak as imitation alone with a strong one. Against the level 9 in-game CPU in Dolphin (50 '
+                 'games): T4HumP1 won 21, the small-pull T4HumKa1 12, imitation alone 0; delayed models from scratch '
+                 'won 1 to 3.',
+         decision='PPO from imitation without a pull back is the best start found. Whether the imitation-based '
+                  'models look more human is for the user to watch.'),
     dict(tasks=['T-37'], date='2026-11-13', title='Memory of past frames',
          question='Does adding the last few game states to the input (frame history) make a stronger bot?',
          cols=['t4v2', 'bot9', ('vs plain, double length', ['T37Plain7_c08', 'T37Plain8_c08'])],
