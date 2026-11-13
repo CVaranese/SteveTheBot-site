@@ -75,9 +75,18 @@ writes a page template (in the SteveTheBot repo: `sim/scenario_anim_page.html`, 
 ## Experiments *(build)*
 
 - `experiments.html` is built by `experiments.py`: one entry per experiment in `EXPERIMENTS` (task ids, date,
-  question in one line, variants with their models, score columns, verdict, decision), newest first. The text is
+  question in one line, variants with their models, score columns, verdict, decision). The text is
   kept by hand; the score cells are filled from the same score logs as the rankings, so new scores of a listed
   model appear on the next build. A model not scored yet shows a dash.
+- Three sections, in this order (the user's request, 2026-11-13: the page was "a lot of unsorted data"):
+  **Recent experiments** (the newest `RECENT` entries, one result line each), **By what was tested** (every entry
+  under its subject from `TOPICS`, folded: only date, title and the result line show until opened), **Model
+  evaluations** (one row per model with its scores against the `EVAL_COLS` opponents and its watch links;
+  filter by name, subject, or "has something to watch"; sort by a column).
+- Every entry needs `topic` (a key of `TOPICS`; add a subject there when none fits) and `short` (the result in one
+  line, answering the question); the build stops otherwise.
+- Game pages (`reports/`) are for watching: the game on top, then moments to jump to and a few numbers; the
+  timeline, the tables and the method are folded.
 - **Every finished task that trains, scores or measures something adds its entry.** The build stops when a score
   log holds a task number no entry covers, or an end-of-run model no entry lists.
 - Score cells are games won of 100, pooled over the variant's runs, with the single runs in small type below.

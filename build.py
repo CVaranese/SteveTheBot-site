@@ -308,8 +308,8 @@ sample by sample. The model is player 1.</p>
 <details><summary>Version 1 (three scenarios, superseded)</summary>
 %s</details></section>
 <section id="reports"><h2>Game reports</h2>
-<p>One whole game as a timeline: what the model did, which inputs could have mattered, attacks and openings, with
-the game itself playing beside it. These pages are 1 to 3 MB each.</p>
+<p>Watch one whole game of a model: the game plays at the top, with a list of moments to jump to (stocks, combos)
+and a few numbers. The timeline and the full tables are folded away below. These pages are 1 to 3 MB each.</p>
 %s</section>
 %s
 <footer>Gameplay is drawn with <a href="https://github.com/gcpreston/slippi-viewer">slippi-viewer</a> (MIT).
@@ -317,8 +317,8 @@ Rebuilt %s.</footer>
 </main></body></html>
 """ % (('<a class="big" href="roadmap.html">Roadmap and progress<span>What each part of the system is now, what '
         'each change bought, and how the trainer works.</span></a>\n' if has_roadmap else '') +
-       '<a class="big" href="experiments.html">Experiments<span>Every experiment, newest first: the question, the '
-       'variants tried, their scores, the verdict and what was decided.</span></a>\n' +
+       '<a class="big" href="experiments.html">Experiments<span>The newest results, every experiment grouped by '
+       'what was tested, and the scores of every model with links to watch it play.</span></a>\n' +
        '<a class="big" href="catalog.html">How the bot got here<span>One model per change made to the bot, in '
        'order, each scored on every yardstick, with links to watch it play.</span></a>\n'
        '<a class="big" href="rankings.html">Rankings<span>The best models so far, one ranking per opponent, from '
