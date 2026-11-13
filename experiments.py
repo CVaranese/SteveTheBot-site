@@ -103,7 +103,8 @@ EXPERIMENTS = [
                  'limits how many runs fit, and a run costs about 1.2 GB plus 6 MB per match, so 6 runs of 128 '
                  'matches play 13% to 20% more than 8 of 64 (two measurements). Speed-ups that keep the learning identical gave 9% for one run '
                  'alone.',
-         decision='Pending: 128 matches as the screening setting (each batch about 0.6 h instead of 0.9) or keep 64.'),
+         decision='128 matches is the default for new runs (the user, 2026-11-13): 6 runs per batch, about 0.6 h '
+                  'instead of 0.9, compared against plain runs at 128 from the same batch.'),
     dict(tasks=['T-4'], date='2026-11-13', title='PPO from imitation (the human line)', topic='replays',
          short='Yes, likely: 62 wins of 100 against 48 from scratch. Pulling back to the human policy hurt.',
          question='Does starting PPO from a network that copied human Falcon replays beat starting from scratch?',
