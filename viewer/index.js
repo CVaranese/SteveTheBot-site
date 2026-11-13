@@ -10364,7 +10364,15 @@
     };
   }
   function getDamageFlyRollRotation2(replayState3, playerState) {
-    const previousState = getPlayerOnFrame(playerState.playerIndex, playerState.frameNumber - 1)[playerState.isNana ? "nanaState" : "state"];
+    const key = playerState.isNana ? "nanaState" : "state";
+    const before = getPlayerOnFrame(playerState.playerIndex, playerState.frameNumber - 1);
+    if (!before?.[key]) {
+      const after = getPlayerOnFrame(playerState.playerIndex, playerState.frameNumber + 1);
+      const next = after?.[key];
+      if (!next) return 0;
+      return Math.atan2(next.yPosition - playerState.yPosition, next.xPosition - playerState.xPosition) * 180 / Math.PI - 90;
+    }
+    const previousState = before[key];
     const deltaX = playerState.xPosition - previousState.xPosition;
     const deltaY = playerState.yPosition - previousState.yPosition;
     return Math.atan2(deltaY, deltaX) * 180 / Math.PI - 90;
