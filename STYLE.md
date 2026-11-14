@@ -72,6 +72,23 @@ writes a page template (in the SteveTheBot repo: `sim/scenario_anim_page.html`, 
 - Head-to-head scores (one model against a frozen model that is not a ranking opponent) are listed newest first
   under the rankings, not ranked.
 
+## Training curves *(build)*
+
+- `curves.html` is built by `curves.py` from `logs/yardstick.csv` and `logs/t43/curves.csv` (the user's request,
+  2026-11-14: benchmarks as a graph, a point per checkpoint, a line per important model, one graph per opponent).
+- One graph at a time. "Runs" picks a set of lines (`SETS`, at most 8 lines, usually 3 or 4); the buttons pick the
+  benchmark (`BENCH`: an opponent, a pool of opponents, or the combined Elo number). A set or benchmark with no
+  scored checkpoints is left out, so rows can be added before the scores exist.
+- A line is one setting: the mean of its runs drawn thick with a marker per checkpoint, the single runs thin
+  behind it. A line keeps its colour within its set whatever else is shown or hidden.
+- X axis: training so far in million decisions by one player (`PER_CHECKPOINT` per run family), never the
+  checkpoint number, so runs with different checkpoint spacing line up. Y axis: share of games won (0 to 100) or
+  Elo. One Y axis only.
+- Chart colours: the eight-colour categorical palette in `curves.py` (`--s1` to `--s8`, light and dark steps),
+  checked for colour-blind separation on the site's surfaces. Text stays in ink and muted; colour only on marks.
+- Every graph has a legend (click to hide a line), a hover readout, and the same numbers as a table.
+- A new run family: a `SETS` row, a `PER_CHECKPOINT` row, and its `names.py` pattern.
+
 ## Experiments *(build)*
 
 - `experiments.html` is built by `experiments.py`: one entry per experiment in `EXPERIMENTS` (task ids, date,

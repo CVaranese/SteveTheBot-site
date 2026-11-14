@@ -27,6 +27,7 @@ import time
 from pathlib import Path
 
 import catalog
+import curves
 import experiments
 import rankings
 from names import NAME_PARTS, explain, show
@@ -126,7 +127,8 @@ def nav(root, here, groups):
     return ('<nav class="stb-nav" aria-label="Site"><div class="stb-in">' +
             link('index.html', 'SteveTheBot', ' class="stb-home"') +
             link('roadmap.html', 'Roadmap') + link('experiments.html', 'Experiments') +
-            link('rankings.html', 'Rankings') + link('catalog.html', 'Catalog') +
+            link('rankings.html', 'Rankings') + link('curves.html', 'Curves') +
+            link('catalog.html', 'Catalog') +
             link('index.html#scenarios', 'Scenarios') +
             link('index.html#reports', 'Game reports') + link('index.html#names', 'Model names') +
             '<select aria-label="Go to page" onchange="if(this.value)location.href=this.value">' + ''.join(opts) +
@@ -292,6 +294,7 @@ def main():
     check_names(ranked)
     check_names(catalog.build(HERE, SRC, HEAD, STYLE, model_pages))
     check_names(experiments.build(HERE, SRC, HEAD, STYLE, model_pages))
+    check_names(curves.build(HERE, SRC, HEAD, STYLE, model_pages))
     v2 =[a for a in animated if a[1].name.startswith('anim2_')]
     v1 = [a for a in animated if not a[1].name.startswith('anim2_')]
 
@@ -322,7 +325,9 @@ Rebuilt %s.</footer>
        '<a class="big" href="catalog.html">How the bot got here<span>One model per change made to the bot, in '
        'order, each scored on every yardstick, with links to watch it play.</span></a>\n'
        '<a class="big" href="rankings.html">Rankings<span>The best models so far, one ranking per opponent, from '
-       'every scored game.</span></a>',
+       'every scored game.</span></a>\n'
+       '<a class="big" href="curves.html">Training curves<span>Graphs of how strong each run is as it trains, one '
+       'point per saved checkpoint, one graph per opponent.</span></a>',
        listing(v2), listing(v1), listing(reports), names_section(), time.strftime('%d %b %Y'))
     (HERE / 'index.html').write_text(page, encoding='utf-8')
     (HERE / '.nojekyll').write_text('', encoding='utf-8')
@@ -338,11 +343,12 @@ Rebuilt %s.</footer>
     groups = [('Start', [('index.html', 'Start page')] + ([('roadmap.html', 'Roadmap and progress')]
                                                            if has_roadmap else []) +
                [('experiments.html', 'Experiments'), ('rankings.html', 'Rankings'),
-                ('catalog.html', 'Model catalog')]),
+                ('curves.html', 'Training curves'), ('catalog.html', 'Model catalog')]),
               ('Scenarios, version 2', entries(v2, True)),
               ('Scenarios, version 1', entries(v1, True)),
               ('Game reports', entries(reports, False))]
-    for path in [HERE / 'index.html', HERE / 'experiments.html', HERE / 'rankings.html', HERE / 'catalog.html'] +([HERE / 'roadmap.html'] if has_roadmap else []) + \
+    for path in [HERE / 'index.html', HERE / 'experiments.html', HERE / 'rankings.html', HERE / 'curves.html',
+                 HERE / 'catalog.html'] + ([HERE / 'roadmap.html'] if has_roadmap else []) + \
             [HERE / h for h, _ in animated + reports]:
         add_nav(path, groups)
     print('roadmap: %s, animated scenario pages: %d, game reports: %d' % (has_roadmap, len(animated), len(reports)))
