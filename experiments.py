@@ -18,6 +18,9 @@ Entry fields:
   cols      score columns: keys of OPP, or (header, [opponent model names]) for head-to-head scores
   variants  [(what was tried, [model names as in the score logs])]; seeds of one setting go in one row
   facts     optional hand-kept table for results that are not in the score logs: (header row, [rows])
+  watch     for an entry with no variants: [model names] whose scenario and game pages it links. A facts row whose
+            first word is the model's shown name gets the links in a Watch column; the others go in a line below
+  no_game   for an entry with no variants and nothing to watch: the reason, in a few words
   verdict   what the scores say
   decision  what the user decided from it (or what is pending)
 """
@@ -62,6 +65,8 @@ EXPERIMENTS = [
          short='Now scored; recovery splits them (21% to 85%), shielding is impossible for them.',
          question='How do the models that decide every frame with a reaction delay do in the scenario positions?',
          cols=[], variants=[],
+         watch=['T21L6Cs4_c04', 'T4V2s3_c04', 'T4V2s5_c04', 'T37Plain8_c08', 'T4ImFull', 'T4HumP1_c04',
+                'T4HumP2_c04', 'T4HumKa1_c04', 'T4HumKa2_c04'],
          facts=(['Model', 'Edgeguard', 'Recovery', 'Follow-up: one more hit', 'Whiff punish', 'First hit',
                  'Shield: not hit'], [
              ['T21L6Cs4 (no delay, for comparison)', '7%', '90%', '43%', '26%', '36%', '24%'],
@@ -150,7 +155,7 @@ EXPERIMENTS = [
     dict(tasks=['T-4'], date='2026-11-13', title='Imitation with frame history', topic='replays',
          short='Barely: prediction error 0.612 against 0.620.',
          question='Does frame history help a network predict what a human presses next?',
-         cols=[], variants=[],
+         cols=[], variants=[], watch=['T4ImFull', 'T4ImFullH4_c04'],
          facts=(['Held-out replays', 'Plain (T4ImFull)', '4 states, 8 apart (T4ImFullH4)'], [
              ['Cross-entropy (lower is better)', '0.620', '0.612'],
              ['Accuracy', '0.840', '0.841'],
@@ -189,7 +194,7 @@ EXPERIMENTS = [
     dict(tasks=['T-31'], date='2026-11-12', title='Scenario yardstick, version 2', topic='yardsticks',
          short='Recovery is solved (83% to 92%); edgeguarding is absent (5% to 11%).',
          question='Can saved positions test single skills (edgeguard, recovery, punishes) fairly?',
-         cols=[], variants=[],
+         cols=[], variants=[], watch=['T21L6Cs4_c04', 'PPO8Self_c04', 'PPO8Bot_c04', 'SimBase_c08'],
          facts=(['Scenario (vs frozen T21L6Cs4)', 'PPO models', 'Random'], [
              ['Edgeguard: takes the stock', '5% to 11%', '6%'],
              ['Recovery: back on stage', '83% to 92%', '7%'],
@@ -205,7 +210,7 @@ EXPERIMENTS = [
     dict(tasks=['T-28'], date='2026-11-12', title='Scenario yardstick, version 1', topic='yardsticks',
          short='Too loose: many starts were already decided. Replaced by version 2.',
          question='First try at scoring edgeguard, follow-up and recovery from saved positions.',
-         cols=[], variants=[],
+         cols=[], variants=[], watch=['T21L6Cs4_c04', 'T22EmbSmall3_c04', 'SimBase_c08'],
          facts=(['Scenario (vs frozen T21L6Cs4)', 'PPO models', 'Random'], [
              ['Recovery', '81% to 86%', '19%'],
              ['Edgeguard', '21% to 28%', '14%'],
@@ -243,7 +248,7 @@ EXPERIMENTS = [
     dict(tasks=['T-15'], date='2026-11-12', title='Does a held button stay held?', topic='controls',
          short='Yes, one long press: the bot cannot press a button twice in a row.',
          question='When the bot picks the same button twice in a row, is it one long press or two?',
-         cols=[], variants=[],
+         cols=[], variants=[], no_game='a check of button traces, not of a model',
          verdict='One continuous hold, in Dolphin and the simulator alike (identical traces): the bot cannot press a '
                  'button twice without another action between.',
          decision='Kept in mind for the controller work; no change made.'),
@@ -265,7 +270,7 @@ EXPERIMENTS = [
     dict(tasks=['T-5', 'T-23'], date='2026-11-12', title='Project+ in Dolphin', topic='pplus',
          short='About 620 to 750 frames a second per copy; a Melee model plays whole P+ games.',
          question='How fast does P+ run in a scriptable Dolphin, and can a Melee model play it?',
-         cols=[], variants=[],
+         cols=[], variants=[], no_game='speed measurements in Dolphin; no recording of the P+ games was kept',
          facts=(['Measure', 'Result'], [
              ['Game speed, one copy', 'about 620 to 750 frames a second (10 to 12 times real time)'],
              ['Four copies at once', 'about 620 frames a second each'],
@@ -325,7 +330,7 @@ EXPERIMENTS = [
     dict(tasks=['T-18'], date='2026-11-11', title='Game report', topic='yardsticks',
          short='85% of moves hit nothing; in 57% to 70% of decisions no input could matter.',
          question='What does one game look like decision by decision, and which inputs could have mattered?',
-         cols=[], variants=[],
+         cols=[], variants=[], watch=['PPO8Self_c04', 'PPO8Bot_c04', 'PPOSelf_c04', 'PPOBot_c04', 'SimBase_c08'],
          facts=(['Measure (one game per model)', 'Result'], [
              ['Decisions where no input could change the next half second', '57% to 70%'],
              ['Inputs that change what the character does', 'about 11%'],
@@ -411,7 +416,7 @@ EXPERIMENTS = [
     dict(tasks=['T-2', 'T-7'], date='2026-11-11', title='Simulator against Dolphin', topic='speed',
          short='Yes: 29 of 30 input columns are equal on every frame of a whole game.',
          question='Does the simulator build the same inputs as the real game, frame for frame?',
-         cols=[], variants=[],
+         cols=[], variants=[], no_game='a frame-by-frame comparison of inputs, not of a model',
          verdict='One whole two-controller game (4,907 frames) replays in the simulator to the end; after a hitstun '
                  'fix, 29 of 30 input columns are equal on every frame (the last differs in 27 idle frames). Games '
                  'against the in-game CPU cannot be replayed this way.',
@@ -571,13 +576,28 @@ def _table(e, sim, dol, pages):
             '</div>' % (''.join(_head(c) for c in e['cols']), ''.join(rows)))
 
 
-def _facts(e):
-    if not e.get('facts'):
-        return ''
-    head, rows = e['facts']
-    return ('<div class="tw"><table><thead><tr>%s</tr></thead><tbody>%s</tbody></table></div>' % (
-        ''.join('<th>%s</th>' % html.escape(h) for h in head),
-        ''.join('<tr>%s</tr>' % ''.join('<td>%s</td>' % html.escape(c) for c in r) for r in rows)))
+def _facts(e, pages):
+    """The hand-kept table, plus the entry's watch links: in a Watch column for rows that start with a watch
+    model's name, in a line below for the rest."""
+    watch = {}
+    for m in e.get('watch', []):
+        watch.setdefault(show(m), _links(pages.get(show(m), []), True))
+    head, rows = e.get('facts') or ([], [])
+    first = {n.split(' ')[0]: n for n in watch}
+    in_rows = [first.get(r[0].split(' ')[0]) for r in rows]
+    col = any(in_rows)
+    out = ''
+    if rows:
+        out = '<div class="tw"><table><thead><tr>%s%s</tr></thead><tbody>%s</tbody></table></div>' % (
+            ''.join('<th>%s</th>' % html.escape(h) for h in head), '<th>Watch</th>' if col else '',
+            ''.join('<tr>%s%s</tr>' % (''.join('<td>%s</td>' % html.escape(c) for c in r),
+                                       '<td>%s</td>' % watch.get(n, '') if col else '')
+                    for r, n in zip(rows, in_rows)))
+    rest = [n for n in watch if n not in in_rows]
+    if rest:
+        out += '<p class="small">Watch: %s</p>' % ' &middot; '.join(
+            '%s %s' % (html.escape(n), watch[n]) for n in rest)
+    return out
 
 
 def _anchor(e):
@@ -595,7 +615,7 @@ def _entry(e, sim, dol, pages):
             '<span class="short">%s</span></summary><div class="xb"><p class="q">%s</p>%s%s<dl><dt>Verdict</dt>'
             '<dd>%s</dd><dt>Decision</dt><dd>%s</dd></dl></div></details>' % (
                 _anchor(e), _day(e['date']), html.escape(e['title']), html.escape(tid), html.escape(e['short']),
-                html.escape(e['question']), _table(e, sim, dol, pages), _facts(e), html.escape(e['verdict']),
+                html.escape(e['question']), _table(e, sim, dol, pages), _facts(e, pages), html.escape(e['verdict']),
                 html.escape(e['decision'])))
 
 
@@ -709,6 +729,11 @@ def _check_watch(pages):
     for e in EXPERIMENTS:
         if e.get('no_game'):
             continue
+        if not e['variants'] and not e.get('watch'):   # no score table: the entry names what to watch itself
+            missing.append('%s: no variants, so it needs watch=[models] or a no_game reason' % e['title'])
+        for m in e.get('watch', []):
+            if not pages.get(show(m)):
+                missing.append('%s: watch model %s has no page' % (e['title'], m))
         for what, models in e['variants']:
             if models == ['random']:              # random play is not a saved model; the game report cannot play it
                 continue
@@ -728,6 +753,7 @@ def build(here, src, head, site_style, pages=None):
     _check_watch(pages)
     entries = sorted(EXPERIMENTS, key=lambda e: e['date'], reverse=True)   # stable: file order within a day
     shown = {m for e in entries for _w, ms in e['variants'] for m in ms}
+    shown.update(m for e in entries for m in e.get('watch', []))
     for e in entries:
         for c in e['cols']:
             if isinstance(c, tuple):
