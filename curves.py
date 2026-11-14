@@ -70,8 +70,17 @@ BENCH = [
      'never trained by playing.', ['model_T4ImFull_seeds1000']),
     ('ppo8', 'Frozen PPO8Self', 'Share of games won against a saved copy of PPO8Self, the yardstick of the earlier '
      'models.', ['model_PPO8Self_c04_seeds1000']),
+    ('cpu9', 'Level 9 CPU', 'Share of games won against Melee\'s own hardest computer player, in the real game '
+     '(Slippi Dolphin, 20 to 100 games a model). Only end-of-training models were scored, so each is one point.',
+     'cpu9'),
+    ('t21', 'Frozen T21L6Cs4', 'Share of 100 simulator games won against a saved copy of T21L6Cs4, the best model '
+     'that decides every 2 frames with no reaction delay. Models with a reaction delay are at a handicap here.',
+     ['model_T21L6Cs4_c04_seeds1000']),
+    ('bot9', 'Scripted bot 9', 'Share of simulator games won against the hand-written scripted bot at its highest '
+     'level. Most trained models win nearly every game.', ['scripted_bot_level9_seeds1000']),
 ]
 MIN_GAMES = 40
+MIN_GAMES_CPU = 20
 
 # The landmarks graph: one bar per change made to the bot (catalog.CATALOG, in order), one graph per opponent.
 # (key, tab text, what it is, 'cpu9' or the yardsticks pooled)
@@ -91,6 +100,49 @@ LAND_BREAK = 'T16F1D15s3_c04'       # first model that acts every frame with a r
 LAND_BREAK_TEXT = ('From here on the bot decides every frame and acts on what it saw 11 to 15 frames ago, like a '
                    'human. That is a handicap against the opponents above the line, so a drop here is the cost '
                    'of the handicap, not a worse learner.')
+
+
+# Landmark models as single points on the curve graphs: million decisions of training by one player
+# (updates x matches x 256; SimBase: 89 hours of game time at a decision every 2 frames). A landmark from
+# catalog.CATALOG that is missing here is not drawn on the curves.
+LAND_TRAINING = {
+    'random': 0.0, 'SimBase_c08': 9.6, 'PPOSelf_c04': 48.9, 'PPOBot_c04': 44.7, 'PPO8Self_c04': 48.2,
+    'PPO8Bot_c04': 44.5, 'PPO8Bot_c04_edit_rec': 44.5, 'T9Prev': 48.2, 'T22EmbSmall3_c04': 48.2,
+    'T21L6Cs4_c04': 48.2, 'T22LongBase7_c08': 96.3, 'T16F1D15s3_c04': 48.2, 'T17F54s4_c04': 48.2,
+    'T4V2s3_c04': 48.2, 'T4HumP1_c04': 48.2,
+}
+
+
+def _land_points(src):
+    """{benchmark key: [[shown name, million decisions, share won, games, the change], ...]} for the curve graphs."""
+    from catalog import CATALOG
+    from names import show
+    from rankings import _dolphin_scores, _sim_scores
+    sim, dol = _sim_scores(src), _dolphin_scores(src)
+    out = {}
+    for key, _tab, _about, ys in BENCH:
+        if ys == 'elo':
+            continue
+        pts = []
+        for model, change, _what in CATALOG:
+            if model not in LAND_TRAINING:
+                continue
+            if ys == 'cpu9':
+                s = dol.get(model)
+                if s and s[0] >= MIN_GAMES_CPU:
+                    pts.append([show(model), LAND_TRAINING[model], round(100.0 * s[1] / s[0], 1), s[0], change])
+                continue
+            if any(y.startswith('model_%s_seeds' % model) for y in ys):
+                continue
+            # the same model was sometimes scored with and without its end-of-run suffix
+            base = re.sub(r'_c\d\d$', '', model)
+            got = [sim[y][m] for y in ys if y in sim for m in {model, base, base + '_c04'} if m in sim[y]]
+            g, w = sum(s[0] for s in got), sum(s[1] for s in got)
+            if g >= MIN_GAMES:
+                pts.append([show(model), LAND_TRAINING[model], round(100.0 * w / g, 1), g, change])
+        if pts:
+            out[key] = pts
+    return out
 
 
 def _landmarks(src, pages):
@@ -167,6 +219,9 @@ def _data(src):
     out = {}
     for key, _tab, _about, ys in BENCH:
         pts = {}
+        if ys == 'cpu9':
+            out[key] = {}
+            continue
         if ys == 'elo':
             path = src / 'logs' / 't43' / 'curves.csv'
             if path.is_file():
@@ -209,7 +264,8 @@ select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);
 .plot{position:relative;margin-top:10px;touch-action:pan-y}
 .plot svg{display:block;width:100%;height:auto;overflow:visible}
 .plot text{font:12px system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--muted)}
-.plot text.lab{fill:var(--ink);font-size:12.5px}
+.plot text.lab{fill:var(--ink);font-size:12.5px;paint-order:stroke;stroke:var(--surface);stroke-width:3px;
+  stroke-linejoin:round}
 .tip{position:absolute;top:8px;pointer-events:none;background:var(--surface);border:1px solid var(--line);
   border-radius:6px;padding:8px 10px;font-size:.82rem;line-height:1.45;box-shadow:0 2px 10px rgba(0,0,0,.15);
   min-width:170px;max-width:280px;display:none;font-variant-numeric:tabular-nums}
@@ -256,7 +312,7 @@ ol.land li.brk{display:block;color:var(--muted);font-size:.84rem;padding:8px 0 8
 SCRIPT = r"""
 const D = __DATA__;
 const $ = id => document.getElementById(id);
-const state = {set: D.sets[0].key, bench: null, log: false, hidden: new Set()};
+const state = {set: D.sets[0].key, bench: null, log: false, hidden: new Set(), land: {}};
 const fmt = (v, unit) => unit === 'elo' ? (v > 0 ? '+' : '') + Math.round(v) : Math.round(v) + '%';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 
@@ -272,7 +328,9 @@ function linesFor(set, bench) {
     return {label: l.label, slot: i + 1, runs, mean};
   }).filter(l => l.runs.length);
 }
-function benchesFor(set) { return D.bench.filter(b => linesFor(set, b.key).length); }
+function benchesFor(set) {
+  return D.bench.filter(b => linesFor(set, b.key).length || (set.key === 'main' && ((D.land || {})[b.key] || []).length));
+}
 function nice(lo, hi, n) {
   const step0 = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
   const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= step0);
@@ -295,14 +353,21 @@ function render() {
   const lines = all.filter(l => !state.hidden.has(key(l)));
   $('leg').innerHTML = all.map(l => `<button aria-pressed="${!state.hidden.has(key(l))}" data-l="${esc(l.label)}" title="Show or hide this line"><i style="background:var(--s${l.slot})"></i>${esc(l.label)}${l.runs.length > 1 ? ' <span style="color:var(--muted)">&middot; mean of ' + l.runs.length + ' runs</span>' : ''}</button>`).join('');
 
+  // landmark models: one point each (end of training), shown by default only with the Highlights set
+  const landAll = (D.land || {})[bench.key] || [], lkey = set.key + '|land';
+  if (!(lkey in state.land)) state.land[lkey] = set.key === 'main';
+  const land = state.land[lkey] ? landAll : [];
+  if (landAll.length) $('leg').innerHTML += `<button aria-pressed="${state.land[lkey]}" data-land="1" title="Show or hide the landmark models"><i style="background:var(--ink);border-radius:0;transform:rotate(45deg) scale(.8)"></i>Landmark models <span style="color:var(--muted)">&middot; one point each, at the end of training</span></button>`;
+
   const wrap = $('plot'), W = Math.max(300, wrap.clientWidth), wide = W >= 700 && lines.length <= 4;
   const H = Math.round(Math.max(260, Math.min(440, W * 0.56)));
   const m = {l: 46, r: wide ? 200 : 16, t: 12, b: 42};
   const xs = lines.flatMap(l => l.mean.map(p => p.x));
   const ysAll = lines.flatMap(l => l.runs.flatMap(r => r.pts.map(p => p[1])));
   let svg = '';
-  if (!xs.length) { wrap.querySelector('svg').innerHTML = ''; $('table').innerHTML = ''; return; }
-  const x0 = state.log ? Math.min(...xs) : 0, x1 = Math.max(...xs);
+  const lxs = land.map(p => p[1]).filter(v => v > 0 || !state.log);
+  if (!xs.length && !lxs.length) { wrap.querySelector('svg').innerHTML = ''; $('table').innerHTML = ''; return; }
+  const x0 = state.log ? Math.min(...xs, ...lxs) : 0, x1 = Math.max(...xs, ...lxs);
   const tx = v => state.log ? Math.log2(v) : v;
   const X = v => m.l + (tx(v) - tx(x0)) / ((tx(x1) - tx(x0)) || 1) * (W - m.l - m.r);
   let y0 = 0, y1 = 100, yt = [0, 25, 50, 75, 100];
@@ -330,12 +395,24 @@ function render() {
   }
   svg += `<line id="cross" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" stroke="var(--axis)" stroke-width="1" visibility="hidden"/>`;
   svg += `<rect id="hit" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent"/>`;
+  // landmark points go on top of the hover area so each one answers to the pointer itself
+  const lp = land.filter(p => p[1] > 0 || !state.log).map(p => ({p, x: X(p[1]), y: Y(p[2])})).sort((a, b) => a.x - b.x || a.y - b.y);
+  const placed = [];
+  lp.forEach(e => {            // name beside the point, moved down while it would sit on an earlier name
+    let ly = e.y + 4;
+    const lx = e.x + 9, w = e.p[0].length * 6.6;
+    for (let k = 0; k < 40 && placed.some(q => Math.abs(q.y - ly) < 13 && lx < q.x + q.w && q.x < lx + w); k++) ly += 13;
+    placed.push({x: lx, y: ly, w});
+    const tip = `${e.p[0]}: ${e.p[4]}. ${Math.round(e.p[2])}% of ${e.p[3]} games, after ${Math.round(e.p[1])} million decisions`;
+    svg += `<g><title>${esc(tip)}</title><rect x="${(e.x - 4.5).toFixed(1)}" y="${(e.y - 4.5).toFixed(1)}" width="9" height="9" transform="rotate(45 ${e.x.toFixed(1)} ${e.y.toFixed(1)})" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/><text class="lab" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" style="font-size:11.5px">${esc(e.p[0])}</text></g>`;
+  });
   const el = wrap.querySelector('svg');
   el.setAttribute('viewBox', `0 0 ${W} ${H}`);
   el.innerHTML = svg;
 
   const ux = [...new Set(xs)].sort((a, b) => a - b), tip = $('tip'), cross = el.querySelector('#cross');
   const show = ev => {
+    if (!ux.length) return;
     const r = el.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
     const x = ux.reduce((a, b) => Math.abs(X(b) - px) < Math.abs(X(a) - px) ? b : a);
     cross.setAttribute('x1', X(x)); cross.setAttribute('x2', X(x)); cross.setAttribute('visibility', 'visible');
@@ -366,7 +443,7 @@ if (D.sets.find(s => s.key === h[0])) { state.set = h[0]; state.bench = h[1] || 
 $('set').value = state.set;
 $('set').addEventListener('change', e => { state.set = e.target.value; render(); });
 $('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { state.bench = b.dataset.b; render(); } });
-$('leg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const k = state.set + '|' + b.dataset.l; state.hidden.has(k) ? state.hidden.delete(k) : state.hidden.add(k); render(); });
+$('leg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.land) { state.land[state.set + '|land'] = !state.land[state.set + '|land']; render(); return; } const k = state.set + '|' + b.dataset.l; state.hidden.has(k) ? state.hidden.delete(k) : state.hidden.add(k); render(); });
 $('log').addEventListener('change', e => { state.log = e.target.checked; render(); });
 $('lmtabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
   document.querySelectorAll('#lmtabs button').forEach(x => x.setAttribute('aria-selected', x === b));
@@ -387,9 +464,10 @@ def build(here, src, head, site_style, pages):
         kept = [{'label': lab, 'runs': [r for r in runs if r in have]} for lab, runs in lines]
         if any(l['runs'] for l in kept):
             sets.append({'key': key, 'title': title, 'about': about, 'lines': kept})
+    land_pts = _land_points(src)
     bench = [{'key': k, 'tab': tab, 'about': about, 'unit': 'elo' if ys == 'elo' else 'pct'}
-             for k, tab, about, ys in BENCH if pts.get(k)]
-    data = json.dumps({'sets': sets, 'bench': bench, 'pts': pts}, separators=(',', ':'))
+             for k, tab, about, ys in BENCH if pts.get(k) or land_pts.get(k)]
+    data = json.dumps({'sets': sets, 'bench': bench, 'pts': pts, 'land': land_pts}, separators=(',', ':'))
     land, land_names = _landmarks(src, pages)
     page = head.replace('</head>', '<title>SteveTheBot training curves</title><style>%s%s</style></head>' % (
         site_style, STYLE)) + """<main>
