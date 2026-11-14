@@ -73,6 +73,79 @@ BENCH = [
 ]
 MIN_GAMES = 40
 
+# The landmarks graph: one bar per change made to the bot (catalog.CATALOG, in order), one graph per opponent.
+# (key, tab text, what it is, 'cpu9' or the yardsticks pooled)
+LAND_BENCH = [
+    ('cpu9', 'Level 9 CPU', 'Share of games won against Melee\'s own hardest computer player, in the real game '
+     '(Slippi Dolphin, 20 to 100 games a model). The only opponent every model has faced under the same conditions.',
+     'cpu9'),
+    ('t21', 'Frozen T21L6Cs4', 'Share of 100 simulator games won against a saved copy of T21L6Cs4, the best model '
+     'that decides every 2 frames with no reaction delay.', ['model_T21L6Cs4_c04_seeds1000']),
+    ('pool', 'Frozen pool', 'Share of simulator games won against the four T4V2 models, which act every frame '
+     'with an 11-frame reaction delay like every model since.', _POOL),
+    ('bot9', 'Scripted bot 9', 'Share of 100 simulator games won against the hand-written scripted bot at its '
+     'highest level. Most trained models win nearly every game, so it only separates the early ones.',
+     ['scripted_bot_level9_seeds1000']),
+]
+LAND_BREAK = 'T16F1D15s3_c04'       # first model that acts every frame with a reaction delay
+LAND_BREAK_TEXT = ('From here on the bot decides every frame and acts on what it saw 11 to 15 frames ago, like a '
+                   'human. That is a handicap against the opponents above the line, so a drop here is the cost '
+                   'of the handicap, not a worse learner.')
+
+
+def _landmarks(src, pages):
+    """The landmarks card (html), and the raw model names it shows."""
+    import html as H
+    from catalog import CATALOG
+    from names import show
+    from rankings import _dolphin_scores, _links, _sim_scores
+    sim, dol = _sim_scores(src), _dolphin_scores(src)
+    tabs, panels = [], []
+    for k, (key, tab, about, ys) in enumerate(LAND_BENCH):
+        rows, prev = [], None
+        for i, (model, change, what) in enumerate(CATALOG):
+            if ys == 'cpu9':
+                s = dol.get(model)
+                g, w = (s[0], s[1]) if s else (0, 0)
+                lead = (s[2] - s[3]) / g if g else 0.0
+                me = False
+            else:
+                got = [sim[y][model] for y in ys if y in sim and model in sim[y]]
+                g, w = sum(s[0] for s in got), sum(s[1] for s in got)
+                lead = sum(s[2] - s[3] for s in got) / g if g else 0.0
+                me = any(y == 'model_%s_seeds1000' % model for y in ys)
+            if model == LAND_BREAK:
+                rows.append('<li class="brk">%s</li>' % H.escape(LAND_BREAK_TEXT))
+            head = '<span class="n">%d</span><span class="nm"><b>%s</b><i>%s</i></span>' % (
+                i + 1, H.escape(change), H.escape(show(model)))
+            watch = _links(pages.get(show(model), [])[:1], True)
+            if me:
+                cell = '<span class="bar"></span><span class="v d">is the opponent</span>'
+            elif not g:
+                cell = '<span class="bar"></span><span class="v d">not scored</span>'
+            else:
+                pct = 100.0 * w / g
+                step = '' if prev is None else ' <small>%s%d</small>' % (
+                    '+' if pct - prev >= 0.5 else ('−' if pct - prev <= -0.5 else '±'),
+                    abs(round(pct - prev)))
+                cell = ('<span class="bar" title="%d games, stock lead %+.2f a game"><span style="width:%.1f%%">'
+                        '</span></span><span class="v">%d%%%s</span>' % (g, lead, max(pct, 0.6), round(pct), step))
+                prev = pct
+            rows.append('<li title="%s">%s%s<span class="w">%s</span></li>' % (H.escape(what), head, cell, watch))
+        tabs.append('<button role="tab" aria-selected="%s" data-lm="%s">%s</button>' % (
+            'true' if k == 0 else 'false', key, H.escape(tab)))
+        panels.append('<div class="lm" id="lm-%s"%s><p class="about">%s</p><ol class="land">%s</ol></div>' % (
+            key, '' if k == 0 else ' hidden', H.escape(about), ''.join(rows)))
+    card = ('<section class="card viz" id="landmarks"><h2>Landmarks: one model per change</h2>'
+            '<p class="about">Every change made to the bot, oldest first, each as one model scored against the '
+            'same opponent. The small number is the step from the scored model above it. Hover a row for what '
+            'the change was; the full table is the <a href="catalog.html">catalog</a>.</p>'
+            '<div class="tabs" id="lmtabs" role="tablist" aria-label="Opponent">%s</div>%s'
+            '<p class="small">One model per change, mostly one training run, so a step under about 10 points '
+            'can be chance. The changes were not made one at a time under equal conditions: later models also '
+            'carry every earlier change that was kept.</p></section>' % (''.join(tabs), ''.join(panels)))
+    return card, {m for m, _c, _w in CATALOG}
+
 
 def _per_checkpoint(run):
     for pat, m in PER_CHECKPOINT:
@@ -159,6 +232,25 @@ td span{color:var(--muted);font-size:.8rem}
 dl.terms{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:.9rem;margin:6px 0 0}
 dl.terms dt{font-weight:600} dl.terms dd{margin:0;color:var(--muted)}
 @media (max-width:560px){dl.terms{grid-template-columns:1fr} .opts{margin-left:0}}
+ol.land{list-style:none;margin:10px 0 0;padding:0;background:none;border:0}
+ol.land li{display:grid;grid-template-columns:22px minmax(150px,290px) 1fr 86px 124px;gap:4px 10px;align-items:center;
+  padding:5px 0;border-top:1px solid var(--grid)}
+ol.land li:first-child{border-top:0}
+ol.land .n{color:var(--muted);font-size:.8rem;text-align:right}
+ol.land .nm b{display:block;font-size:.9rem;font-weight:600;line-height:1.25}
+ol.land .nm i{display:block;font-style:normal;color:var(--muted);font-size:.78rem}
+ol.land .bar{display:block;height:14px;background:var(--grid);border-radius:4px;overflow:hidden}
+ol.land .bar span{display:block;height:100%;background:var(--s1);border-radius:0 4px 4px 0}
+ol.land .v{font-size:.92rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+ol.land .v.d{font-weight:400;color:var(--muted);font-size:.8rem}
+ol.land .v small{font-weight:400;color:var(--muted);font-size:.78rem;margin-left:4px}
+ol.land .w{font-size:.8rem;text-align:right}
+ol.land .w a{white-space:nowrap}
+ol.land li.brk{display:block;color:var(--muted);font-size:.84rem;padding:8px 0 8px 32px;
+  border-top:2px solid var(--axis)}
+@media (max-width:640px){ol.land li{grid-template-columns:22px 1fr 74px}
+  ol.land .bar{grid-column:2 / 3;grid-row:2} ol.land .v{grid-column:3;grid-row:1 / 3;text-align:right}
+  ol.land .v small{display:block;margin:0} ol.land .w{display:none}}
 """
 
 SCRIPT = r"""
@@ -276,6 +368,9 @@ $('set').addEventListener('change', e => { state.set = e.target.value; render();
 $('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { state.bench = b.dataset.b; render(); } });
 $('leg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const k = state.set + '|' + b.dataset.l; state.hidden.has(k) ? state.hidden.delete(k) : state.hidden.add(k); render(); });
 $('log').addEventListener('change', e => { state.log = e.target.checked; render(); });
+$('lmtabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#lmtabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.querySelectorAll('.lm').forEach(p => { p.hidden = p.id !== 'lm-' + b.dataset.lm; }); });
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 120); });
 render();
 """
@@ -295,12 +390,13 @@ def build(here, src, head, site_style, pages):
     bench = [{'key': k, 'tab': tab, 'about': about, 'unit': 'elo' if ys == 'elo' else 'pct'}
              for k, tab, about, ys in BENCH if pts.get(k)]
     data = json.dumps({'sets': sets, 'bench': bench, 'pts': pts}, separators=(',', ':'))
+    land, land_names = _landmarks(src, pages)
     page = head.replace('</head>', '<title>SteveTheBot training curves</title><style>%s%s</style></head>' % (
         site_style, STYLE)) + """<main>
 <header><h1>Training curves</h1>
 <p>How strong a run is at each point of its training. Every saved copy of a model (a checkpoint) is one point; a
 line is one setting. Pick which runs to compare, then switch the benchmark (usually: which opponent) with the
-buttons. Rebuilt %s from the same score logs as the <a href="rankings.html">rankings</a>.</p></header>
+buttons. Below it, <a href="#landmarks">the landmarks</a>: one model per change made to the bot, on one page. Rebuilt %s from the same score logs as the <a href="rankings.html">rankings</a>.</p></header>
 <section class="card viz">
 <div class="row"><label for="set">Runs</label><select id="set"></select>
 <label class="opts"><input type="checkbox" id="log"> Even steps per doubling of training</label></div>
@@ -313,7 +409,8 @@ buttons. Rebuilt %s from the same score logs as the <a href="rankings.html">rank
 <p class="small" id="note"></p>
 <details><summary>The same numbers as a table</summary><div class="tw"><table id="table"></table></div></details>
 </section>
-<section><h2>Reading the graph</h2><dl class="terms">
+%s
+<section><h2>Reading the graphs</h2><dl class="terms">
 <dt>Decision</dt><dd>One controller input chosen by the bot. Training length is counted in decisions made by one
 player; a run of the usual length is 48 million.</dd>
 <dt>Checkpoint</dt><dd>A copy of the model saved during training. It is scored later by playing games against
@@ -325,6 +422,6 @@ checkpoints were saved by the clock, not by amount of training. Their end result
 <a href="rankings.html">rankings</a> and the <a href="catalog.html">catalog</a>.</dd>
 </dl></section>
 </main><script>%s</script></body></html>
-""" % (time.strftime('%d %b %Y'), SCRIPT.replace('__DATA__', data))
+""" % (time.strftime('%d %b %Y'), land, SCRIPT.replace('__DATA__', data))
     (here / 'curves.html').write_text(page, encoding='utf-8')
-    return {r for s in sets for l in s['lines'] for r in l['runs']}
+    return {r for s in sets for l in s['lines'] for r in l['runs']} | land_names
