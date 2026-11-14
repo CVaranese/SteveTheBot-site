@@ -216,10 +216,11 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
       <div class="cell next"><span class="lab">Later · T-10</span>Bigger layers (256) and one shared body with a policy head and a value head (T-10). Not started. A memory core (recurrent or transformer) is on hold: frame stacking did not beat plain inputs (T-37).</div>
     </div>
     <div class="stage">
-      <div class="stage-head"><span class="n">4</span><h3>The controller</h3><span class="tag done">timing changed</span><span class="tag later">heads not default</span></div>
+      <div class="stage-head"><span class="n">4</span><h3>The controller</h3><span class="tag done">timing changed</span><span class="tag later">heads not default</span><span class="tag later">C-stick head built, unscored</span></div>
       <div class="cell"><span class="lab">Now · changed 12 Nov</span>One of 54 fixed actions: 9 stick positions times one button or none. New PPO models (<span class="mono">sim/ppo_run.py</span>) choose an action <b>every frame</b>, and each action reaches the controller <b>11 frames (0.19 s) later</b>, like a human reaction time (your choice, 0.19 s x 60 frames, rounded). Models trained before this, and the old 2017 learner, choose every 2 frames with no delay.<div class="note">Cost: at the usual 2,940 updates a delayed model is far weaker than an undelayed one, because the opponents it is scored against have no delay. Tested with a delay of 15: 10 of 50 wins against the level 9 CPU in Dolphin, against 42 to 46 without. With the default delay of 11, T17F54 (below) won 3 of 50. The double-length models (T22Long) were trained without the delay.</div></div>
       <div class="cell"><span class="lab">How timing works · tested</span><ul><li>Each saved model has a small settings file: frames per action and delay. Missing means every 2 frames, no delay.</li><li>An action chosen on frame t reaches the controller on frame t+11. Meanwhile the network also sees the 11 actions still in flight: 796 + 11 x 54 = 1,390 inputs.</li><li>Discount and GAE decay are scaled to the shorter step, so one update covers the same game time.</li><li>Self-play delays both sides. The scripted opponent is not delayed.</li><li>The same button on consecutive decisions is one continuous hold, in Dolphin and the simulator (A held gives one jab). The bot cannot press a button twice without another action between.</li></ul><span class="dec">Resumed models keep their own settings; <span class="mono">--frames-per-action 2 --delay 0</span> gives the old behaviour.</span></div>
-      <div class="cell next"><span class="lab">Tested 12 Nov: two heads (T-17)</span>A second action set of 102 pairs: 6 buttons x 17 stick positions (centre, 8 full, 8 half-tilted). A two-head network picks a button, then a stick position given that button. With delay 11, 2,940 updates, two seeds each, the 54 actions beat both two heads (74 wins of 100 head to head) and one flat list of the 102 pairs (72). Two heads vs the flat 102 list was even (48). Against the level 9 CPU in Dolphin the 102-pair models won 1 to 3 of 50.<div class="note">Reading (a guess, not tested): at this training length the larger action set is not learned yet. The 54 actions stay the default. No decision yet on what to do next with the two heads; a C-stick head was planned after them. The replay labels show what the 54 cannot say: the C-stick is used on 9.4% of human frames, and several buttons at once on 3.2%.</div></div>
+      <div class="cell next"><span class="lab">Tested 12 Nov: two heads (T-17)</span>A second action set of 102 pairs: 6 buttons x 17 stick positions (centre, 8 full, 8 half-tilted). A two-head network picks a button, then a stick position given that button. With delay 11, 2,940 updates, two seeds each, the 54 actions beat both two heads (74 wins of 100 head to head) and one flat list of the 102 pairs (72). Two heads vs the flat 102 list was even (48). Against the level 9 CPU in Dolphin the 102-pair models won 1 to 3 of 50.<div class="note">Reading (a guess, not tested): at this training length the larger action set is not learned yet. The 54 actions stay the default. The replay labels show what the 54 cannot say: the C-stick is used on 9.4% of human frames, and several buttons at once on 3.2%.</div></div>
+      <div class="cell next"><span class="lab">Built 14 Nov: two heads plus a C-stick head (T-42) · not trained or scored yet</span>Your decision (13 Nov): the next controller is two heads plus a C-stick head. It is a third action set of 510 = 6 buttons x 17 main-stick positions (centre, 8 full, 8 half) x 5 C-stick positions (centre, right, up, left, down). The network picks the button, then the stick given the button, then the C-stick given both; the layer (<span class="mono">Model.ThreeHead</span>) outputs the probability of each of the 510 combinations. Switch: <span class="mono">sim/ppo_run.py --controller heads510</span>. Each past action in the input is 6 + 17 + 5 = 28 numbers, so with the 11-frame delay queue the input is 1,104 numbers.<div class="note">Tested: the simulator acts on the C-stick (smash attacks on the ground, aerials in the air, and the main stick still steers during a C-stick aerial), and the new controller runs at the same speed as the 54 actions (32,556 against 32,859 decisions per second, one run alone). <b>No results yet:</b> it has not been trained at length or scored, so nothing says it plays better or worse. The 54 actions stay the default. Next: a long comparison batch against the 54 actions (strength against training length). If this design shows a steeper curve, the Faynt-style scheme (below) is the next step.</div></div>
     </div>
     <div class="stage">
       <div class="stage-head"><span class="n">5</span><h3>The reward</h3><span class="tag keep">keep</span></div>
@@ -456,10 +457,11 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 
   <div class="sub">
     <h3>The controller</h3>
-    <p>How an action becomes buttons. The current design, the two-head design (tested, not the default) and, for scale, a published one. Dots are the stick positions the bot can choose.</p>
+    <p>How an action becomes buttons. The current design, the two-head design (tested, not the default), the three-head design (built, not scored) and, for scale, a published one. Dots are the stick positions the bot can choose.</p>
     <div class="seg" role="group" aria-label="Controller design">
       <button id="d-now" aria-pressed="true">Now: 54 flat</button>
       <button id="d-step" aria-pressed="false">Tested: two heads</button>
+      <button id="d-c" aria-pressed="false">Built: plus C-stick head</button>
       <button id="d-faynt" aria-pressed="false">Faynt 2026, for scale</button>
     </div>
     <div class="card ctl">
@@ -491,7 +493,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     <li><a href="https://ericyuegu.com/behavior-cloning-melee">Training AI to play Super Smash Bros. Melee (HAL), 2025</a> <span class="lbl">read</span></li>
     <li><a href="https://arxiv.org/abs/2610.02144">Faynt: Scaling and Optimizing Policies for Competitive Melee, 2026</a> <span class="lbl">first half read</span></li>
   </ul>
-  <p class="note">Facts about this project are read from its code and test logs (the project's score board and experiment write-ups, private); last checked 13 Nov 2026. "approx_kl near 0.01 is common" is from memory. HAL's dataset is used privately for imitation (T-4). The full model and score tables are on the <a href="rankings.html">rankings page</a>.</p>
+  <p class="note">Facts about this project are read from its code and test logs (the project's score board and experiment write-ups, private); last checked 14 Nov 2026. "approx_kl near 0.01 is common" is from memory. HAL's dataset is used privately for imitation (T-4). The full model and score tables are on the <a href="rankings.html">rankings page</a>.</p>
 </section>
 
 </div>
@@ -607,7 +609,12 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
       pts:[[C,C]].concat(ring(8,R)).concat(ring(8,R*0.5)), size:5.5,
       btns:[['A','a'],['B','b'],['X','g'],['Z','z'],['L','g'],['none','g'],['C-stick: after','c']],
       text:'The network picks a button (6 choices), then a stick position given that button (17 choices): 102 combinations from two small choices. Built and tested 12 Nov (the every-frame and delay part is separate, see stage 4).',
-      note:'Half tilts allow walking and tilt attacks. Tested: the 54 actions beat it at 2,940 updates (74 of 100 head to head); the larger set is probably not learned yet (a guess). A C-stick head was planned after it.'},
+      note:'Half tilts allow walking and tilt attacks. Tested: the 54 actions beat it at 2,940 updates (74 of 100 head to head); the larger set is probably not learned yet (a guess). The C-stick head came next (see the next button).'},
+    c:{title:'Button, main stick, then C-stick',
+      pts:[[C,C]].concat(ring(8,R)).concat(ring(8,R*0.5)), size:5.5,
+      btns:[['A','a'],['B','b'],['X','g'],['Z','z'],['L','g'],['none','g'],['C-stick: 5','c']],
+      text:'The network picks a button (6), then a main-stick position given the button (17), then a C-stick position given both (centre, right, up, left, down): 510 combinations. Built and speed-tested 14 Nov. The dots show the main stick only.',
+      note:'Not trained at length or scored yet, so there is no result. The 54 actions stay the default.'},
     faynt:{title:'728 button classes, 85 stick positions',
       pts:[[C,C]].concat(ring(4,R*0.3)).concat(ring(16,R*0.65)).concat(ring(64,R)), size:2.6,
       btns:[['A','a'],['B','b'],['X or Y','g'],['Z','z'],['L or R: off, light, full','g'],['C-stick: 13','c']],
@@ -623,9 +630,9 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
     document.getElementById('ctl-note').textContent=d.note;
     var b=document.getElementById('ctl-btns'); b.textContent='';
     d.btns.forEach(function(x){var s=document.createElement('span');s.className='btn '+x[1];s.textContent=x[0];b.appendChild(s);});
-    ['now','step','faynt'].forEach(function(n){document.getElementById('d-'+n).setAttribute('aria-pressed', n===k?'true':'false');});
+    ['now','step','c','faynt'].forEach(function(n){document.getElementById('d-'+n).setAttribute('aria-pressed', n===k?'true':'false');});
   }
-  ['now','step','faynt'].forEach(function(n){document.getElementById('d-'+n).addEventListener('click',function(){show(n);});});
+  ['now','step','c','faynt'].forEach(function(n){document.getElementById('d-'+n).addEventListener('click',function(){show(n);});});
   show('now');
 })();
 </script>
