@@ -17,6 +17,8 @@ Entry fields:
   question  the question in one line
   cols      score columns: keys of OPP, or (header, [opponent model names]) for head-to-head scores
   variants  [(what was tried, [model names as in the score logs])]; seeds of one setting go in one row
+  graphs    optional [(link text, href)]: graphs of the result, e.g. ('Graph: ...', 'curves.html#t43/elo'), where
+            the part after # is <key of a SETS row>/<key of a BENCH row> in curves.py
   facts     optional hand-kept table for results that are not in the score logs: (header row, [rows])
   watch     for an entry with no variants: [model names] whose scenario and game pages it links. A facts row whose
             first word is the model's shown name gets the links in a Watch column; the others go in a line below
@@ -95,7 +97,9 @@ EXPERIMENTS = [
                  'them. A short run does not predict the long one: a line through the first four copies is 67 to '
                  '141 Elo too low at the end, and misses that two heads catch up. T4HumP1, trained the usual '
                  'length from human replays, still wins about 2 games in 5 against these long 54-action runs. '
-                 'The graphs are on the training curves page (curves.html, "All opponents (Elo)").',
+                 'The graph is linked above.',
+         graphs=[('Graph: Elo against training for the three controllers', 'curves.html#t43/elo'),
+                 ('Graph: games won against the frozen pool', 'curves.html#t43/pool')],
          decision='The 54 actions stay the default. The three-head controller is not dropped: its next test is a '
                   'start from human replays (task T-42). Pending with the user: whether the two-head controller '
                   'gets more runs, and the rule for reporting a setting\'s strength (the mean curve of at least 3 '
@@ -121,6 +125,8 @@ EXPERIMENTS = [
                'is too uneven to extend.',
          question='Can a model\'s strength after long training be predicted from the first part of its run?',
          cols=[], variants=[], watch=['T37Plain7_c08', 'T40M128s7_c08'],
+         graphs=[('Graph: Elo against training, frame-history runs', 'curves.html#t37/elo'),
+                 ('Graph: Elo against training, matches-per-run runs', 'curves.html#t40/elo')],
          facts=(['What was measured', 'Result'],
                 [['Runs scored', '10 (six T37, four T40), 8 saved copies each'],
                  ['Fixed opponents (the ladder)', '9, from imitation-only up to T4HumP1'],
@@ -692,7 +698,10 @@ def _entry(e, sim, dol, pages):
             '<span class="short">%s</span></summary><div class="xb"><p class="q">%s</p>%s%s<dl><dt>Verdict</dt>'
             '<dd>%s</dd><dt>Decision</dt><dd>%s</dd></dl></div></details>' % (
                 _anchor(e), _day(e['date']), html.escape(e['title']), html.escape(tid), html.escape(e['short']),
-                html.escape(e['question']), _table(e, sim, dol, pages), _facts(e, pages), html.escape(e['verdict']),
+                html.escape(e['question']), _table(e, sim, dol, pages),
+                _facts(e, pages) + ''.join('<p class="q"><a href="%s">%s</a></p>' % (html.escape(href), html.escape(text))
+                                           for text, href in e.get('graphs', [])),
+                html.escape(e['verdict']),
                 html.escape(e['decision'])))
 
 

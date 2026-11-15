@@ -186,13 +186,14 @@ def _landmarks(src, pages):
             rows.append('<li title="%s">%s%s<span class="w">%s</span></li>' % (H.escape(what), head, cell, watch))
         tabs.append('<button role="tab" aria-selected="%s" data-lm="%s">%s</button>' % (
             'true' if k == 0 else 'false', key, H.escape(tab)))
-        panels.append('<div class="lm" id="lm-%s"%s><p class="about">%s</p><ol class="land">%s</ol></div>' % (
-            key, '' if k == 0 else ' hidden', H.escape(about), ''.join(rows)))
+        # all panels share one grid cell (class stack), so switching opponent never changes the card's height
+        panels.append('<div class="lm%s" id="lm-%s"><p class="about">%s</p><ol class="land">%s</ol></div>' % (
+            '' if k == 0 else ' off', key, H.escape(about), ''.join(rows)))
     card = ('<section class="card viz" id="landmarks"><h2>Landmarks: one model per change</h2>'
             '<p class="about">Every change made to the bot, oldest first, each as one model scored against the '
             'same opponent. The small number is the step from the scored model above it. Hover a row for what '
             'the change was; the full table is the <a href="catalog.html">catalog</a>.</p>'
-            '<div class="tabs" id="lmtabs" role="tablist" aria-label="Opponent">%s</div>%s'
+            '<div class="tabs" id="lmtabs" role="tablist" aria-label="Opponent">%s</div><div class="stack">%s</div>'
             '<p class="small">One model per change, mostly one training run, so a step under about 10 points '
             'can be chance. The changes were not made one at a time under equal conditions: later models also '
             'carry every earlier change that was kept.</p></section>' % (''.join(tabs), ''.join(panels)))
@@ -256,10 +257,10 @@ main{max-width:1100px}
 select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);
   border-radius:6px;padding:6px 8px;max-width:100%}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.tabs button,.leg button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--surface);
+.tabs button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--surface);
   border:1px solid var(--line);border-radius:16px;padding:5px 12px;cursor:pointer}
-.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface);
-  font-weight:600}
+.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.stack{display:grid} .stack>*{grid-area:1/1;min-width:0} .stack>.off{visibility:hidden}
 .about{font-size:.9rem;margin-top:10px}
 .plot{position:relative;margin-top:10px;touch-action:pan-y}
 .plot svg{display:block;width:100%;height:auto;overflow:visible}
@@ -273,11 +274,20 @@ select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);
 .tip div{display:flex;gap:6px;align-items:baseline}
 .tip i,.leg i{flex:none;display:inline-block;width:10px;height:10px;border-radius:50%}
 .tip span{color:var(--muted)} .tip em{font-style:normal;margin-left:auto;padding-left:10px;font-weight:600}
-.leg{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.leg button{display:flex;flex-wrap:wrap;gap:2px 7px;align-items:center;text-align:left;border-radius:6px;
-  max-width:100%}
+.leg{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:2px 14px;margin-top:12px}
+.leg button{display:flex;gap:9px;align-items:flex-start;text-align:left;font:inherit;font-size:.92rem;
+  line-height:1.3;color:var(--ink);background:none;border:0;border-radius:6px;padding:6px 4px;cursor:pointer;
+  min-width:0}
+.leg button:hover:not(:disabled){background:var(--grid)}
+.leg .box{flex:none;width:17px;height:17px;margin-top:1px;border-radius:4px;border:2px solid var(--c);
+  background:var(--c);color:var(--surface);font-size:12px;font-weight:700;line-height:13px;text-align:center}
+.leg .t{min-width:0}
+.leg small{display:block;color:var(--muted);font-size:.8rem;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.leg button[aria-pressed="false"] .box{background:none;color:transparent}
+.leg button[aria-pressed="false"] .t{color:var(--muted)}
+.leg button:disabled{cursor:default;opacity:.55}
 .card{min-width:0}
-.leg button[aria-pressed="false"]{opacity:.45;text-decoration:line-through}
 .opts{margin-left:auto;font-size:.85rem;color:var(--muted);display:flex;gap:6px;align-items:center}
 .small{font-size:.85rem;margin-top:8px}
 .tw{overflow-x:auto;margin-top:8px;border:1px solid var(--line);border-radius:6px}
@@ -328,6 +338,11 @@ function linesFor(set, bench) {
     return {label: l.label, slot: i + 1, runs, mean};
   }).filter(l => l.runs.length);
 }
+function stack(el, items, on) {
+  // every text in the same grid cell, only one visible: the element keeps the height of its longest text
+  el.classList.add('stack');
+  el.innerHTML = items.map((t, i) => `<span${i === on ? '' : ' class="off" aria-hidden="true"'}>${esc(t)}</span>`).join('');
+}
 function benchesFor(set) {
   return D.bench.filter(b => linesFor(set, b.key).length || (set.key === 'main' && ((D.land || {})[b.key] || []).length));
 }
@@ -347,25 +362,37 @@ function render() {
   const unit = bench.unit;
   $('setabout').textContent = set.about;
   $('tabs').innerHTML = benches.map(b => `<button role="tab" aria-selected="${b.key === bench.key}" data-b="${b.key}">${esc(b.tab)}</button>`).join('');
-  $('about').textContent = bench.about;
+  // Nothing on the page may move when a tab or a legend entry is clicked (STYLE.md, "Nothing moves on a click"):
+  // texts that change are stacked in one grid cell, the legend always lists every line of the set, and the axes
+  // are sized from every line and landmark of the set and benchmark, shown or hidden.
+  stack($('about'), benches.map(b => b.about), benches.indexOf(bench));
   const all = linesFor(set, bench.key);
   const key = l => set.key + '|' + l.label;
   const lines = all.filter(l => !state.hidden.has(key(l)));
-  $('leg').innerHTML = all.map(l => `<button aria-pressed="${!state.hidden.has(key(l))}" data-l="${esc(l.label)}" title="Show or hide this line"><i style="background:var(--s${l.slot})"></i>${esc(l.label)}${l.runs.length > 1 ? ' <span style="color:var(--muted)">&middot; mean of ' + l.runs.length + ' runs</span>' : ''}</button>`).join('');
+  const here = new Set(all.map(l => l.label));
+  let leg = set.lines.map((l, i) => {
+    const ok = here.has(l.label), on = ok && !state.hidden.has(key(l));
+    const sub = !ok ? 'not scored against this opponent' : l.runs.length > 1 ? 'mean of ' + l.runs.length + ' runs' : 'one run';
+    return `<button aria-pressed="${on}"${ok ? '' : ' disabled'} data-l="${esc(l.label)}" title="Show or hide this line" style="--c:var(--s${i + 1})"><span class="box">&#10003;</span><span class="t">${esc(l.label)}<small>${sub}</small></span></button>`;
+  }).join('');
 
-  // landmark models: one point each (end of training), shown by default only with the Highlights set
-  const landAll = (D.land || {})[bench.key] || [], lkey = set.key + '|land';
-  if (!(lkey in state.land)) state.land[lkey] = set.key === 'main';
+  // landmark models (Highlights set only): one point each at the end of training, with a dashed line from
+  // untrained play that is drawn, not measured
+  const isMain = set.key === 'main', lkey = set.key + '|land';
+  const landAll = isMain ? ((D.land || {})[bench.key] || []) : [];
+  if (!(lkey in state.land)) state.land[lkey] = true;
   const land = state.land[lkey] ? landAll : [];
-  if (landAll.length) $('leg').innerHTML += `<button aria-pressed="${state.land[lkey]}" data-land="1" title="Show or hide the landmark models"><i style="background:var(--ink);border-radius:0;transform:rotate(45deg) scale(.8)"></i>Landmark models <span style="color:var(--muted)">&middot; one point each, at the end of training</span></button>`;
+  if (isMain && D.bench.some(b => ((D.land || {})[b.key] || []).length))
+    leg += `<button aria-pressed="${landAll.length > 0 && state.land[lkey]}"${landAll.length ? '' : ' disabled'} data-land="1" title="Show or hide the landmark models" style="--c:var(--ink)"><span class="box">&#10003;</span><span class="t">Landmark models<small>${landAll.length ? 'one per change; dashed line drawn from untrained play' : 'not scored against this opponent'}</small></span></button>`;
+  $('leg').innerHTML = leg;
 
-  const wrap = $('plot'), W = Math.max(300, wrap.clientWidth), wide = W >= 700 && lines.length <= 4;
+  const wrap = $('plot'), W = Math.max(300, wrap.clientWidth), wide = W >= 700 && set.lines.length <= 4;
   const H = Math.round(Math.max(260, Math.min(440, W * 0.56)));
   const m = {l: 46, r: wide ? 200 : 16, t: 12, b: 42};
-  const xs = lines.flatMap(l => l.mean.map(p => p.x));
-  const ysAll = lines.flatMap(l => l.runs.flatMap(r => r.pts.map(p => p[1])));
+  const xs = all.flatMap(l => l.mean.map(p => p.x));
+  const ysAll = all.flatMap(l => l.runs.flatMap(r => r.pts.map(p => p[1])));
   let svg = '';
-  const lxs = land.map(p => p[1]).filter(v => v > 0 || !state.log);
+  const lxs = landAll.map(p => p[1]).filter(v => v > 0 || !state.log);
   if (!xs.length && !lxs.length) { wrap.querySelector('svg').innerHTML = ''; $('table').innerHTML = ''; return; }
   const x0 = state.log ? Math.min(...xs, ...lxs) : 0, x1 = Math.max(...xs, ...lxs);
   const tx = v => state.log ? Math.log2(v) : v;
@@ -397,6 +424,10 @@ function render() {
   svg += `<rect id="hit" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent"/>`;
   // landmark points go on top of the hover area so each one answers to the pointer itself
   const lp = land.filter(p => p[1] > 0 || !state.log).map(p => ({p, x: X(p[1]), y: Y(p[2])})).sort((a, b) => a.x - b.x || a.y - b.y);
+  const rnd = landAll.find(p => p[1] === 0), s0 = rnd ? rnd[2] : 0, sx = state.log ? x0 : 0;
+  lp.forEach(e => {            // dashed line from untrained play (random play's score, or 0) to the model's point
+    if (e.p[1] > 0) svg += `<path d="M${X(sx).toFixed(1)} ${Y(s0 + (e.p[2] - s0) * sx / e.p[1]).toFixed(1)}L${e.x.toFixed(1)} ${e.y.toFixed(1)}" fill="none" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 4" opacity=".4" pointer-events="none"/>`;
+  });
   const placed = [];
   lp.forEach(e => {            // name beside the point, moved down while it would sit on an earlier name
     let ly = e.y + 4;
@@ -410,7 +441,7 @@ function render() {
   el.setAttribute('viewBox', `0 0 ${W} ${H}`);
   el.innerHTML = svg;
 
-  const ux = [...new Set(xs)].sort((a, b) => a - b), tip = $('tip'), cross = el.querySelector('#cross');
+  const ux = [...new Set(lines.flatMap(l => l.mean.map(p => p.x)))].sort((a, b) => a - b), tip = $('tip'), cross = el.querySelector('#cross');
   const show = ev => {
     if (!ux.length) return;
     const r = el.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
@@ -427,11 +458,13 @@ function render() {
   hit.addEventListener('pointermove', show); hit.addEventListener('pointerdown', show);
   hit.addEventListener('pointerleave', () => { tip.style.display = 'none'; cross.setAttribute('visibility', 'hidden'); });
 
-  const games = lines.flatMap(l => l.mean.map(p => p.n / Math.max(1, p.each.length))).sort((a, b) => a - b);
+  const games = all.flatMap(l => l.mean.map(p => p.n / Math.max(1, p.each.length))).sort((a, b) => a - b);
   const g = games[Math.floor(games.length / 2)] || 0;
-  $('note').textContent = unit === 'elo'
-    ? 'Thick line: the mean of a setting’s runs. Thin lines: the single runs. One run’s point is known to about ±' + Math.round(g) + ' Elo; a run also moves up and down by about 50 Elo from one checkpoint to the next, so read the mean and the trend, not single points.'
-    : 'Thick line: the mean of a setting’s runs. Thin lines: the single runs. One run’s point is ' + Math.round(g) + ' games, so chance alone moves it by about ±' + Math.round(100 * Math.sqrt(0.25 / Math.max(1, g))) + ' points; read the mean and the trend, not single points.';
+  stack($('note'), [
+    'Thick line: the mean of a setting’s runs. Thin lines: the single runs. One run’s point is known to about ±' + Math.round(g || 20) + ' Elo; a run also moves up and down by about 50 Elo from one checkpoint to the next, so read the mean and the trend, not single points.',
+    'Thick line: the mean of a setting’s runs. Thin lines: the single runs. One run’s point is ' + Math.round(g || 50) + ' games, so chance alone moves it by about ±' + Math.round(100 * Math.sqrt(0.25 / Math.max(1, g || 50))) + ' points; read the mean and the trend, not single points.',
+    'Only the landmark models were scored against this opponent: one point each, at the end of training. The dashed lines are drawn from untrained play to each point and are not measured.',
+  ], !all.length ? 2 : unit === 'elo' ? 0 : 1);
   $('table').innerHTML = '<thead><tr><th>Million decisions</th>' + all.map(l => `<th>${esc(l.label)}</th>`).join('') + '</tr></thead><tbody>' +
     [...new Set(all.flatMap(l => l.mean.map(p => p.x)))].sort((a, b) => a - b).map(x => `<tr><td>${Math.round(x)}</td>` + all.map(l => { const p = l.mean.find(q => q.x === x); return '<td>' + (p ? fmt(p.y, unit) + (p.each.length > 1 ? ' <span>(' + p.each.map(v => fmt(v, unit)).join(', ') + ')</span>' : '') : '&ndash;') + '</td>'; }).join('') + '</tr>').join('') + '</tbody>';
   try { history.replaceState(null, '', '#' + state.set + '/' + state.bench); } catch (e) {}
@@ -447,7 +480,7 @@ $('leg').addEventListener('click', e => { const b = e.target.closest('button'); 
 $('log').addEventListener('change', e => { state.log = e.target.checked; render(); });
 $('lmtabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
   document.querySelectorAll('#lmtabs button').forEach(x => x.setAttribute('aria-selected', x === b));
-  document.querySelectorAll('.lm').forEach(p => { p.hidden = p.id !== 'lm-' + b.dataset.lm; }); });
+  document.querySelectorAll('.lm').forEach(p => { p.classList.toggle('off', p.id !== 'lm-' + b.dataset.lm); }); });
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 120); });
 render();
 """

@@ -35,6 +35,23 @@ writes a page template (in the SteveTheBot repo: `sim/scenario_anim_page.html`, 
 - One reading column: 760 px (start page), 900 px (scenario pages), 1100 px (game reports, bar).
 - Cards: surface background, 1 px line border, 6 to 10 px corner radius.
 
+## Nothing moves on a click
+
+The user's rule (2026-11-15: "ensure the page stays static when I'm clicking (this goes for the future as well)").
+A click on a tab, filter, legend entry or toggle changes only what it is about; nothing else on the page shifts,
+resizes or reflows. For every interactive page:
+
+- **Reserve the space.** A text that changes with the selection (a description, a note) keeps the height of its
+  longest version: put every version in the same grid cell and show one (`stack()` in `curves.py`).
+- **Lists of controls stay the same.** Tabs and legend entries that do not apply to the current selection are
+  shown disabled with a short reason, not removed. A selected tab or button changes colour, never size (no
+  change of font weight, border width or padding).
+- **Graphs keep their scale.** Axes are sized from everything the current view could show, not from what is
+  ticked, so hiding a line or a group of points never rescales the graph. The plot keeps its height.
+- **What may move:** content below a folded section the reader opens, and a change of the whole view (another
+  set of runs, another page section).
+- Check before a push: click every tab and every legend entry and watch the rest of the page.
+
 ## Gameplay
 
 - All gameplay is drawn with the animated viewer in `viewer/` (slippi-viewer, MIT, our build with the `framechange`
@@ -86,7 +103,13 @@ writes a page template (in the SteveTheBot repo: `sim/scenario_anim_page.html`, 
   Elo. One Y axis only.
 - Chart colours: the eight-colour categorical palette in `curves.py` (`--s1` to `--s8`, light and dark steps),
   checked for colour-blind separation on the site's surfaces. Text stays in ink and muted; colour only on marks.
-- Every graph has a legend (click to hide a line), a hover readout, and the same numbers as a table.
+- Every graph has a legend (click to hide a line), a hover readout, and the same numbers as a table. The legend
+  is a list with one tick box per line in the line's colour, the name in ink and one muted line under it (how
+  many runs, or why it is not shown); a hidden line has an empty box, no strike-through.
+- Landmark models (Highlights set only) are single measured points; each gets a dashed line from untrained play
+  (random play's score against that opponent, or 0) that is drawn, not measured, and the legend says so.
+- A graph is linked as `curves.html#<set key>/<benchmark key>` (for example `#t43/elo`); experiment entries link
+  their graphs with the `graphs` field.
 - A new run family: a `SETS` row, a `PER_CHECKPOINT` row, and its `names.py` pattern.
 
 ## Experiments *(build)*
