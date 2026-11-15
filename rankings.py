@@ -23,6 +23,13 @@ BOARDS = [
      'A saved copy of T21L6Cs4, the strongest model of its time, that does not learn. The hardest opponent '
      'the newer models are scored against; T21L6Cs4 itself is the reference and is not ranked.',
      'model_T21L6Cs4_c04_seeds1000', 50, True),
+    ('pool2', 'Frozen pool 2 (simulator)',
+     'The routine yardstick since 15 Nov 2026: four saved models of rising strength that do not learn. T4V2s3 '
+     '(kept from the old pool), T4HumP1 (started from human replays), and the ladder run T43Lad at a quarter and '
+     'at the end of its 12-times-length training; 50 games against each, pooled. All play with the current '
+     'controls. The old pool (next table) was used up: the long runs won about 9 games in 10 against it. Only '
+     'models that played all four are ranked.',
+     ['model_%s_seeds1000' % m for m in ('T4V2s3_c04', 'T4HumP1', 'T43Lad_c12', 'T43Lad_c48')], 200, True),
     ('t4v2', 'Frozen T4V2, four seeds (simulator)',
      'The four T4V2 runs (seeds 3 to 6), saved and not learning; 100 games against each, pooled. They play with the '
      'current controls (a decision every frame, acting on what it saw 11 frames earlier, like a human reaction), so '

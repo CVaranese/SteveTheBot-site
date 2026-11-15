@@ -34,12 +34,17 @@ from names import end_of_run, show
 from rankings import _dolphin_scores, _links, _sim_scores
 
 T4V2 = ['model_T4V2s%d_c04_seeds1000' % s for s in (3, 4, 5, 6)]
+# The frozen pool, version 2 (the main repo's sim/pools.py is the definition; a new version gets a new key here)
+POOL2 = ['model_%s_seeds1000' % m for m in ('T4V2s3_c04', 'T4HumP1', 'T43Lad_c12', 'T43Lad_c48')]
 
 # column key -> (header, what it is, score source: 'dolphin' or [yardsticks in logs/yardstick.csv])
 OPP = {
     'cpu9': ('CPU 9, Dolphin', 'Melee\'s own level 9 computer player in Slippi Dolphin (the real game)', 'dolphin'),
     't4v2': ('Frozen T4V2 (4 seeds)', 'The four T4V2 runs, frozen; 100 games against each, pooled. The yardstick for '
-             'models with the current controls (every frame, 11-frame reaction delay)', T4V2),
+             'models with the current controls (every frame, 11-frame reaction delay) until 15 Nov 2026', T4V2),
+    'pool2': ('Frozen pool 2', 'The routine yardstick since 15 Nov 2026, four saved models of rising strength: '
+              'T4V2s3 (kept from the old pool), T4HumP1 (started from human replays), and the ladder run T43Lad '
+              'at a quarter and at the end of its 12-times-length training; 50 games against each, pooled', POOL2),
     't21': ('Frozen T21L6Cs4', 'T21L6Cs4 frozen: the strongest model without reaction delay',
             ['model_T21L6Cs4_c04_seeds1000']),
     'ppo8': ('Frozen PPO8Self', 'PPO8Self frozen: the yardstick of the early PPO models',
@@ -60,7 +65,7 @@ TOPICS = [
     ('pplus', 'Project+', 'The target game: running it and playing it with a Melee model.'),
 ]
 RECENT = 6                                            # entries in "Recent experiments"
-EVAL_COLS = ['cpu9', 't4v2', 't21', 'ppo8', 'bot9']   # score columns of the evaluations table
+EVAL_COLS = ['cpu9', 'pool2', 't4v2', 't21', 'ppo8', 'bot9']   # score columns of the evaluations table
 
 EXPERIMENTS = [
     dict(tasks=['T-43', 'T-42'], date='2026-11-15', title='Twelve times the usual training: 54 actions against the '
@@ -69,7 +74,7 @@ EXPERIMENTS = [
                'heads catch up with the 54 actions.',
          question='Does strength keep rising in a regular way when a run trains 12 times as long, and does a '
                   'richer controller start lower and climb faster?',
-         cols=['t4v2', 'cpu9', ('Frozen T4HumP1', ['T4HumP1']), ('Frozen ladder run', ['T43Lad_c48']),
+         cols=['t4v2', 'pool2', 'cpu9', ('Frozen T4HumP1', ['T4HumP1']), ('Frozen ladder run', ['T43Lad_c48']),
                ('vs 54 actions', ['T43F54s1_c48', 'T43F54s2_c48', 'T43F54s3_c48'])],
          variants=[
              ('54 actions', ['T43F54s1_c48', 'T43F54s2_c48', 'T43F54s3_c48']),
