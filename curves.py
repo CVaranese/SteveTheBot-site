@@ -64,8 +64,9 @@ BENCH = [
     ('elo', 'All opponents (Elo)', 'One strength number from every game against a ladder of 13 fixed opponents, '
      'from imitation-only up to the end of a 12-times-length run. Zero is the average of the frozen pool; 100 Elo more '
      'means winning about 64 of 100 games against an equal of before.', 'elo'),
-    ('hum', 'T4HumP1', 'Share of games won against T4HumP1, the strongest fixed opponent: started from human '
-     'replays, then trained by self-play.', ['model_T4HumP1_seeds1000']),
+    ('hum', 'T4HumP1', 'Share of games won against T4HumP1: started from human replays, then trained by '
+     'self-play for the usual length. It was the strongest fixed opponent until the long batch; the end of the '
+     'ladder run T43Lad is now about 310 Elo above it.', ['model_T4HumP1_seeds1000']),
     ('im', 'Imitation only', 'Share of games won against T4ImFull, a model that only copies human replays and was '
      'never trained by playing.', ['model_T4ImFull_seeds1000']),
     ('ppo8', 'Frozen PPO8Self', 'Share of games won against a saved copy of PPO8Self, the yardstick of the earlier '

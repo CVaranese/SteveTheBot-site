@@ -69,7 +69,7 @@ EXPERIMENTS = [
                'heads catch up with the 54 actions.',
          question='Does strength keep rising in a regular way when a run trains 12 times as long, and does a '
                   'richer controller start lower and climb faster?',
-         cols=['t4v2', ('Frozen T4HumP1', ['T4HumP1']), ('Frozen ladder run', ['T43Lad_c48']),
+         cols=['t4v2', 'cpu9', ('Frozen T4HumP1', ['T4HumP1']), ('Frozen ladder run', ['T43Lad_c48']),
                ('vs 54 actions', ['T43F54s1_c48', 'T43F54s2_c48', 'T43F54s3_c48'])],
          variants=[
              ('54 actions', ['T43F54s1_c48', 'T43F54s2_c48', 'T43F54s3_c48']),
@@ -97,7 +97,13 @@ EXPERIMENTS = [
                  'them. A short run does not predict the long one: a line through the first four copies is 67 to '
                  '141 Elo too low at the end, and misses that two heads catch up. T4HumP1, trained the usual '
                  'length from human replays, still wins about 2 games in 5 against these long 54-action runs. '
-                 'The graph is linked above.',
+                 'The graph is linked above. Outside check, added the same day (task T-47): one run of each '
+                 'controller played 50 games against Melee\'s own level 9 computer player in Dolphin. The 54 '
+                 'actions won 11, the ladder run 19, three heads 11, two heads 5. T4HumP1 won 21 at the usual '
+                 'length. So the large gain against our own models shows only weakly against an opponent the '
+                 'models never trained with (plain runs: 4 of 50 at the usual length, 7 to 8 at double length), '
+                 'and the controllers come out in a different order there than on the ladder. One run each and '
+                 '50 games: differences under about 7 wins say nothing.',
          graphs=[('Graph: Elo against training for the three controllers', 'curves.html#t43/elo'),
                  ('Graph: games won against the frozen pool', 'curves.html#t43/pool')],
          decision='The 54 actions stay the default. The three-head controller is not dropped: its next test is a '
