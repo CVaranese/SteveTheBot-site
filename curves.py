@@ -61,14 +61,13 @@ _POOL = ['model_T4V2s%d_c04_seeds1000' % s for s in (3, 4, 5, 6)]
 BENCH = [
     ('pool', 'Frozen pool', 'Share of games won against four saved models that no longer learn (T4V2, four random '
      'seeds, trained the usual length with today\'s controls). The routine yardstick.', _POOL),
-    ('elo', 'All opponents (Elo)', 'One strength number from every game against a ladder of 13 fixed opponents, '
-     'from imitation-only up to the end of a 12-times-length run. Zero is the average of the frozen pool; 100 Elo more '
+    ('elo', 'All opponents (Elo)', 'One strength number from every game against a ladder of 12 fixed opponents, '
+     'from an early T4V2 copy up to the end of a 12-times-length run. Zero is the average of the frozen pool; 100 Elo more '
      'means winning about 64 of 100 games against an equal of before.', 'elo'),
     ('hum', 'T4HumP1', 'Share of games won against T4HumP1: started from human replays, then trained by '
      'self-play for the usual length. It was the strongest fixed opponent until the long batch; the end of the '
-     'ladder run T43Lad is now about 310 Elo above it.', ['model_T4HumP1_seeds1000']),
-    ('im', 'Imitation only', 'Share of games won against T4ImFull, a model that only copies human replays and was '
-     'never trained by playing.', ['model_T4ImFull_seeds1000']),
+     'ladder run T43Lad is now about 310 Elo above it. T43F54 at c24, c34 and c48 also played 200 more games (other seeds), pooled in.',
+     ['model_T4HumP1_seeds1000', 'model_T4HumP1_seeds5000']),
     ('ppo8', 'Frozen PPO8Self', 'Share of games won against a saved copy of PPO8Self, the yardstick of the earlier '
      'models.', ['model_PPO8Self_c04_seeds1000']),
     ('cpu9', 'Level 9 CPU', 'Share of games won against Melee\'s own hardest computer player, in the real game '

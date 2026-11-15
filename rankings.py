@@ -8,6 +8,7 @@ game); rankings in BY_LEAD, where most models win nearly every game, go by stock
 import csv
 import html
 import math
+import re
 import time
 from collections import defaultdict
 
@@ -144,7 +145,7 @@ def _head_to_head(src):
         y = r['yardstick']
         if not y.startswith('model_') or y in boards:
             continue
-        opp = y[len('model_'):-len('_seeds1000')] if y.endswith('_seeds1000') else y[len('model_'):]
+        opp = re.sub(r'_seeds\d+$', '', y[len('model_'):])
         shown.update([r['model'], opp])
         rows.append((r['time'], r['model'], opp, int(r['games']), int(r['won']),
                      float(r['taken_per_game']) - float(r['lost_per_game'])))
