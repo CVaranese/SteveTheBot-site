@@ -57,10 +57,15 @@ SETS = [
 ]
 
 _POOL = ['model_T4V2s%d_c04_seeds1000' % s for s in (3, 4, 5, 6)]
+_POOL2 = ['model_%s_seeds1000' % m for m in ('T4V2s3_c04', 'T4HumP1', 'T43Lad_c12', 'T43Lad_c48')]
 # (key, tab text, what the benchmark is, yardsticks pooled or 'elo')
 BENCH = [
-    ('pool', 'Frozen pool', 'Share of games won against four saved models that no longer learn (T4V2, four random '
-     'seeds, trained the usual length with today\'s controls). The routine yardstick.', _POOL),
+    ('pool2', 'Frozen pool 2', 'Share of games won against four saved models that no longer learn: one T4V2 from '
+     'pool 1, T4HumP1 (started from human replays), and the ladder run T43Lad at 145 and 578 million decisions. '
+     'The routine yardstick since 2026-11-15.', _POOL2),
+    ('pool', 'Frozen pool 1', 'Share of games won against four saved models that no longer learn (T4V2, four random '
+     'seeds, trained the usual length with today\'s controls). The routine yardstick until 2026-11-15, when the '
+     'long runs had used it up.', _POOL),
     ('elo', 'All opponents (Elo)', 'One strength number from every game against a ladder of 12 fixed opponents, '
      'from an early T4V2 copy up to the end of a 12-times-length run. Zero is the average of the frozen pool; 100 Elo more '
      'means winning about 64 of 100 games against an equal of before.', 'elo'),
