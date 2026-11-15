@@ -66,7 +66,8 @@ resizes or reflows. For every interactive page:
   the end of its training run. File names and addresses keep the suffix. A model that is not from the end of its
   run must say where it is from in its legend entry.
 - Every model a page names (including the games scenario starts were saved from, and every ranked model) needs an
-  explanation in `names.py`: an exact entry in `NAMES` or a family in `PATTERNS`; the build stops otherwise. The
+  explanation in `names.py`: an exact entry in `NAMES` or a family in `PATTERNS` (or, for a model in an
+  experiment record, its variant's label); the build stops otherwise. The
   start page's "Model names" section shows the name parts (`NAME_PARTS`) and the models of the scenario and report
   pages; the rankings page lists its own models at the bottom, and each ranked name links there. Write each entry so it makes sense without knowing the code: what was trained,
   how it differs from its neighbour, the seed.
@@ -114,10 +115,41 @@ resizes or reflows. For every interactive page:
 
 ## Experiments *(build)*
 
-- `experiments.html` is built by `experiments.py`: one entry per experiment in `EXPERIMENTS` (task ids, date,
-  question in one line, variants with their models, score columns, verdict, decision). The text is
-  kept by hand; the score cells are filled from the same score logs as the rankings, so new scores of a listed
-  model appear on the next build. A model not scored yet shows a dash.
+- `experiments.html` is built by `experiments.py` from **experiment records** (since 2026-11-15, T-35; the user:
+  "record our test results in a standardized way so that it auto updates the site"): the header block (front
+  matter) of each plan file `notes/experiments/<date>-<slug>.md` in the main repo, read by `records.py` (the
+  field list is its docstring). Only the header is public; the plan body stays private. One plan file may hold
+  several records (`site:` is a list). The score cells are filled from the same score logs as the rankings, so
+  new scores of a listed model appear on the next build; no score table is typed by hand. A model not scored yet
+  shows a dash.
+- Template of a record (paste at the very top of the plan file):
+
+  ```yaml
+  ---
+  site:
+  - title: A few words
+    date: '2026-11-15'            # day the results came in
+    tasks: [T-48]
+    topic: controls               # a key of TOPICS
+    short: The result in one line.
+    question: The question in one line?
+    cols: [pool2, cpu9, {vs: Frozen T4HumP1, models: [T4HumP1], seeds: 1000}]
+    variants:
+    - what: What was tried (one setting, its seeds in one row)
+      models: [T48As1_c04, T48As2_c04]
+    # optional: assessment (only rows scored with ASSESSMENT=<id>), graphs [{text, href}],
+    # facts {head, rows} or facts_file {path, table}, watch [models], no_game reason, rescore: true
+    verdict: What the scores say.
+    decision: What the user decided (or what is pending).
+  ---
+  ```
+- Score with `ASSESSMENT=<plan file name without .md> python sim/eval_vs_bot.py ...` when a record should count
+  only its own rows (for example a re-score with new seeds); without it, every row of a listed model counts.
+- A model with no `names.py` entry is explained by the `what` label of its variant; a `names.py` entry still
+  wins and is better for model families shown on several pages.
+- Publishing is one command in the main repo: `bash tools/publish.sh` (copies new WSL score rows back, builds,
+  runs the safety check `tools/site_check.py`, commits and pushes this repo). `PUBLISH_DRY=1` stops before the
+  commit. Dolphin game logs are copied into `logs/` by hand first.
 - Three sections, in this order (the user's request, 2026-11-13: the page was "a lot of unsorted data"):
   **Recent experiments** (the newest `RECENT` entries, one result line each), **By what was tested** (every entry
   under its subject from `TOPICS`, folded: only date, title and the result line show until opened), **Model
@@ -127,8 +159,12 @@ resizes or reflows. For every interactive page:
   line, answering the question); the build stops otherwise.
 - Game pages (`reports/`) are for watching: the game on top, then moments to jump to and a few numbers; the
   timeline, the tables and the method are folded.
-- **Every finished task that trains, scores or measures something adds its entry.** The build stops when a score
-  log holds a task number no entry covers, or an end-of-run model no entry lists.
+- **Every finished task that trains, scores or measures something writes its record header.** The build stops
+  when a score log holds a task number no record covers, or an end-of-run model no record lists.
+- Every variant needs a game page, except in a record with `rescore: true` (it only scores existing models again;
+  the user, 2026-11-15: "Optional for rescores") or a `no_game` reason. A re-score record's models get no row of
+  their own in Model evaluations and no watch links (their shown name is the run's end-of-run copy).
+- Within one day, entries are ordered newest plan file first, then in the order written in the file.
 - Score cells are games won of 100, pooled over the variant's runs, with the single runs in small type below.
   Results not in the score logs (imitation accuracy, scenario shares, speeds) go in the entry's `facts` table.
 - Public page: summaries and numbers only, never raw notes, local paths, replay player names or connect codes.
@@ -136,5 +172,7 @@ resizes or reflows. For every interactive page:
 ## Before a push
 
 - `python build.py` runs without errors (it checks the names and the bar).
-- New pages hold no local paths, replay player names or connect codes, and no simulator code or data.
+- New pages hold no local paths, replay player names or connect codes, and no simulator code or data:
+  `tools/site_check.py` in the main repo checks every changed file (`--all`: every file) and `tools/publish.sh`
+  runs it before each push.
 - Look at one page of each kind (start page, roadmap, a scenario page, a game report) at phone and desktop width.

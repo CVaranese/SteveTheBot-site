@@ -1,35 +1,24 @@
 """experiments.html: every experiment, newest first, with its question, variants, scores, verdict and the decision it
 fed.
 
-The text of each entry (question, variants and their models, verdict, decision) is kept by hand in EXPERIMENTS
-below. The score tables are filled from the score logs at build time (logs/yardstick.csv from sim/eval_vs_bot.py;
-logs/**/*_cpu9_games.csv from run.py --games-log), so new scores of a listed model show up on the next build.
+Each entry is a record header in the main repo's notes/experiments/<date>-<slug>.md (front matter, read by
+records.py; the fields are listed there and a template is in STYLE.md). The score tables are filled from the score
+logs at build time (logs/yardstick.csv from sim/eval_vs_bot.py; logs/**/*_cpu9_games.csv from run.py --games-log),
+so new scores of a listed model show up on the next build. No table is typed by hand except 'facts', for numbers the
+score logs do not hold.
 
-The build stops when a score log holds a model no entry lists (every end-of-run model, by its shown name), or a
-task number no entry covers. So every finished task adds its entry here (rule in STYLE.md, "Experiments").
-
-Entry fields:
-  topic     what was being tested: a key of TOPICS (the page groups entries by it)
-  short     the result in one line, shown while the entry is folded and in "Recent experiments"
-  tasks     task ids the entry covers, e.g. ['T-37']; the first is shown
-  date      day the results came in (YYYY-MM-DD); entries are listed newest first
-  title     a few words
-  question  the question in one line
-  cols      score columns: keys of OPP, or (header, [opponent model names]) for head-to-head scores
-  variants  [(what was tried, [model names as in the score logs])]; seeds of one setting go in one row
-  graphs    optional [(link text, href)]: graphs of the result, e.g. ('Graph: ...', 'curves.html#t43/elo'), where
-            the part after # is <key of a SETS row>/<key of a BENCH row> in curves.py
-  facts     optional hand-kept table for results that are not in the score logs: (header row, [rows])
-  watch     for an entry with no variants: [model names] whose scenario and game pages it links. A facts row whose
-            first word is the model's shown name gets the links in a Watch column; the others go in a line below
-  no_game   for an entry with no variants and nothing to watch: the reason, in a few words
-  verdict   what the scores say
-  decision  what the user decided from it (or what is pending)
+The build stops when a score log holds a model no record lists (every end-of-run model, by its shown name), or a
+task number no record covers. So every finished task writes its record header (rule in STYLE.md, "Experiments").
+A facts row whose first word is a watch model's shown name gets that model's links in a Watch column.
 """
+import csv
 import html
 import re
 import time
+from collections import defaultdict
 
+import names
+import records
 from names import end_of_run, show
 from rankings import _dolphin_scores, _links, _sim_scores
 
@@ -67,499 +56,51 @@ TOPICS = [
 RECENT = 6                                            # entries in "Recent experiments"
 EVAL_COLS = ['cpu9', 'pool2', 't4v2', 't21', 'ppo8', 'bot9']   # score columns of the evaluations table
 
-EXPERIMENTS = [
-    dict(tasks=['T-43'], date='2026-11-15', title='Do the long runs get worse against T4HumP1 late on?',
-         topic='yardsticks',
-         short='Late copies did win less (77% to 67%), but mostly in one run, and earlier copies swing as much; '
-               'no clear decline with training.',
-         question='Against T4HumP1, the 54-action long runs seemed to win less after about 400 million decisions '
-                  'while their Elo kept rising. Is that real?',
-         cols=[], variants=[],
-         graphs=[('Graph: games won against T4HumP1 during training', 'curves.html#t43/hum')],
-         facts=(['Run', 'Won at 289 million decisions', 'Won at 410 million', 'Won at 578 million (end)'],
-                [['T43F54s1', '51%', '79%', '69%'],
-                 ['T43F54s2', '84%', '86%', '63%'],
-                 ['T43F54s3', '64%', '67%', '71%'],
-                 ['All three', '66%', '77%', '67%']]),
-         no_game='re-scores of the long-batch models above, which have their own pages',
-         verdict='Three saved copies of each 54-action long run played 200 new games against T4HumP1 (other '
-                 'random seeds than the first 50). Taken together the late copies did win less: 77% at 410 million '
-                 'decisions, 67% at the end, a fall larger than chance between games. But it comes mostly from one '
-                 'run (s2 fell 23 points; s1 fell 10; s3 rose 4), and between the two earlier copies the score rose '
-                 'by about as much. One run\'s saved copies swing this much against a single opponent, so three '
-                 'runs cannot show a steady decline. Over the same span the Elo on the ladder rose a little (+317 '
-                 'to +332). A guess, not tested: late self-play gains are against the run\'s own kind of play and '
-                 'do not carry over to a model started from human replays. The same day, T4ImFull (imitation '
-                 'only) was dropped from the ladder and the graphs, since every trained model beats it in nearly '
-                 'every game; the ladder is now 12 opponents and no Elo value moved by more than 11.',
-         decision='Nothing changes. Strength is still read as the mean Elo curve of several runs.'),
-    dict(tasks=['T-43', 'T-42'], date='2026-11-15', title='Twelve times the usual training: 54 actions against the '
-         'head controllers', topic='controls',
-         short='Strength keeps rising about 100 Elo per doubling of training. Three heads are far behind; two '
-               'heads catch up with the 54 actions.',
-         question='Does strength keep rising in a regular way when a run trains 12 times as long, and does a '
-                  'richer controller start lower and climb faster?',
-         cols=['t4v2', 'pool2', 'cpu9', ('Frozen T4HumP1', ['T4HumP1']), ('Frozen ladder run', ['T43Lad_c48']),
-               ('vs 54 actions', ['T43F54s1_c48', 'T43F54s2_c48', 'T43F54s3_c48'])],
-         variants=[
-             ('54 actions', ['T43F54s1_c48', 'T43F54s2_c48', 'T43F54s3_c48']),
-             ('Three heads: button, stick, C-stick (510 combinations)',
-              ['T43H510s1_c48', 'T43H510s2_c48', 'T43H510s3_c48']),
-             ('Two heads: button, stick (102 combinations), one run', ['T43H102s1_c48']),
-             ('The ladder run (54 actions, a fourth seed; its saved copies are fixed opponents)', ['T43Lad_c48']),
-         ],
-         facts=(['Controller', 'Runs', 'Elo at the usual length (48 million decisions)',
-                 'Elo at the end (578 million)', 'Elo gained per doubling of training',
-                 'Games won against 54 actions of the same age, at the end'],
-                [['54 actions', '3', '-11', '+332', '100', ''],
-                 ['Three heads', '3', '-200', '0', '49', '21%'],
-                 ['Two heads', '1', '-107', '+299', '130', '40%']]),
-         verdict='Eight self-play runs trained for 578 million decisions each (about 8.5 hours, all at once). '
-                 'Twelve saved copies of each run then played 50 games against each of 13 fixed opponents, and all '
-                 'results together give one strength number (Elo; zero is the frozen pool, 100 more means winning '
-                 'about 64 of 100). The 54 actions rise on a straight line against the logarithm of training: 100 '
-                 'Elo for every doubling, over five and a half doublings, with no ceiling in sight. The fixed '
-                 'opponents are not exhausted: against the strongest one the 54-action runs still win only 36%. '
-                 'The three-head controller is behind from the start and climbs half as fast; from 145 million '
-                 'decisions on it is about 330 Elo behind and wins 10% to 21% of games against 54-action runs of '
-                 'the same age. Its policy stayed much closer to random. The two-head controller (no C-stick, one '
-                 'run) started behind, caught the 54 actions at about 200 million decisions and stayed level with '
-                 'them. A short run does not predict the long one: a line through the first four copies is 67 to '
-                 '141 Elo too low at the end, and misses that two heads catch up. T4HumP1, trained the usual '
-                 'length from human replays, still wins about 2 games in 5 against these long 54-action runs. '
-                 'The graph is linked above. Outside check, added the same day (task T-47): one run of each '
-                 'controller played 50 games against Melee\'s own level 9 computer player in Dolphin. The 54 '
-                 'actions won 11, the ladder run 19, three heads 11, two heads 5. T4HumP1 won 21 at the usual '
-                 'length. So the large gain against our own models shows only weakly against an opponent the '
-                 'models never trained with (plain runs: 4 of 50 at the usual length, 7 to 8 at double length), '
-                 'and the controllers come out in a different order there than on the ladder. One run each and '
-                 '50 games: differences under about 7 wins say nothing.',
-         graphs=[('Graph: Elo against training for the three controllers', 'curves.html#t43/elo'),
-                 ('Graph: games won against the frozen pool', 'curves.html#t43/pool')],
-         decision='The 54 actions stay the default. The three-head controller is not dropped: its next test is a '
-                  'start from human replays (task T-42). Pending with the user: whether the two-head controller '
-                  'gets more runs, and the rule for reporting a setting\'s strength (the mean curve of at least 3 '
-                  'runs, no single "peak" number).'),
-    dict(tasks=['T-42'], date='2026-11-14', title='Three-head controller with a C-stick, built', topic='controls',
-         short='Built and checked: button, stick and C-stick heads (510 combinations) at no cost in speed.',
-         question='Can the bot get a C-stick and finer stick positions without slowing training down?',
-         cols=[], variants=[], watch=['T43H510s1_c48'],
-         facts=(['Controller', 'Inputs it can choose each frame', 'Decisions per second, one run alone'],
-                [['54 actions', '54', '32,859'],
-                 ['Three heads', '510', '32,556']]),
-         verdict='The network now picks a button (6), then a stick position given the button (17: centre, 8 full, '
-                 '8 half), then a C-stick position given both (5). The simulator acts on the C-stick: smash '
-                 'attacks on the ground, aerials in the air. Training, saving, the imitation trainer and the '
-                 'players all handle it, and it runs as fast as the 54 actions. Choices made in the build and '
-                 'open to change: 5 C-stick positions, and no pressing of several buttons at once. The game '
-                 'linked here is from the long run that followed.',
-         decision='Design chosen by the user on 2026-11-13: two heads plus a C-stick head. Compared against the '
-                  '54 actions in the long batch (the entry above). Still open: imitation from human replays with '
-                  'this controller, then PPO from that start.'),
-    dict(tasks=['T-43'], date='2026-11-14', title='Strength on one scale: the ladder', topic='yardsticks',
-         short='Averaged over runs, strength rises about 95 to 100 Elo per doubling of training; one run alone '
-               'is too uneven to extend.',
-         question='Can a model\'s strength after long training be predicted from the first part of its run?',
-         cols=[], variants=[], watch=['T37Plain7_c08', 'T40M128s7_c08'],
-         graphs=[('Graph: Elo against training, frame-history runs', 'curves.html#t37/elo'),
-                 ('Graph: Elo against training, matches-per-run runs', 'curves.html#t40/elo')],
-         facts=(['What was measured', 'Result'],
-                [['Runs scored', '10 (six T37, four T40), 8 saved copies each'],
-                 ['Fixed opponents (the ladder)', '9, from imitation-only up to T4HumP1'],
-                 ['Error of one strength value', 'about 21 Elo'],
-                 ['Up-and-down of one run around its own line', 'about 47 Elo'],
-                 ['Mean gain per doubling of training, T37 runs', '98 Elo'],
-                 ['Mean gain per doubling of training, T40 runs', '95 Elo'],
-                 ['Line through a run\'s first 4 copies, extended to its 8th: typical miss', '85 Elo'],
-                 ['Assuming no gain after the 4th copy: typical miss', '80 Elo']]),
-         verdict='Every saved copy of ten earlier runs played 50 games against each of nine fixed opponents, and '
-                 'all results together give each copy one strength number (Elo). Averaged over 4 to 6 runs, '
-                 'strength rises steadily with the logarithm of training and does not flatten within twice the '
-                 'usual length. A single run is too uneven: extending its early line misses its later strength '
-                 'by 85 Elo, no better than assuming it stops improving, and it mis-ranks the frame-history '
-                 'variants.',
-         decision='Curves are read as averages over several runs. The long batch (12 times the usual length, the '
-                  'entry above) went ahead on that basis.'),
-    dict(tasks=['T-30'], date='2026-11-13', title='Scenarios for models with a reaction delay', topic='yardsticks',
-         short='Now scored; recovery splits them (21% to 85%), shielding is impossible for them.',
-         question='How do the models that decide every frame with a reaction delay do in the scenario positions?',
-         cols=[], variants=[],
-         watch=['T21L6Cs4_c04', 'T4V2s3_c04', 'T4V2s5_c04', 'T37Plain8_c08', 'T4ImFull', 'T4HumP1_c04',
-                'T4HumP2_c04', 'T4HumKa1_c04', 'T4HumKa2_c04'],
-         facts=(['Model', 'Edgeguard', 'Recovery', 'Follow-up: one more hit', 'Whiff punish', 'First hit',
-                 'Shield: not hit'], [
-             ['T21L6Cs4 (no delay, for comparison)', '7%', '90%', '43%', '26%', '36%', '24%'],
-             ['T4V2s3', '6%', '34%', '36%', '15%', '31%', '1%'],
-             ['T4V2s5', '7%', '69%', '33%', '8%', '30%', '1%'],
-             ['T37Plain8 (double length)', '9%', '65%', '38%', '13%', '29%', '1%'],
-             ['T4ImFull (imitation only)', '9%', '24%', '23%', '8%', '19%', '0%'],
-             ['T4HumP1', '6%', '44%', '41%', '19%', '31%', '1%'],
-             ['T4HumP2', '7%', '54%', '41%', '14%', '32%', '1%'],
-             ['T4HumKa1', '7%', '85%', '33%', '12%', '30%', '1%'],
-             ['T4HumKa2', '8%', '85%', '32%', '12%', '28%', '0%'],
-         ]),
-         verdict='Every model now plays the positions with its own controls (scoring an old model again gave exactly '
-                 'its earlier numbers). Against the frozen T21L6Cs4, which has no delay, the delayed models lose the '
-                 'first hit about two times in three and rarely punish a whiff. Recovery splits them most and varies '
-                 'between seeds (T4V2: 34% to 69%); the small pull back to the human policy (T4HumKa) recovers in '
-                 '85% with both seeds. A delayed model starts each position with an empty delay queue and stands '
-                 'still for 11 frames, so it is always hit at the shield positions; these numbers are not directly '
-                 'comparable with models without a delay. 28 models scored; the full table is on the catalog for '
-                 'the catalog models.',
-         decision='Pending: none needed to use the scores.'),
-    dict(tasks=['T-40'], date='2026-11-13', title='Matches per run', topic='speed',
-         short='All three end level against frozen T4V2; per hour, 256 matches at once is behind.',
-         question='Does playing more matches at once in one training run learn as well per game and per hour?',
-         cols=['t4v2', ('vs plain 64 matches', ['T40M64s7_c08', 'T40M64s8_c08'])],
-         variants=[
-             ('64 matches at once (the usual)', ['T40M64s7_c08', 'T40M64s8_c08']),
-             ('128 matches at once', ['T40M128s7_c08', 'T40M128s8_c08']),
-             ('256 matches at once', ['T40M256s7_c08', 'T40M256s8_c08']),
-         ],
-         facts=(['Setting', 'Runs that fit in memory', 'Decisions per second, all runs', 'Hours to the usual length',
-                 'Wins of 200, half way', 'Wins of 200, end'],
-                [['64 matches', '8', '126,000', '0.85', '97.5', '96.5'],
-                 ['128 matches', '6', '151,000', '0.53', '81', '107.5'],
-                 ['256 matches', '4 (5 may fit)', '110,000', '0.49', '70.5', '94.5']]),
-         verdict='All three end level against frozen T4V2 (50 games against each of the four; two seeds each, which '
-                 'differ by up to 32 of 200). Per game played, 64 matches learns fastest in the middle of the run; '
-                 'per hour of a full machine, 64 and 128 are level and 256 is behind. Memory, not the processor, '
-                 'limits how many runs fit, and a run costs about 1.2 GB plus 6 MB per match, so 6 runs of 128 '
-                 'matches play 13% to 20% more than 8 of 64 (two measurements). Speed-ups that keep the learning identical gave 9% for one run '
-                 'alone.',
-         decision='128 matches is the default for new runs (the user, 2026-11-13): 6 runs per batch, about 0.6 h '
-                  'instead of 0.9, compared against plain runs at 128 from the same batch.'),
-    dict(tasks=['T-4'], date='2026-11-13', title='PPO from imitation (the human line)', topic='replays',
-         short='Yes, likely: 62 wins of 100 against 48 from scratch. Pulling back to the human policy hurt.',
-         question='Does starting PPO from a network that copied human Falcon replays beat starting from scratch?',
-         cols=['t4v2', 'bot9', ('vs plain start', ['T4HumP1_c04', 'T4HumP2_c04'])],
-         variants=[
-             ('From scratch (reference, T-37 plain runs)', ['T37Plain7_c04', 'T37Plain8_c04']),
-             ('The imitation network alone, no PPO (reference)', ['T4ImFull_c04']),
-             ('The imitation network with frame history alone, no PPO (reference)', ['T4ImFullH4_c04']),
-             ('From the imitation network', ['T4HumP1_c04', 'T4HumP2_c04']),
-             ('From the imitation network with frame history', ['T4HumH1_c04', 'T4HumH2_c04']),
-             ('From imitation, small pull back to the human policy (KL 0.1)', ['T4HumKa1_c04', 'T4HumKa2_c04']),
-             ('From imitation, strong pull back to the human policy (KL 1.0)', ['T4HumKb1_c04', 'T4HumKb2_c04']),
-         ],
-         verdict='Starting from imitation helps: mean 62 wins of 100 against frozen T4V2, against 48 from scratch at '
-                 'the same 2,940 updates, though the two seeds differ by 20 (72 and 52), so the gain is likely, not '
-                 'firm. The imitation network alone wins almost nothing (1 of 100), so the gain comes only after PPO '
-                 'moves away from it. The history start scores 47 and loses head to head to the plain start (34 of '
-                 '100). Pulling the policy back toward the imitation network made it weaker: mean 38 with a small '
-                 'pull, as weak as imitation alone with a strong one. Against the level 9 in-game CPU in Dolphin (50 '
-                 'games): T4HumP1 won 21, the small-pull T4HumKa1 12, imitation alone 0; delayed models from scratch '
-                 'won 1 to 3.',
-         decision='PPO from imitation without a pull back is the best start found. Whether the imitation-based '
-                  'models look more human is for the user to watch.'),
-    dict(tasks=['T-37'], date='2026-11-13', title='Memory of past frames', topic='inputs',
-         short='No: both history inputs score below plain inputs at the usual length.',
-         question='Does adding the last few game states to the input (frame history) make a stronger bot?',
-         cols=['t4v2', 'cpu9', 'bot9', ('vs plain, double length', ['T37Plain7_c08', 'T37Plain8_c08'])],
-         variants=[
-             ('Plain inputs (no history)', ['T37Plain7_c04', 'T37Plain8_c04']),
-             ('4 past states, 8 frames apart', ['T37H4s8_7_c04', 'T37H4s8_8_c04']),
-             ('8 past states, 4 frames apart', ['T37H8s4_7_c04', 'T37H8s4_8_c04']),
-             ('Plain inputs, double length', ['T37Plain7_c08', 'T37Plain8_c08']),
-             ('4 past states, 8 apart, double length', ['T37H4s8_7_c08', 'T37H4s8_8_c08']),
-             ('8 past states, 4 apart, double length', ['T37H8s4_7_c08', 'T37H8s4_8_c08']),
-         ],
-         verdict='No. At 2,940 updates both history inputs score below plain (36 and 41 against 48). At double '
-                 'length (5,880 updates) 4 states 8 apart catches up (58 against 62, even head to head) and 8 states '
-                 '4 apart stays behind (45; 36 head to head). Against the level 9 CPU in Dolphin (50 games each) '
-                 'plain inputs also win most: 4 and 4 at 2,940 updates and 8 and 7 at double length, against 1 to 5 '
-                 'for the history runs.',
-         decision='No recurrent or transformer core is built for now; the imitation work (T-4) uses the plain '
-                  'network, with a history twin for comparison.'),
-    dict(tasks=['T-4'], date='2026-11-13', title='Imitation with frame history', topic='replays',
-         short='Barely: prediction error 0.612 against 0.620.',
-         question='Does frame history help a network predict what a human presses next?',
-         cols=[], variants=[], watch=['T4ImFull', 'T4ImFullH4_c04'],
-         facts=(['Held-out replays', 'Plain (T4ImFull)', '4 states, 8 apart (T4ImFullH4)'], [
-             ['Cross-entropy (lower is better)', '0.620', '0.612'],
-             ['Accuracy', '0.840', '0.841'],
-             ['Accuracy of "repeat the last input"', '0.835', '0.836'],
-             ['Accuracy when the human changes input', '0.083', '0.087'],
-         ]),
-         verdict='Barely: 0.008 lower cross-entropy, steady across checkpoints but well under the 0.02 to 0.10 '
-                 'expected. Both networks mostly learn to repeat the last input; changes of input are the hard part '
-                 '(right about 1 time in 12). 1,236 Falcon ditto games on Final Destination, 20.6 million frames.',
-         decision='Both networks were trained on with PPO (the human line, above) to compare in play.'),
-    dict(tasks=['T-4'], date='2026-11-12', title='Input version 2 (the zero line)', topic='inputs',
-         short='No cost: input 2 wins 54 to 69 of 100 against input 1 runs.',
-         question='Do inputs built only from what both the simulator and human replays record cost PPO anything?',
-         cols=['bot9', ('vs input 1 runs', ['T4V1s5_c04', 'T4V1s6_c04', 'T17F54s3_c04', 'T17F54s4_c04'])],
-         variants=[
-             ('Input version 2', ['T4V2s3_c04', 'T4V2s4_c04', 'T4V2s5_c04', 'T4V2s6_c04']),
-             ('Input version 1 (the usual inputs)', ['T4V1s5_c04', 'T4V1s6_c04']),
-         ],
-         verdict='No cost: input 2 runs as fast and wins 54 to 69 of 100 against input 1 runs (part of the '
-                 'same-batch margin is seed luck).',
-         decision='Input 2 is used for both lines: PPO from scratch and PPO from imitation. The four T4V2 runs '
-                  'became the frozen yardstick for models with the current controls.'),
-    dict(tasks=['T-4'], date='2026-11-12', title='First imitation runs', topic='replays',
-         short='No: it repeats its last input and loses every game.',
-         question='Can a network that copies human replays play on its own?',
-         cols=['bot9'],
-         variants=[
-             ('Copy the replays', ['T4Im300_c02']),
-             ('Copy the replays, input changes weighted 5 times', ['T4Im300W5_c01']),
-         ],
-         verdict='Not on its own. It learns to repeat its last input (84% accuracy, the same as "repeat the last '
-                 'input") and loses every game, mostly by falling off the stage without using up-B. Weighting input '
-                 'changes makes it predict them (24%) but does not fix recovery: the network reaches positions '
-                 'humans rarely show. Trained on 254 games.',
-         decision='The user chose the next step: imitation on all games, then PPO from that start (above).'),
-    dict(tasks=['T-31'], date='2026-11-12', title='Scenario yardstick, version 2', topic='yardsticks',
-         short='Recovery is solved (83% to 92%); edgeguarding is absent (5% to 11%).',
-         question='Can saved positions test single skills (edgeguard, recovery, punishes) fairly?',
-         cols=[], variants=[], watch=['T21L6Cs4_c04', 'PPO8Self_c04', 'PPO8Bot_c04', 'SimBase_c08'],
-         facts=(['Scenario (vs frozen T21L6Cs4)', 'PPO models', 'Random'], [
-             ['Edgeguard: takes the stock', '5% to 11%', '6%'],
-             ['Recovery: back on stage', '83% to 92%', '7%'],
-             ['Whiff punish', '21% to 29%', '16%'],
-             ['First hit from neutral', '35% to 58%', '23%'],
-             ['Shielding: not hit', '15% to 24%', '35%'],
-         ]),
-         verdict='Recovery is solved and edgeguarding is absent: the bots barely go after an opponent offstage. Starts '
-                 'already lost or already safe are filtered out by playing them on first (170 of 380 kept). The '
-                 'shielding test favours random play because the starts are moments these models were hit.',
-         decision='The user watched samples and accepted them ("they\'re just cut a little too long"); the scenario '
-                  'pages on this site play them.'),
-    dict(tasks=['T-28'], date='2026-11-12', title='Scenario yardstick, version 1', topic='yardsticks',
-         short='Too loose: many starts were already decided. Replaced by version 2.',
-         question='First try at scoring edgeguard, follow-up and recovery from saved positions.',
-         cols=[], variants=[], watch=['T21L6Cs4_c04', 'T22EmbSmall3_c04', 'SimBase_c08'],
-         facts=(['Scenario (vs frozen T21L6Cs4)', 'PPO models', 'Random'], [
-             ['Recovery', '81% to 86%', '19%'],
-             ['Edgeguard', '21% to 28%', '14%'],
-             ['Follow-up: extra damage', '8 to 12', '3.6'],
-         ]),
-         verdict='Recovery saturated; the edgeguard and follow-up tests were too loose (many starts already decided).',
-         decision='The user found the scenarios "pretty poor" after watching them and asked for version 2 (above).'),
-    dict(tasks=['T-17'], date='2026-11-12', title='Two-head controller', topic='controls',
-         short='No: the 54 actions beat both 102-action versions about 3 games in 4.',
-         question='Does choosing a button, then a stick position (102 combinations) beat the 54 fixed actions?',
-         cols=['cpu9', 'bot9', ('vs 102 in one list', ['T17F102s3_c04', 'T17F102s4_c04']),
-               ('vs two heads', ['T17H102s3_c04', 'T17H102s4_c04'])],
-         variants=[
-             ('54 actions (as before)', ['T17F54s3_c04', 'T17F54s4_c04']),
-             ('102 actions in one list', ['T17F102s3_c04', 'T17F102s4_c04']),
-             ('102 actions, two heads (button, then stick)', ['T17H102s3_c04', 'T17H102s4_c04']),
-         ],
-         verdict='The 54 actions win: they beat both 102-action versions about 3 games in 4; two heads and one list '
-                 'are about even (48 of 100). All act every frame with an 11-frame delay and lose to the undelayed yardsticks.',
-         decision='The 54 actions stay the default; two heads is an option.'),
-    dict(tasks=['T-16'], date='2026-11-12', title='Every frame, with reaction delay', topic='controls',
-         short='Every frame costs nothing; a 15-frame delay costs a lot (10 of 50 against the level 9 CPU, the '
-               'others 42 to 46).',
-         question='Does a decision every frame, and a human-like reaction delay, change how well the bot learns?',
-         cols=['cpu9', 't21', 'bot9'],
-         variants=[
-             ('Every 2 frames, no delay (as before)', ['T16Base3_c04', 'T16Base4_c04']),
-             ('Every frame, no delay', ['T16F1s3_c04', 'T16F1s4_c04']),
-             ('Every frame, 15-frame delay', ['T16F1D15s3_c04', 'T16F1D15s4_c04']),
-         ],
-         verdict='Every frame without delay plays about as well as every 2 frames. A 15-frame delay costs a lot at '
-                 'this training length: it wins 10 of 50 against the level 9 CPU, the others 42 to 46.',
-         decision='The user made every frame with an 11-frame delay (0.19 s) the default after watching: the bot '
-                  'should play with human reactions, even if scores drop.'),
-    dict(tasks=['T-15'], date='2026-11-12', title='Does a held button stay held?', topic='controls',
-         short='Yes, one long press: the bot cannot press a button twice in a row.',
-         question='When the bot picks the same button twice in a row, is it one long press or two?',
-         cols=[], variants=[], no_game='a check of button traces, not of a model',
-         verdict='One continuous hold, in Dolphin and the simulator alike (identical traces): the bot cannot press a '
-                 'button twice without another action between.',
-         decision='Kept in mind for the controller work; no change made.'),
-    dict(tasks=['T-22'], date='2026-11-12', title='Twice as long', topic='method',
-         short='Yes: each long run beats its own half-way copy 93 to 100 times in 100.',
-         question='Does training for 5,880 updates instead of 2,940 pay, and does it change which inputs win?',
-         cols=['cpu9', 't21'],
-         variants=[
-             ('Plain inputs, 5,880 updates', ['T22LongBase7_c08', 'T22LongBase8_c08']),
-             ('Animation embedding, 5,880 updates', ['T22LongEmb5_c08', 'T22LongEmb6_c08', 'T22LongEmb7_c08',
-                                                     'T22LongEmb8_c08', 'T22LongEmb9_c08', 'T22LongEmb10_c08']),
-             ('Plain inputs, 2,940 updates (reference)', ['T21L6Cs4_c04']),
-             ('Animation embedding, 2,940 updates', ['T22EmbSmall3_c04']),
-         ],
-         verdict='Twice as long pays strongly: each long run beats its own half-way copy 93 to 100 times in 100. The '
-                 'embedding falls behind plain inputs at both lengths (84 against 98 at double length).',
-         decision='Screening stays at 2,940 updates; double length is for a model to present. The embedding was '
-                  'dropped as default.'),
-    dict(tasks=['T-5', 'T-23'], date='2026-11-12', title='Project+ in Dolphin', topic='pplus',
-         short='About 620 to 750 frames a second per copy; a Melee model plays whole P+ games.',
-         question='How fast does P+ run in a scriptable Dolphin, and can a Melee model play it?',
-         cols=[], variants=[], no_game='speed measurements in Dolphin; no recording of the P+ games was kept',
-         facts=(['Measure', 'Result'], [
-             ['Game speed, one copy', 'about 620 to 750 frames a second (10 to 12 times real time)'],
-             ['Four copies at once', 'about 620 frames a second each'],
-             ['Scripted inputs (after our fix)', 'every input lands, 1 to 2 frames late'],
-             ['Game states that map to Melee exactly', '91%'],
-         ]),
-         verdict='A Melee-trained model plays whole P+ games through a translator. A savestate bug in the scripting '
-                 'Dolphin ran P+ at double speed and dropped every second input; our fork fixes it.',
-         decision='Falcon against Falcon on Battlefield or Final Destination; no Melee level is required first.'),
-    dict(tasks=['T-12', 'T-22'], date='2026-11-11', title='Re-screen at the new learning rate', topic='inputs',
-         short='Only the embedding beat plain inputs in this batch; it lost again at double length.',
-         question='At the larger learning rate, which input variants still beat plain inputs?',
-         cols=['t21', 'cpu9'],
-         variants=[
-             ('Plain inputs', ['T22Base5_c04', 'T22Base6_c04']),
-             ('Animation embedding, small start', ['T22EmbSmall3_c04', 'T22EmbSmall4_c04']),
-             ('Inputs rescaled', ['T22Scale3_c04', 'T22Scale4_c04']),
-             ('Learning rate 0.0012', ['T22L12Cs3_c04', 'T22L12Cs4_c04']),
-         ],
-         verdict='The embedding beats plain inputs in this batch (50 against 12 of 100); rescaling does not help; '
-                 'doubling the rate again is not better. T21L6Cs4 itself turned out to be an unusually strong seed.',
-         decision='The user set the rule (a variant becomes default if it beats plain runs from the same batch by 10 '
-                  'or more, with no run below the lowest plain run) and made the embedding default, then dropped it '
-                  'after the double-length runs (above).'),
-    dict(tasks=['T-21'], date='2026-11-11', title='Larger learning rate', topic='method',
-         short='Yes: from about 54 to about 92 wins of 100 against frozen PPO8Self.',
-         question='Does a larger learning rate (step size) make PPO learn faster at the same length?',
-         cols=['ppo8', ('vs frozen T21L6s3', ['T21L6s3_c04']), 't21'],
-         variants=[
-             ('0.0006, lowered to zero', ['T21L6s3_c04', 'T21L6s4_c04', 'T21L6s5_c04', 'T21L6s6_c04']),
-             ('0.0006, held constant', ['T21L6Cs3_c04', 'T21L6Cs4_c04']),
-             ('0.0003, held constant', ['T21L3Cs3_c04', 'T21L3Cs4_c04']),
-         ],
-         verdict='Much better: from about 54 to about 92 of 100 against frozen PPO8Self. 0.0006 held constant is '
-                 'strongest and was still improving at the end.',
-         decision='0.0006 held constant became the default ("We can make these the defaults").'),
-    dict(tasks=['T-19'], date='2026-11-11', title='Faster experiments', topic='speed',
-         short='8 runs share the GPU; half-length runs cannot rank variants.',
-         question='Can runs be shorter, and run many at once on the GPU, and still rank variants right?',
-         cols=['ppo8', 'bot9'],
-         variants=[
-             ('Plain inputs, 2,940 updates', ['T19Base3_c04', 'T19Base4_c04']),
-             ('Embedding, small start', ['T19EmbSmall2_c04', 'T19EmbSmall3_c04']),
-             ('Embedding, large start', ['T19Emb2_c04']),
-             ('Previous action as input', ['T19Prev3_c04']),
-             ('Half length (1,470 updates)', ['T19hBase3_c01', 'T19hBase4_c01', 'T19hEmb2_c01', 'T19hEmbSmall2_c01',
-                                              'T19hEmbSmall3_c01', 'T19hPrev3_c01']),
-             ('Half length, learning rate 0.0006', ['T19L6Base3_c01', 'T19L6Base4_c01', 'T19L6Emb2_c01',
-                                                    'T19L6EmbSmall2_c01', 'T19L6EmbSmall3_c01', 'T19L6Prev3_c01']),
-             ('Half length, learning rate 0.0012', ['T19L12Base3_c01', 'T19L12Prev3_c01']),
-         ],
-         verdict='Up to 8 runs share the GPU (71,000 decisions a second in all). Half-length runs are far weaker and '
-                 'rank variants differently, so they cannot screen. Doubling the learning rate at half length '
-                 'raised wins from about 4 to 31: the step size was holding learning back.',
-         decision='Screening stays at full length with two seeds per variant, 8 runs at once; the step-size result '
-                  'led to T-21.'),
-    dict(tasks=['T-18'], date='2026-11-11', title='Game report', topic='yardsticks',
-         short='85% of moves hit nothing; in 57% to 70% of decisions no input could matter.',
-         question='What does one game look like decision by decision, and which inputs could have mattered?',
-         cols=[], variants=[], watch=['PPO8Self_c04', 'PPO8Bot_c04', 'PPOSelf_c04', 'PPOBot_c04', 'SimBase_c08'],
-         facts=(['Measure (one game per model)', 'Result'], [
-             ['Decisions where no input could change the next half second', '57% to 70%'],
-             ['Inputs that change what the character does', 'about 11%'],
-             ['Moves started per minute', 'about 55'],
-             ['Moves that hit nothing', '85%, most from more than 40 units away'],
-         ]),
-         verdict='The bot throws moves at nothing and rarely follows up; when it is free to act, it chooses between '
-                 'about 3 options. The critic tracks the next few seconds, not the stock lead.',
-         decision='The game report pages on this site come from this; the same report is meant for the user\'s own '
-                  'games later.'),
-    dict(tasks=['T-12'], date='2026-11-11', title='Second seed for the input variants', topic='inputs',
-         short='The previous-action gain did not repeat; one run per variant cannot rank close variants.',
-         question='Do the T-9 input gains hold with a second random seed?',
-         cols=['ppo8', 'bot9'],
-         variants=[
-             ('Plain inputs', ['T12Base_c01']),
-             ('Previous action as input', ['T12Prev_c01']),
-             ('Embedding, small start', ['T12EmbSmall_c01']),
-             ('Embedding, small start, previous action', ['T12EmbSmallPrev_c01']),
-         ],
-         verdict='The previous-action gain did not repeat (54 against 47); the small-start embedding looked best. '
-                 'Same-setting runs differ by 12 to 13 wins, so one run per variant cannot rank close variants.',
-         decision='Two seeds per variant from here on; the previous action stays optional (the user: it does not say '
-                  'whether the press took effect).'),
-    dict(tasks=['T-9'], date='2026-11-11', title='Input variants', topic='inputs',
-         short='Previous action 72 against plain 54 of 100, one seed each (not confirmed by the second seed).',
-         question='Do a learned animation embedding, or the bot\'s own previous action, make better inputs?',
-         cols=['ppo8', 'bot9'],
-         variants=[
-             ('Plain inputs', ['T9Base_c01']),
-             ('Previous action as input', ['T9Prev_c01']),
-             ('Embedding', ['T9Emb_c01']),
-             ('Embedding and previous action', ['T9EmbPrev_c01']),
-         ],
-         verdict='Previous action 72 and embedding with previous action 69, against 54 for plain inputs; the '
-                 'embedding alone 32. One seed each.',
-         decision='Checked with a second seed (T-12, above).'),
-    dict(tasks=['weights'], date='2026-11-11', title='Hand-edited weights', topic='method',
-         short='Yes: sharper choices and a wired-in recovery lose fewer stocks to the level 9 CPU.',
-         question='Can editing a trained network by hand (sharper choices, a wired-in recovery) make it play better?',
-         cols=['cpu9', 'ppo8'],
-         variants=[
-             ('Unchanged (PPO8Bot)', ['PPO8Bot_c04']),
-             ('Choices sharpened (output times 2.5)', ['PPO8Bot_c04_edit']),
-             ('Sharpened plus a hand-wired recovery', ['PPO8Bot_c04_edit_rec']),
-         ],
-         verdict='Both edits lose fewer stocks to the level 9 CPU (2.05 to 1.62 and 1.34) and win more against '
-                 'frozen PPO8Self. Fully greedy play is worse: some randomness is needed, since the network cannot '
-                 'see its own last press.',
-         decision='The user watched it: it "definitely flails less". Hand edits stay a one-off; temperature '
-                  'tuning before scoring is queued.'),
-    dict(tasks=['T-11'], date='2026-11-11', title='PPO against the in-game CPU', topic='method',
-         short='PPO wins 25 to 48 of 50 at level 9; the 2017 learner none.',
-         question='How do the first PPO models do against Melee\'s own computer player?',
-         cols=['cpu9', 'ppo8'],
-         variants=[
-             ('2017 learner (reference)', ['SimBase_c08']),
-             ('PPO, self-play', ['PPOSelf_c04']),
-             ('PPO, vs scripted bot', ['PPOBot_c04']),
-             ('PPO with network fixes, self-play', ['PPO8Self_c04']),
-             ('PPO with network fixes, vs scripted bot', ['PPO8Bot_c04']),
-         ],
-         verdict='Every PPO model wins all 50 games at level 3 and 25 to 48 of 50 at level 9; the 2017 learner wins '
-                 'none. The scripted bot is saturated, so a frozen model (PPO8Self) became the harder yardstick. The '
-                 'two kinds of opponent rank bot-trained and self-play models in opposite orders.',
-         decision='The frozen-model yardstick became the routine score.'),
-    dict(tasks=['T-3', 'T-8'], date='2026-11-11', title='PPO with GAE', topic='method',
-         short='Yes: PPO wins 87 to 100 of 100 against the level 3 scripted bot after 20 minutes.',
-         question='Does replacing the 2017 actor-critic with PPO and GAE (and fixing the network) make a bot that '
-                  'wins?',
-         cols=['bot3', 'bot9'],
-         variants=[
-             ('2017 learner, self-play (reference)', ['SimBase_c08']),
-             ('2017 learner, vs scripted bot', ['SimBaseBot_c08']),
-             ('PPO, self-play', ['PPOSelf_c04']),
-             ('PPO, vs scripted bot', ['PPOBot_c04']),
-             ('PPO with network fixes, self-play', ['PPO8Self_c04']),
-             ('PPO with network fixes, vs scripted bot', ['PPO8Bot_c04']),
-         ],
-         verdict='Yes: in 20 minutes PPO wins 87 to 100 of 100 against the level 3 scripted bot, which the 2017 '
-                 'learner never beat in 48,000 updates. PPO runs 15,400 decisions a second (the old learner 5,600).',
-         decision='PPO with the network fixes became the learner.'),
-    dict(tasks=['T-2', 'T-7'], date='2026-11-11', title='Simulator against Dolphin', topic='speed',
-         short='Yes: 29 of 30 input columns are equal on every frame of a whole game.',
-         question='Does the simulator build the same inputs as the real game, frame for frame?',
-         cols=[], variants=[], no_game='a frame-by-frame comparison of inputs, not of a model',
-         verdict='One whole two-controller game (4,907 frames) replays in the simulator to the end; after a hitstun '
-                 'fix, 29 of 30 input columns are equal on every frame (the last differs in 27 idle frames). Games '
-                 'against the in-game CPU cannot be replayed this way.',
-         decision='Training moved to the simulator; the hitstun fix is in the inputs.'),
-    dict(tasks=['T-1', 'baseline'], date='2026-11-11', title='The 2017 learner as a baseline', topic='method',
-         short='Barely above random: it never wins a game.',
-         question='How good is the original 2017 learner, in Dolphin and in the simulator?',
-         cols=['bot3'],
-         variants=[
-             ('Random play', ['random']),
-             ('Trained in Dolphin, 21,850 updates', ['Steve_2026-11-11_u21850']),
-             ('Simulator, self-play, 48,000 updates', ['SimBase_c08']),
-             ('Simulator, vs scripted bot, 48,000 updates', ['SimBaseBot_c08']),
-         ],
-         facts=(['Stocks taken per game from the level 3 scripted bot (100 games)', 'Stocks'], [
-             ['Random play', '0.14'],
-             ['Trained in Dolphin, 21,850 updates', '0.64'],
-             ['Simulator, self-play, 48,000 updates', '0.43'],
-             ['Simulator, vs scripted bot, 48,000 updates', '0.69'],
-         ]),
-         verdict='Barely above random: it never wins a game and its choices stay close to random. Models trained '
-                 'only in the simulator play at least as well against the real CPU as the one trained in Dolphin.',
-         decision='The baseline came first, on the user\'s instruction; PPO was the first change of method.'),
-]
+# Filled by load(src) from the record headers of the main repo's notes/experiments/*.md (records.py).
+EXPERIMENTS = []
+
+
+def load(src):
+    """Read the records; a model with no names.py entry is explained by its variant's label. Call before any page
+    checks names (build.py does it first)."""
+    EXPERIMENTS[:] = records.load(src)
+    for e in EXPERIMENTS:
+        for what, models in e['variants']:
+            for m in models:
+                n = show(m)
+                if not names.explain(n):
+                    names.EXTRA[n] = '%s (experiment "%s").' % (re.sub(r' \(reference[^)]*\)', '', what),
+                                                                 e['title'])
+    return EXPERIMENTS
+
+
+def _yard(m, seeds):
+    return 'model_%s_seeds%d' % (m, seeds)
+
+
+def _opp_name(y):
+    """'model_X_seedsN' -> 'X'; None for other yardsticks."""
+    m = re.fullmatch(r'model_(.+)_seeds\d+', y)
+    return m[1] if m else None
+
+
+def _sim_by_assessment(src):
+    """{assessment id: {yardstick: {model: [games, won, taken, lost]}}} from logs/yardstick.csv rows that carry
+    an assessment id (column added 2026-11-15)."""
+    out = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [0, 0, 0.0, 0.0, '9999'])))
+    path = src / 'logs' / 'yardstick.csv'
+    if path.is_file():
+        for r in csv.DictReader(path.open(encoding='utf-8')):
+            a = r.get('assessment') or ''
+            if not a:
+                continue
+            g = int(r['games'])
+            s = out[a][r['yardstick']][r['model']]
+            s[0] += g
+            s[1] += int(r['won'])
+            s[2] += float(r['taken_per_game']) * g
+            s[3] += float(r['lost_per_game']) * g
+    return out
 
 STYLE = """
 main{max-width:1000px}
@@ -635,12 +176,12 @@ details.x[open]>summary{border-bottom:1px solid var(--line)}
 def _src_rows(col, sim, dol):
     """The score rows a column reads: {model: [games, won, taken, lost, day]} per source, as a list."""
     if isinstance(col, tuple):
-        return [sim.get('model_%s_seeds1000' % m, {}) for m in col[1]], {m for m in col[1]}
+        seeds = col[2] if len(col) > 2 else 1000
+        return [sim.get(_yard(m, seeds), {}) for m in col[1]], {m for m in col[1]}
     source = OPP[col][2]
     if source == 'dolphin':
         return [dol], set()
-    return [sim.get(y, {}) for y in source], {y[len('model_'):-len('_seeds1000')] for y in source
-                                             if y.startswith('model_')}
+    return [sim.get(y, {}) for y in source], {_opp_name(y) for y in source if _opp_name(y)}
 
 
 def _cell(models, col, sim, dol):
@@ -672,8 +213,10 @@ def _cell(models, col, sim, dol):
 
 def _head(col):
     if isinstance(col, tuple):
-        return '<th class="n" title="Head to head: games won against %s">%s</th>' % (
-            html.escape(', '.join(show(m) for m in col[1])), html.escape(col[0]))
+        seeds = col[2] if len(col) > 2 else 1000
+        return '<th class="n" title="Head to head: games won against %s%s">%s</th>' % (
+            html.escape(', '.join(show(m) for m in col[1])),
+            '' if seeds == 1000 else ' (games with seed base %d, not the usual 1000)' % seeds, html.escape(col[0]))
     return '<th class="n" title="%s">%s</th>' % (html.escape(OPP[col][1]), html.escape(OPP[col][0]))
 
 
@@ -687,7 +230,8 @@ def _table(e, sim, dol, pages):
             n = show(m)
             if n not in names:
                 names.append(n)
-        links = ''.join(_links(pages.get(n, []), True) for n in names)
+        # a re-score names saved copies whose shown name is the run's: its page is another copy, so no link
+        links = '' if e.get('rescore') else ''.join(_links(pages.get(n, []), True) for n in names)
         rows.append('<tr><td class="v"><b>%s</b><span>%s</span>%s</td>%s</tr>' % (
             html.escape(what), html.escape(', '.join(names)), ('<div>%s</div>' % links) if links else '',
             ''.join(_cell(models, c, sim, dol) for c in e['cols'])))
@@ -727,8 +271,11 @@ def _day(d):
     return time.strftime('%d %b', time.strptime(d, '%Y-%m-%d'))
 
 
-def _entry(e, sim, dol, pages):
-    """One experiment, folded: date, title and the one-line result show; the rest opens."""
+def _entry(e, sim, dol, pages, by_a=None):
+    """One experiment, folded: date, title and the one-line result show; the rest opens. A record with an
+    'assessment' id counts only the score rows written with that id."""
+    if e.get('assessment'):
+        sim = (by_a or {}).get(e['assessment'], {})
     tid = ', '.join(t for t in e['tasks'] if t.startswith('T-'))
     return ('<details class="x" id="%s"><summary><span class="when">%s</span><b>%s</b><span class="when">%s</span>'
             '<span class="short">%s</span></summary><div class="xb"><p class="q">%s</p>%s%s<dl><dt>Verdict</dt>'
@@ -768,7 +315,7 @@ def _evals(entries, sim, dol, pages):
     for e in entries:
         for what, models in e['variants']:
             for m in models:
-                if home.get(m, (None,))[0] is not e:
+                if home.get(m, (None,))[0] is not e or e.get('rescore'):   # re-scored copies get no own row
                     continue
                 del home[m]                       # a model listed twice in one entry gets one row
                 name = show(m)
@@ -838,8 +385,8 @@ def _check(sim, dol):
     missing_tasks = sorted({'T-%s' % re.match(r'T(\d+)', m)[1] for m in logged if re.match(r'T\d+', m)} - tasks)
     missing = sorted({show(m) for m in logged if end_of_run(m) and 'Smoke' not in m} - listed)
     if missing_tasks or missing:
-        raise SystemExit('experiments.py: the score logs hold %s with no entry. Add an entry to EXPERIMENTS (or the '
-                         'models to an entry\'s variants).' % '; '.join(
+        raise SystemExit('experiments.py: the score logs hold %s with no record. Add a record header to the plan '
+                         'file in notes/experiments/ (or the models to a record\'s variants).' % '; '.join(
                              x for x in ['tasks ' + ', '.join(missing_tasks) if missing_tasks else '',
                                          'models ' + ', '.join(missing) if missing else ''] if x))
 
@@ -849,7 +396,7 @@ def _check_watch(pages):
     playback). An entry whose models cannot be shown says why in 'no_game'."""
     missing = []
     for e in EXPERIMENTS:
-        if e.get('no_game'):
+        if e.get('no_game') or e.get('rescore'):      # re-scores of existing models: game pages optional
             continue
         if not e['variants'] and not e.get('watch'):   # no score table: the entry names what to watch itself
             missing.append('%s: no variants, so it needs watch=[models] or a no_game reason' % e['title'])
@@ -870,10 +417,14 @@ def _check_watch(pages):
 def build(here, src, head, site_style, pages=None):
     """Write experiments.html; return the raw model names it shows (for the name check)."""
     pages = pages or {}
-    sim, dol = _sim_scores(src), _dolphin_scores(src)
+    if not EXPERIMENTS:
+        load(src)
+    sim, dol, by_a = _sim_scores(src), _dolphin_scores(src), _sim_by_assessment(src)
     _check(sim, dol)
     _check_watch(pages)
-    entries = sorted(EXPERIMENTS, key=lambda e: e['date'], reverse=True)   # stable: file order within a day
+    # newest day first; within a day the newer plan file first, and a file's records in their written order
+    order = {id(e): i for i, e in enumerate(EXPERIMENTS)}
+    entries = sorted(EXPERIMENTS, key=lambda e: (e['date'], e['source'], -order[id(e)]), reverse=True)
     shown = {m for e in entries for _w, ms in e['variants'] for m in ms}
     shown.update(m for e in entries for m in e.get('watch', []))
     for e in entries:
@@ -897,7 +448,7 @@ def build(here, src, head, site_style, pages=None):
         opts.append('<option value="%s">%s</option>' % (key, html.escape(title)))
         topics.append('<div class="topic" id="t-%s"><h3>%s<span>%d</span></h3><p class="small">%s</p>%s</div>' % (
             key, html.escape(title), len(mine), html.escape(about),
-            ''.join(_entry(e, sim, dol, pages) for e in mine)))
+            ''.join(_entry(e, sim, dol, pages, by_a) for e in mine)))
     cols = ''.join('<dt>%s</dt><dd>%s.</dd>' % (html.escape(h), html.escape(a)) for h, a, _s in OPP.values())
     page = head.replace('</head>', '<title>SteveTheBot experiments</title><style>%s%s</style></head>' % (
         site_style, STYLE)) + """<main>

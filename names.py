@@ -132,6 +132,10 @@ PATTERNS += [
 TWO_LENGTHS = r'T37'
 LONG = ' (double length)'
 
+# Shown names explained by the label of their variant in an experiment record (filled by experiments.load); a
+# NAMES or PATTERNS entry wins over it.
+EXTRA = {}
+
 
 def explain(name):
     if name.endswith(LONG):
@@ -143,7 +147,7 @@ def explain(name):
         m = re.fullmatch(pat, name)
         if m:
             return text(m)
-    return None
+    return EXTRA.get(name)
 
 
 def show(name):

@@ -165,7 +165,7 @@ def _landmarks(src, pages):
                 got = [sim[y][model] for y in ys if y in sim and model in sim[y]]
                 g, w = sum(s[0] for s in got), sum(s[1] for s in got)
                 lead = sum(s[2] - s[3] for s in got) / g if g else 0.0
-                me = any(y == 'model_%s_seeds1000' % model for y in ys)
+                me = any(re.fullmatch(r'model_%s_seeds\d+' % re.escape(model), y) for y in ys)
             if model == LAND_BREAK:
                 rows.append('<li class="brk">%s</li>' % H.escape(LAND_BREAK_TEXT))
             head = '<span class="n">%d</span><span class="nm"><b>%s</b><i>%s</i></span>' % (

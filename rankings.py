@@ -184,7 +184,7 @@ def build(here, src, head, site_style, pages=None):
                     t = scores[model]
                     t[:4] = [a + b for a, b in zip(t[:4], s[:4])]
                     t[4] = min(t[4], s[4])
-            opponents = {y[len('model_'):-len('_seeds1000')] for y in sources if y.startswith('model_')}
+            opponents = {re.sub(r'_seeds\d+$', '', y[len('model_'):]) for y in sources if y.startswith('model_')}
         rows = []
         for model, (g, won, taken, lost, day) in scores.items():
             if g < need or not end_of_run(model) or model in opponents:

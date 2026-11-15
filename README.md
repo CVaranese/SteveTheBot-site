@@ -18,4 +18,6 @@ Every page has the same bar at the top: links to the start page and the roadmap,
 page follows (bar, colours, layout, model names) are in [STYLE.md](STYLE.md).
 
 To update: `python build.py` (renders the current pages from a SteveTheBot checkout beside this folder and rebuilds
-`index.html`), then commit and push.
+`index.html`), then commit and push. From the main repo, `bash tools/publish.sh` does all of it in one command,
+with the safety check. The experiments page is built from the record headers of the main repo's plan files
+(`records.py`; template in [STYLE.md](STYLE.md), "Experiments").

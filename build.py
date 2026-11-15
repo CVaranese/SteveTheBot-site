@@ -11,7 +11,8 @@ Writes:
                    (animated replay when the report holds the animation data, blocks otherwise)
   viewer/          the slippi-viewer build (MIT) and Captain Falcon's display files, shared by anim/ and reports/
   scenarios/       old addresses of the block-drawn scenario pages, now forwarding to the animated ones
-  experiments.html every experiment, newest first (experiments.py: hand-kept text, scores from the score logs)
+  experiments.html every experiment, newest first (experiments.py: text from the record headers of the main repo's
+                   notes/experiments/*.md, read by records.py; scores from the score logs)
   rankings.html    one ranking per opponent (rankings.py)
   catalog.html     one model per change (catalog.py)
   index.html       the start page
@@ -155,7 +156,10 @@ def viewer_files():
     if not (VIEWER_SRC / 'dist' / 'index.js').is_file():
         return False
     (out / 'public' / 'zips').mkdir(parents=True)
-    shutil.copyfile(VIEWER_SRC / 'dist' / 'index.js', out / 'index.js')
+    # the bundler leaves the worker's local build path in a comment ('// worker:D:\...\worker.js'): keep the name only
+    js = (VIEWER_SRC / 'dist' / 'index.js').read_bytes()
+    js = re.sub(rb'(// worker:)[^\r\n]*?([^\\/\r\n]+)(?=\r?\n)', rb'\1 \2', js)
+    (out / 'index.js').write_bytes(js)
     shutil.copyfile(VIEWER_SRC / 'LICENSE', out / 'LICENSE')
     for z in (VIEWER_SRC / 'public' / 'zips').glob('*.zip'):
         shutil.copyfile(z, out / 'public' / 'zips' / z.name)
@@ -290,6 +294,7 @@ def main():
         else:
             short, long_ = 'Game ' + rest.split(',')[0].replace('against ', 'vs '), 'Game report ' + rest
         model_pages.setdefault(name, []).append((href, short, long_))
+    experiments.load(SRC)              # the records explain models that names.py does not, so they load first
     ranked = rankings.build(HERE, SRC, HEAD, STYLE, model_pages)
     check_names(ranked)
     check_names(catalog.build(HERE, SRC, HEAD, STYLE, model_pages))
