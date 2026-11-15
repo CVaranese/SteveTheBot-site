@@ -68,6 +68,31 @@ RECENT = 6                                            # entries in "Recent exper
 EVAL_COLS = ['cpu9', 'pool2', 't4v2', 't21', 'ppo8', 'bot9']   # score columns of the evaluations table
 
 EXPERIMENTS = [
+    dict(tasks=['T-43'], date='2026-11-15', title='Do the long runs get worse against T4HumP1 late on?',
+         topic='yardsticks',
+         short='Late copies did win less (77% to 67%), but mostly in one run, and earlier copies swing as much; '
+               'no clear decline with training.',
+         question='Against T4HumP1, the 54-action long runs seemed to win less after about 400 million decisions '
+                  'while their Elo kept rising. Is that real?',
+         cols=[], variants=[],
+         graphs=[('Graph: games won against T4HumP1 during training', 'curves.html#t43/hum')],
+         facts=(['Run', 'Won at 289 million decisions', 'Won at 410 million', 'Won at 578 million (end)'],
+                [['T43F54s1', '51%', '79%', '69%'],
+                 ['T43F54s2', '84%', '86%', '63%'],
+                 ['T43F54s3', '64%', '67%', '71%'],
+                 ['All three', '66%', '77%', '67%']]),
+         no_game='re-scores of the long-batch models above, which have their own pages',
+         verdict='Three saved copies of each 54-action long run played 200 new games against T4HumP1 (other '
+                 'random seeds than the first 50). Taken together the late copies did win less: 77% at 410 million '
+                 'decisions, 67% at the end, a fall larger than chance between games. But it comes mostly from one '
+                 'run (s2 fell 23 points; s1 fell 10; s3 rose 4), and between the two earlier copies the score rose '
+                 'by about as much. One run\'s saved copies swing this much against a single opponent, so three '
+                 'runs cannot show a steady decline. Over the same span the Elo on the ladder rose a little (+317 '
+                 'to +332). A guess, not tested: late self-play gains are against the run\'s own kind of play and '
+                 'do not carry over to a model started from human replays. The same day, T4ImFull (imitation '
+                 'only) was dropped from the ladder and the graphs, since every trained model beats it in nearly '
+                 'every game; the ladder is now 12 opponents and no Elo value moved by more than 11.',
+         decision='Nothing changes. Strength is still read as the mean Elo curve of several runs.'),
     dict(tasks=['T-43', 'T-42'], date='2026-11-15', title='Twelve times the usual training: 54 actions against the '
          'head controllers', topic='controls',
          short='Strength keeps rising about 100 Elo per doubling of training. Three heads are far behind; two '
