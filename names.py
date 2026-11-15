@@ -113,6 +113,18 @@ PATTERNS += [
                                     'coefficient %s), random seed %s.' % ({'a': '0.1', 'b': '1.0'}[m[1]], m[2])),
     (r'T40M(\d+)s(\d)', lambda m: 'Task T-40 (matches per run): as T4V2, but %s matches played at once in one run '
                                   '(64 is the usual), the same total game time, random seed %s.' % (m[1], m[2])),
+    (r'T43F54s(\d)', lambda m: 'Task T-43, the long batch: today\'s settings (self-play, a decision every frame, '
+                               '11-frame reaction delay, the usual 54 actions) trained 12 times the usual length: '
+                               '17,640 updates, 578 million decisions; random seed 1%s.' % m[1]),
+    (r'T43H510s(\d)', lambda m: 'Task T-43, the long batch: as T43F54, but with the three-head controller of task '
+                                'T-42 (a button, then one of 17 stick positions, then one of 5 C-stick positions: '
+                                '510 combinations); random seed 1%s.' % m[1]),
+    (r'T43H102s(\d)', lambda m: 'Task T-43, the long batch: as T43F54, but with the two-head controller of task '
+                                'T-17 (a button, then one of 17 stick positions: 102 combinations, no C-stick); '
+                                'random seed 1%s.' % m[1]),
+    (r'T43Lad', lambda m: 'Task T-43, the ladder run: a fourth run with the T43F54 settings (random seed 19). '
+                          'Copies saved along its training serve as fixed opponents of rising strength; it is not '
+                          'rated itself.'),
 ]
 
 # Runs scored both at the usual length (_c04, 2,940 updates) and continued to double length (_c08, 5,880 updates).
@@ -148,6 +160,8 @@ def last_copy(run):
     """The checkpoint number saved at the end of a run (from the model folders, 2026-11-12)."""
     if run.startswith(('SimBase', 'T22Long', 'T40M')):
         return 8
+    if run.startswith('T43'):
+        return 48
     if re.match(r'(T9|T12|T19h|T19L6|T19L12)(?!\d)', run):
         return 1
     return 4

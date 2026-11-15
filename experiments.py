@@ -61,6 +61,83 @@ RECENT = 6                                            # entries in "Recent exper
 EVAL_COLS = ['cpu9', 't4v2', 't21', 'ppo8', 'bot9']   # score columns of the evaluations table
 
 EXPERIMENTS = [
+    dict(tasks=['T-43', 'T-42'], date='2026-11-15', title='Twelve times the usual training: 54 actions against the '
+         'head controllers', topic='controls',
+         short='Strength keeps rising about 100 Elo per doubling of training. Three heads are far behind; two '
+               'heads catch up with the 54 actions.',
+         question='Does strength keep rising in a regular way when a run trains 12 times as long, and does a '
+                  'richer controller start lower and climb faster?',
+         cols=['t4v2', ('Frozen T4HumP1', ['T4HumP1']), ('Frozen ladder run', ['T43Lad_c48']),
+               ('vs 54 actions', ['T43F54s1_c48', 'T43F54s2_c48', 'T43F54s3_c48'])],
+         variants=[
+             ('54 actions', ['T43F54s1_c48', 'T43F54s2_c48', 'T43F54s3_c48']),
+             ('Three heads: button, stick, C-stick (510 combinations)',
+              ['T43H510s1_c48', 'T43H510s2_c48', 'T43H510s3_c48']),
+             ('Two heads: button, stick (102 combinations), one run', ['T43H102s1_c48']),
+             ('The ladder run (54 actions, a fourth seed; its saved copies are fixed opponents)', ['T43Lad_c48']),
+         ],
+         facts=(['Controller', 'Runs', 'Elo at the usual length (48 million decisions)',
+                 'Elo at the end (578 million)', 'Elo gained per doubling of training',
+                 'Games won against 54 actions of the same age, at the end'],
+                [['54 actions', '3', '-11', '+332', '100', ''],
+                 ['Three heads', '3', '-200', '0', '49', '21%'],
+                 ['Two heads', '1', '-107', '+299', '130', '40%']]),
+         verdict='Eight self-play runs trained for 578 million decisions each (about 8.5 hours, all at once). '
+                 'Twelve saved copies of each run then played 50 games against each of 13 fixed opponents, and all '
+                 'results together give one strength number (Elo; zero is the frozen pool, 100 more means winning '
+                 'about 64 of 100). The 54 actions rise on a straight line against the logarithm of training: 100 '
+                 'Elo for every doubling, over five and a half doublings, with no ceiling in sight. The fixed '
+                 'opponents are not exhausted: against the strongest one the 54-action runs still win only 36%. '
+                 'The three-head controller is behind from the start and climbs half as fast; from 145 million '
+                 'decisions on it is about 330 Elo behind and wins 10% to 21% of games against 54-action runs of '
+                 'the same age. Its policy stayed much closer to random. The two-head controller (no C-stick, one '
+                 'run) started behind, caught the 54 actions at about 200 million decisions and stayed level with '
+                 'them. A short run does not predict the long one: a line through the first four copies is 67 to '
+                 '141 Elo too low at the end, and misses that two heads catch up. T4HumP1, trained the usual '
+                 'length from human replays, still wins about 2 games in 5 against these long 54-action runs. '
+                 'The graphs are on the training curves page (curves.html, "All opponents (Elo)").',
+         decision='The 54 actions stay the default. The three-head controller is not dropped: its next test is a '
+                  'start from human replays (task T-42). Pending with the user: whether the two-head controller '
+                  'gets more runs, and the rule for reporting a setting\'s strength (the mean curve of at least 3 '
+                  'runs, no single "peak" number).'),
+    dict(tasks=['T-42'], date='2026-11-14', title='Three-head controller with a C-stick, built', topic='controls',
+         short='Built and checked: button, stick and C-stick heads (510 combinations) at no cost in speed.',
+         question='Can the bot get a C-stick and finer stick positions without slowing training down?',
+         cols=[], variants=[], watch=['T43H510s1_c48'],
+         facts=(['Controller', 'Inputs it can choose each frame', 'Decisions per second, one run alone'],
+                [['54 actions', '54', '32,859'],
+                 ['Three heads', '510', '32,556']]),
+         verdict='The network now picks a button (6), then a stick position given the button (17: centre, 8 full, '
+                 '8 half), then a C-stick position given both (5). The simulator acts on the C-stick: smash '
+                 'attacks on the ground, aerials in the air. Training, saving, the imitation trainer and the '
+                 'players all handle it, and it runs as fast as the 54 actions. Choices made in the build and '
+                 'open to change: 5 C-stick positions, and no pressing of several buttons at once. The game '
+                 'linked here is from the long run that followed.',
+         decision='Design chosen by the user on 2026-11-13: two heads plus a C-stick head. Compared against the '
+                  '54 actions in the long batch (the entry above). Still open: imitation from human replays with '
+                  'this controller, then PPO from that start.'),
+    dict(tasks=['T-43'], date='2026-11-14', title='Strength on one scale: the ladder', topic='yardsticks',
+         short='Averaged over runs, strength rises about 95 to 100 Elo per doubling of training; one run alone '
+               'is too uneven to extend.',
+         question='Can a model\'s strength after long training be predicted from the first part of its run?',
+         cols=[], variants=[], watch=['T37Plain7_c08', 'T40M128s7_c08'],
+         facts=(['What was measured', 'Result'],
+                [['Runs scored', '10 (six T37, four T40), 8 saved copies each'],
+                 ['Fixed opponents (the ladder)', '9, from imitation-only up to T4HumP1'],
+                 ['Error of one strength value', 'about 21 Elo'],
+                 ['Up-and-down of one run around its own line', 'about 47 Elo'],
+                 ['Mean gain per doubling of training, T37 runs', '98 Elo'],
+                 ['Mean gain per doubling of training, T40 runs', '95 Elo'],
+                 ['Line through a run\'s first 4 copies, extended to its 8th: typical miss', '85 Elo'],
+                 ['Assuming no gain after the 4th copy: typical miss', '80 Elo']]),
+         verdict='Every saved copy of ten earlier runs played 50 games against each of nine fixed opponents, and '
+                 'all results together give each copy one strength number (Elo). Averaged over 4 to 6 runs, '
+                 'strength rises steadily with the logarithm of training and does not flatten within twice the '
+                 'usual length. A single run is too uneven: extending its early line misses its later strength '
+                 'by 85 Elo, no better than assuming it stops improving, and it mis-ranks the frame-history '
+                 'variants.',
+         decision='Curves are read as averages over several runs. The long batch (12 times the usual length, the '
+                  'entry above) went ahead on that basis.'),
     dict(tasks=['T-30'], date='2026-11-13', title='Scenarios for models with a reaction delay', topic='yardsticks',
          short='Now scored; recovery splits them (21% to 85%), shielding is impossible for them.',
          question='How do the models that decide every frame with a reaction delay do in the scenario positions?',

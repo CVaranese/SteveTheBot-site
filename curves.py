@@ -61,8 +61,8 @@ _POOL = ['model_T4V2s%d_c04_seeds1000' % s for s in (3, 4, 5, 6)]
 BENCH = [
     ('pool', 'Frozen pool', 'Share of games won against four saved models that no longer learn (T4V2, four random '
      'seeds, trained the usual length with today\'s controls). The routine yardstick.', _POOL),
-    ('elo', 'All opponents (Elo)', 'One strength number from every game against a ladder of nine fixed opponents, '
-     'from imitation-only up to the strongest saved model. Zero is the average of the frozen pool; 100 Elo more '
+    ('elo', 'All opponents (Elo)', 'One strength number from every game against a ladder of 13 fixed opponents, '
+     'from imitation-only up to the end of a 12-times-length run. Zero is the average of the frozen pool; 100 Elo more '
      'means winning about 64 of 100 games against an equal of before.', 'elo'),
     ('hum', 'T4HumP1', 'Share of games won against T4HumP1, the strongest fixed opponent: started from human '
      'replays, then trained by self-play.', ['model_T4HumP1_seeds1000']),
