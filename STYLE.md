@@ -161,7 +161,8 @@ resizes or reflows. For every interactive page:
     - what: What was tried (one setting, its seeds in one row)
       models: [T48As1_c04, T48As2_c04]
     # optional: assessment (only rows scored with ASSESSMENT=<id>), graphs [{text, href}],
-    # facts {head, rows} or facts_file {path, table}, watch [models], no_game reason, rescore: true
+    # facts {head, rows} or facts_file {path, table}, watch [models], no_game reason, rescore: true,
+    # writeup: <file in notes/experiments/public/> (the long form, see "Write-ups")
     verdict: What the scores say, in two or three sentences.
     decision: What the user decided (or what is pending).
   ---
@@ -182,6 +183,79 @@ resizes or reflows. For every interactive page:
   runs the safety check `tools/site_check.py`, commits and pushes this repo). `PUBLISH_DRY=1` stops before the
   commit. Dolphin game logs are copied into `logs/` by hand first.
 - Public page: summaries and numbers only, never raw notes, local paths, replay player names or connect codes.
+
+## Write-ups *(build)*
+
+The long form of an experiment, in the order of a paper (the user, 2026-11-16: "more experiments written out in
+more of an academic style ... each experiment would have its own dedicated page"; and: "it needs to be 100%
+accurate"). The experiments table stays the short form; an opened row links its write-up under "Full write-up"
+(a dashed "Not written yet" when there is none).
+
+- **Where.** One Markdown file per record in the main repo, `notes/experiments/public/<name>.md`, named by the
+  record's `writeup: <name>.md`. `writeups.py` builds `experiments/<name>.html` from it. Only this file and the
+  record header are public; the plan body stays private. The record stays the source of title, date, variants,
+  columns, verdict and decision.
+- **Nothing is typed from memory.** The build stops on:
+  - a setup row without `source: path@commit` and `quote:` (the text in that file, at that commit, the value was
+    read from), or whose quote is not in the file. A value that can only be checked on the machine uses
+    `checked: how and when` instead;
+  - an expectation quote that is not word for word in the record's plan file;
+  - a `sources` file that is not in git at its commit;
+  - a score typed in prose (`41%`, `12 of 50`, `+332 Elo`) or a typed table. Scores come from directives.
+- **Before writing, check every sentence against the generated tables** (print the built page as text). A claim
+  the tables do not show is cut or goes under Limitations as "not tested".
+- **Analysis output is cited from a frozen copy.** A table or curve from an analysis file (an Elo fit) is read
+  from a dated copy of that file (`logs/t43/fit_long_batch_2026-11-15.md`), so a later re-fit cannot change a
+  published page. The copy must be the output the record's numbers came from.
+- A control that the record does not list is added to the record as a variant, not described in prose only.
+- Template (sections in this order; block directives stand on a line of their own):
+
+  ```markdown
+  ---
+  expectation:
+    written: '2026-11-15'
+    quotes: ['Text copied word for word from the plan, written before the runs.']
+  setup:
+  - {name: Training seeds, value: 21 and 22, source: research/t10_size/batch.sh@75e4ccf, quote: 'train T10W128s$i 2$i &'}
+  - {name: Machine, value: '...', checked: 'processor name and nvidia-smi read on 16 Nov 2026'}
+  sources:
+  - {what: Training, file: research/t10_size/batch.sh, commit: 75e4ccf}
+  ---
+  ## Abstract
+  {{abstract}}
+  ## Question and hypothesis
+  The question in two or three sentences; then {{expectation}} and what its terms mean.
+  ## Setup
+  {{setup}}
+  {{runs}}
+  How the models were scored (which runs, which opponents); the game counts are in the tables.
+  ## Results
+  {{scores}}
+  {{plots}}
+  {{training entropy | Caption.}}
+  {{games}}
+  ## Discussion
+  One bold claim per paragraph; numbers only as {{win C V}}, {{won C V}}, {{fact R C}}, {{cell path n R C}}.
+  ## Limitations
+  ## Decision
+  {{decision}}
+  ## Reproduction
+  {{sources}}
+  ```
+- Directives (the full list is the docstring of `writeups.py`): `{{abstract}}`, `{{expectation}}`, `{{setup}}`,
+  `{{runs}}` (per run from `logs/<run>_train.csv` and `models/<model>/controls.json`), `{{scores}}` (games, games
+  won, share with its Wilson 95% interval, each run, stocks), `{{plots}}`, `{{training <column> | caption}}`
+  (entropy, approx_kl, reward_per_min, explained_var, lr), `{{curve <csv> <column> | caption}}`,
+  `{{table <path> <n> | caption}}`, `{{line <path> | start of the line}}`, `{{facts}}`, `{{games}}`,
+  `{{decision}}`, `{{sources}}`. Tables and figures are numbered in page order; check typed "Table 3" references
+  after a build.
+- Plots are inline SVG drawn at build time (chart colours `--s1` to `--s8` as on the curves page; one colour per
+  variant). A picture that cannot be generated is a file in this repo's `experiments/` folder, placed with
+  `![caption](file.png)`.
+- Since 2026-11-16 `sim/ppo_run.py` saves `run.json` beside each model (every argument after defaults, the
+  controls, the git blob id of each learner file). Models trained before that have no such file: their settings
+  are setup rows with a source and quote. Reading `run.json` into `{{setup}}` is not built yet.
+- The page is static: nothing on it responds to a click except links and a table's own sideways scroll.
 
 ## Before a push
 

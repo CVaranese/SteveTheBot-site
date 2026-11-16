@@ -32,6 +32,8 @@ and 'site' is a list, so one plan file can hold several records. Fields of one r
   watch     for a record with no variants: [model names] whose scenario and game pages it links
   no_game   for a record with nothing to watch: the reason, in a few words
   rescore   true for a record that only scores existing models again: game pages are optional
+  writeup   optional: file name of the record's long form in notes/experiments/public/ (writeups.py builds
+            experiments/<name>.html from it; template in STYLE.md, "Write-ups")
   verdict   what the scores say
   decision  what the user decided from it (or what is pending)
 """
@@ -41,7 +43,7 @@ from pathlib import Path
 import yaml
 
 FIELDS = {'title', 'date', 'time', 'tasks', 'topic', 'short', 'question', 'cols', 'variants', 'assessment', 'graphs',
-          'facts', 'facts_file', 'watch', 'no_game', 'rescore', 'verdict', 'decision'}
+          'facts', 'facts_file', 'watch', 'no_game', 'rescore', 'writeup', 'verdict', 'decision'}
 MAX_VERDICT = 450            # characters; the experiments page shows the numbers as a plot, the verdict reads them
 NEEDED = ('title', 'date', 'tasks', 'topic', 'short', 'question', 'verdict', 'decision')
 FRONT = re.compile(r'\A---[ \t]*\r?\n(.*?)\r?\n---[ \t]*(?:\r?\n|\Z)', re.S)
@@ -100,7 +102,7 @@ def _entry(rec, src, where):
     for k in ('watch',):
         if rec.get(k):
             e[k] = [str(m) for m in rec[k]]
-    for k in ('no_game', 'assessment', 'time'):
+    for k in ('no_game', 'assessment', 'time', 'writeup'):
         if rec.get(k):
             e[k] = str(rec[k])
     e['rescore'] = bool(rec.get('rescore'))

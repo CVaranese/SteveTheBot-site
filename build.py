@@ -13,6 +13,8 @@ Writes:
   scenarios/       old addresses of the block-drawn scenario pages, now forwarding to the animated ones
   experiments.html every experiment, newest first (experiments.py: text from the record headers of the main repo's
                    notes/experiments/*.md, read by records.py; scores from the score logs)
+  experiments/     the long form of an experiment, one page per write-up (writeups.py, from the main repo's
+                   notes/experiments/public/*.md)
   models.html      every model with its scores per opponent (models.py); curves.html is its second view
   watch.html       every game and scenario page
   roadmap.html, rankings.html, catalog.html   old addresses, forwarding
@@ -32,6 +34,7 @@ import curves
 import experiments
 import models
 import theme
+import writeups
 from names import explain, show
 
 HERE = Path(__file__).resolve().parent
@@ -49,7 +52,7 @@ SHOWN = set()   # every model name a built page shows, checked with names.explai
 
 # The four tabs: (page, label, the pages and folders that belong to it)
 TABS = [('index.html', 'Roadmap', ('index.html',)),
-        ('experiments.html', 'Experiments', ('experiments.html',)),
+        ('experiments.html', 'Experiments', ('experiments.html', 'experiments/')),
         ('models.html', 'Models', ('models.html', 'curves.html')),
         ('watch.html', 'Watch', ('watch.html', 'anim/', 'reports/'))]
 
@@ -239,6 +242,8 @@ def main():
     check_names(models.build(HERE, SRC, HEAD, STYLE, model_pages))
     check_names(experiments.build(HERE, SRC, HEAD, STYLE, model_pages))
     check_names(curves.build(HERE, SRC, HEAD, STYLE, model_pages))
+    papers, paper_models = writeups.build(HERE, SRC, HEAD, STYLE, model_pages)
+    check_names(paper_models)
     v2 =[a for a in animated if a[1].name.startswith('anim2_')]
     v1 = [a for a in animated if not a[1].name.startswith('anim2_')]
 
@@ -273,7 +278,10 @@ Rebuilt %s.</footer>
         add_nav(HERE / name)
     for h, _ in animated + reports:
         add_nav(HERE / h)
-    print('animated scenario pages: %d, game reports: %d' % (len(animated), len(reports)))
+    for h in papers:
+        add_nav(HERE / h)
+    print('animated scenario pages: %d, game reports: %d, write-ups: %d' % (len(animated), len(reports),
+                                                                             len(papers)))
 
 
 if __name__ == '__main__':

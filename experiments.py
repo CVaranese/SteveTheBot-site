@@ -189,7 +189,8 @@ def _rows(entries, sim, dol, by_a, links, times):
             'decision': e['decision'], 'cols': [_col(c) for c in e['cols']], 'variants': variants, 'watch': watch,
             'facts': {'head': facts[0], 'rows': facts[1]} if facts and facts[1] else None,
             'graphs': [{'text': t, 'href': h} for t, h in e.get('graphs', [])],
-            'no_game': e.get('no_game') or '', 'rescore': bool(e.get('rescore'))})
+            'no_game': e.get('no_game') or '', 'rescore': bool(e.get('rescore')),
+            'paper': ('experiments/%s.html' % e['writeup'].rsplit('.', 1)[0]) if e.get('writeup') else ''})
     return out
 
 
@@ -232,7 +233,7 @@ function detail(r){
   const watch=vs.length?`<h4>Watch</h4><table class="vw">${vs.map(v=>`<tr><td>${esc(v.what)}<small>${esc(v.models.join(', '))}</small></td><td>${links(v,why(r))}</td></tr>`).join('')}</table>`:
     `<h4>Watch</h4><p class="note">${esc(why(r)||'Nothing recorded to watch.')}</p>`;
   const graphs=r.graphs.length?`<h4>Training curves</h4><p>${r.graphs.map(g=>`<a href="${esc(g.href)}">${esc(g.text)}</a>`).join('<br>')}</p>`:'';
-  return `<div class="det"><div><h4>Question</h4><p>${esc(r.question)}</p><h4>Verdict</h4><p>${esc(r.verdict)}</p><h4>Decision</h4><p>${esc(r.decision)}</p>${graphs}</div><div><h4>Results</h4>${plots(r)||(r.facts?'':'<p class="note">No scored games in this experiment.</p>')}${facts(r)}${watch}</div></div>`;
+  return `<div class="det"><div><h4>Question</h4><p>${esc(r.question)}</p><h4>Verdict</h4><p>${esc(r.verdict)}</p><h4>Decision</h4><p>${esc(r.decision)}</p>${graphs}<h4>Full write-up</h4><div class="w">${r.paper?`<a href="${r.paper}">Read the write-up</a>`:'<span title="No long write-up of this experiment has been written yet">Not written yet</span>'}</div></div><div><h4>Results</h4>${plots(r)||(r.facts?'':'<p class="note">No scored games in this experiment.</p>')}${facts(r)}${watch}</div></div>`;
 }
 function draw(){
   const q=S.q.toLowerCase();
