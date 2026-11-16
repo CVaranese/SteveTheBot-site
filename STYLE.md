@@ -143,7 +143,9 @@ resizes or reflows. For every interactive page:
   of each plan file `notes/experiments/<date>-<slug>.md` in the main repo, read by `records.py` (the field list
   is its docstring). Only the header is public; the plan body stays private. One plan file may hold several
   records (`site:` is a list). Scores come from the score logs, so new scores of a listed model appear on the
-  next build.
+  next build. A simulator pairing (model against one opponent, one seed base) scored more than once counts once:
+  the scoring with the most games, the newest of those (`rankings.score_rows`; repeats replay the same games).
+  Games against the in-game CPU in Dolphin are not repeatable, so separate runs there are pooled.
 - Template of a record (paste at the very top of the plan file):
 
   ```yaml

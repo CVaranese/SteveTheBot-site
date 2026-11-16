@@ -22,7 +22,7 @@ import names
 import records
 import theme
 from names import end_of_run, show
-from rankings import _dolphin_scores, _sim_scores
+from rankings import _dolphin_scores, _sim_scores, score_rows
 
 T4V2 = ['model_T4V2s%d_c04_seeds1000' % s for s in (3, 4, 5, 6)]
 # The frozen pool, version 2 (the main repo's sim/pools.py is the definition; a new version gets a new key here)
@@ -89,18 +89,13 @@ def _sim_by_assessment(src):
     """{assessment id: {yardstick: {model: [games, won, taken, lost]}}} from logs/yardstick.csv rows that carry
     an assessment id (column added 2026-11-15)."""
     out = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [0, 0, 0.0, 0.0, '9999'])))
-    path = src / 'logs' / 'yardstick.csv'
-    if path.is_file():
-        for r in csv.DictReader(path.open(encoding='utf-8')):
-            a = r.get('assessment') or ''
-            if not a:
-                continue
-            g = int(r['games'])
-            s = out[a][r['yardstick']][r['model']]
-            s[0] += g
-            s[1] += int(r['won'])
-            s[2] += float(r['taken_per_game']) * g
-            s[3] += float(r['lost_per_game']) * g
+    for r in score_rows(src, by_assessment=True):       # a pairing scored twice in one assessment counts once
+        a = r.get('assessment') or ''
+        if not a:
+            continue
+        g = int(r['games'])
+        out[a][r['yardstick']][r['model']] = [g, int(r['won']), float(r['taken_per_game']) * g,
+                                              float(r['lost_per_game']) * g, '9999']
     return out
 
 

@@ -42,20 +42,35 @@ BOARDS = [
 ]
 
 
-def _sim_scores(src):
-    """{yardstick: {model: [games, won, taken, lost, first day]}} from logs/yardstick.csv."""
-    out = defaultdict(lambda: defaultdict(lambda: [0, 0, 0.0, 0.0, '9999']))
+def score_rows(src, by_assessment=False):
+    """The rows of logs/yardstick.csv, one per pairing (yardstick, model): a pairing scored more than once counts
+    once, by its scoring with the most games (the newest of those). Games of one pairing use the same seeds, so a
+    repeat replays the same games and a longer scoring contains the shorter one; adding them would count games
+    twice. by_assessment: one row per (assessment id, yardstick, model) instead. Each row gets 'first_day', the
+    day the pairing was first scored."""
     path = src / 'logs' / 'yardstick.csv'
     if not path.is_file():
-        return out
+        return []
+    best, first = {}, {}
     for r in csv.DictReader(path.open(encoding='utf-8')):
+        k = ((r.get('assessment') or '') if by_assessment else '', r['yardstick'], r['model'])
+        first[k] = min(first.get(k, '9999'), r['time'][:10])
+        b = best.get(k)
+        if b is None or (int(r['games']), r['time']) >= (int(b['games']), b['time']):
+            best[k] = r
+    for k, r in best.items():
+        r['first_day'] = first[k]
+    return list(best.values())
+
+
+def _sim_scores(src):
+    """{yardstick: {model: [games, won, taken, lost, first day]}} from logs/yardstick.csv (score_rows: a pairing
+    scored more than once counts once)."""
+    out = defaultdict(lambda: defaultdict(lambda: [0, 0, 0.0, 0.0, '9999']))
+    for r in score_rows(src):
         g = int(r['games'])
-        s = out[r['yardstick']][r['model']]
-        s[0] += g
-        s[1] += int(r['won'])
-        s[2] += float(r['taken_per_game']) * g
-        s[3] += float(r['lost_per_game']) * g
-        s[4] = min(s[4], r['time'][:10])
+        out[r['yardstick']][r['model']] = [g, int(r['won']), float(r['taken_per_game']) * g,
+                                           float(r['lost_per_game']) * g, r['first_day']]
     return out
 
 

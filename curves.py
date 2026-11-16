@@ -13,6 +13,8 @@ import re
 import time
 from collections import defaultdict
 
+from rankings import score_rows
+
 # Million decisions per side between two saved checkpoints, by run family (updates x matches x 256 decisions).
 PER_CHECKPOINT = [
     (r'T43', 12.06),       # 368 updates x 128 matches
@@ -225,12 +227,8 @@ def _per_checkpoint(run):
 def _data(src):
     """{benchmark key: {run: [[million decisions, value, games or standard error], ...]}}"""
     won = defaultdict(lambda: defaultdict(lambda: [0, 0]))          # yardstick -> model -> [games, won]
-    path = src / 'logs' / 'yardstick.csv'
-    if path.is_file():
-        for r in csv.DictReader(path.open(encoding='utf-8')):
-            s = won[r['yardstick']][r['model']]
-            s[0] += int(r['games'])
-            s[1] += int(r['won'])
+    for r in score_rows(src):                           # a pairing scored more than once counts once
+        won[r['yardstick']][r['model']] = [int(r['games']), int(r['won'])]
     runs = sorted({r for _k, _t, _a, lines in SETS for _l, rs in lines for r in rs})
     out = {}
     for key, _tab, _about, ys in BENCH:
