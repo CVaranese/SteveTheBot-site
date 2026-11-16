@@ -32,6 +32,10 @@ Block directives (a line of their own):
   {{curve <csv path> <column> | caption}}  rows of a run,checkpoint,decisions,<column> file (logs/t43/curves.csv)
   {{table <path> <n> | caption}}        the n-th (from 0) Markdown table of a file in the main repo
   {{line <path> | start of the line}}   one line of an analysis output file, word for word
+  {{file <path> [<first> <last>] | caption}}  a short plain-text output file (or lines first to last of it), word
+                    for word
+  {{rows <path> [<path> ...] | caption | label // label // ...}}  lines of plain-text output files as a table: one row
+                    per line (found by its whole label), one column per file, the values as printed
   {{facts}}         the record's 'facts' table
   {{games}}         the sample game and scenario pages of each variant
   {{decision}}      the record's 'decision'
@@ -584,6 +588,47 @@ class Page:
         return '<p class="cap">From the analysis output <span class="m">%s</span>: "%s"</p>' % (
             esc(a[0]), esc(hits[0]))
 
+    def d_rows(self, a, cap):
+        """{{rows <path> [<path> ...] | caption | label // label // ...}}: lines of plain-text
+        output files as a table, one row per line, one column per file. A line is found by its label (the text
+        before its values); the values are what follows, as printed."""
+        if not a or cap.count('|') != 1:
+            stop(self.where, '{{rows <path> [<path> ...] | caption | label // label // ...}}')
+        text, starts = [x.strip() for x in cap.split('|')]
+        files = [(p, [ln.strip() for ln in (self.src / p).read_text(encoding='utf-8').splitlines()]) for p in a]
+        rows = []
+        for st in [s.strip() for s in starts.split('//') if s.strip()]:
+            row = [esc(st)]
+            for p, lines in files:
+                hits = [ln for ln in lines if ln.startswith(st)]
+                if len(hits) != 1:
+                    stop(self.where, '{{rows}}: %d lines of %s start with %r' % (len(hits), p, st))
+                rest = hits[0][len(st):]
+                if rest and not rest[0].isspace() and rest[0] not in ':=':
+                    stop(self.where, '{{rows}}: %r is not the whole label of its line in %s' % (st, p))
+                row.append(esc(', '.join(c for c in re.split(r'\s{2,}', rest.lstrip(':= ').strip()) if c)))
+            rows.append(row)
+        head = ['Line of the output'] + ['<span class="m">%s</span>' % esc(Path(p).stem) for p in a]
+        return self.table(head, rows, self.inline(text) + ' Each row is one line of the named output file, read '
+                          'when the site is built; a column is one file (<span class="m">%s</span>).'
+                          % esc(str(Path(a[0]).parent).replace('\\', '/')), num=tuple(range(1, len(head))))
+
+    def d_file(self, a, cap):
+        """{{file <path> [<first line> <last line>] | caption}}: a short plain-text output file (or a range of its
+        lines, counted from 1), word for word."""
+        if len(a) not in (1, 3) or not cap:
+            stop(self.where, '{{file <path> [<first line> <last line>] | caption}}')
+        lines = (self.src / a[0]).read_text(encoding='utf-8').splitlines()
+        part = 'lines %s to %s of ' % (a[1], a[2]) if len(a) == 3 else ''
+        if len(a) == 3:
+            lines = lines[int(a[1]) - 1:int(a[2])]
+        if not lines or len(lines) > 120:
+            stop(self.where, '{{file}}: %d lines of %s (1 to 120 can be shown)' % (len(lines), a[0]))
+        return '<div class="tblock"><pre>%s</pre>%s</div>' % (
+            esc('\n'.join(ln.rstrip() for ln in lines)),
+            self.tcap(self.inline(cap) + ' Word for word, %sthe output file <span class="m">%s</span>.'
+                      % (part, esc(a[0]))))
+
     def d_facts(self, _a, _cap):
         f = self.e.get('facts')
         if not f:
@@ -593,11 +638,15 @@ class Page:
 
     def d_games(self, _a, _cap):
         rows = []
+        one = lambda h, t: '<a href="../%s">%s</a>' % (esc(h), t) if h else \
+            '<span title="No %s page was recorded">%s</span>' % (t.lower(), t)
         for what, models in self.e['variants']:
             lk = next((self.links[show(m)] for m in models if self.links.get(show(m))), {})
-            one = lambda h, t: '<a href="../%s">%s</a>' % (esc(h), t) if h else \
-                '<span title="No %s page was recorded">%s</span>' % (t.lower(), t)
             rows.append([esc(what) + '<small>%s</small>' % esc(', '.join(dict.fromkeys(show(m) for m in models))),
+                         '<div class="w">%s%s</div>' % (one(lk.get('game'), 'Game'), one(lk.get('scen'), 'Scenarios'))])
+        for m in self.e.get('watch', []):               # a record with no variants names its models to watch
+            lk = self.links.get(show(m)) or {}
+            rows.append(['<span class="m">%s</span>' % esc(show(m)),
                          '<div class="w">%s%s</div>' % (one(lk.get('game'), 'Game'), one(lk.get('scen'), 'Scenarios'))])
         for t, h in self.e.get('graphs', []):
             rows.append([esc(t), '<div class="w"><a href="../%s">Graph</a></div>' % esc(h)])

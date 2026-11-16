@@ -259,7 +259,10 @@ accurate"). The experiments table stays the short form; an opened row links its 
   `{{runs}}` (per run from `logs/<run>_train.csv` and `models/<model>/controls.json`), `{{scores}}` (games, games
   won, share with its Wilson 95% interval, each run, stocks), `{{plots}}`, `{{training <column> | caption}}`
   (entropy, approx_kl, reward_per_min, explained_var, lr), `{{curve <csv> <column> | caption}}`,
-  `{{table <path> <n> | caption}}`, `{{line <path> | start of the line}}`, `{{facts}}`, `{{games}}`,
+  `{{table <path> <n> | caption}}`, `{{line <path> | start of the line}}`,
+  `{{rows <path> [<path> ...] | caption | label // label}}` (lines of plain-text output files as a table, one
+  column per file), `{{file <path> [<first> <last>] | caption}}` (a short output file, or a line range of it,
+  word for word), `{{facts}}`, `{{games}}`,
   `{{decision}}`, `{{sources}}`. Tables and figures are numbered in page order; check typed "Table 3" references
   after a build.
 - Plots are inline SVG drawn at build time (chart colours `--s1` to `--s8` as on the curves page; one colour per
