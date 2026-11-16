@@ -122,6 +122,16 @@ PATTERNS += [
     (r'T43H102s(\d)', lambda m: 'Task T-43, the long batch: as T43F54, but with the two-head controller of task '
                                 'T-17 (a button, then one of 17 stick positions: 102 combinations, no C-stick); '
                                 'random seed 1%s.' % m[1]),
+    (r'T42HumF54s(\d)', lambda m: 'Task T-42: as T43F54 (the usual 54 actions, 12 times the usual length), but '
+                                  'started from T4ImFull, the network that copied human replays, instead of from '
+                                  'scratch; random seed 1%s.' % m[1]),
+    (r'T42HumH510s(\d)', lambda m: 'Task T-42: as T43H510 (the three-head controller, 12 times the usual length), '
+                                   'but started from T42ImH510, a three-head network that copied human replays; '
+                                   'random seed 1%s.' % m[1]),
+    (r'T42H102s(\d)', lambda m: 'Task T-42: a further run of T43H102 (the two-head controller from scratch, 12 '
+                                'times the usual length); random seed 1%s.' % m[1]),
+    (r'T42ImH510', lambda m: 'Task T-42: a three-head network (button, stick, C-stick) trained only to copy human '
+                             'Falcon replays, no self-play. The start of the T42HumH510 runs.'),
     (r'T43Lad', lambda m: 'Task T-43, the ladder run: a fourth run with the T43F54 settings (random seed 19). '
                           'Copies saved along its training serve as fixed opponents of rising strength; it is not '
                           'rated itself.'),

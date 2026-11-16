@@ -16,6 +16,7 @@ from collections import defaultdict
 # Million decisions per side between two saved checkpoints, by run family (updates x matches x 256 decisions).
 PER_CHECKPOINT = [
     (r'T43', 12.06),       # 368 updates x 128 matches
+    (r'T42(Hum|H102|D256)', 12.06),
     (r'T37', 12.04),       # 735 updates x 64 matches
     (r'T40M', 6.03),       # a quarter of that, at every match count
     (r'T19', 12.04),       # 735 updates x 64 matches (a decision every 2 frames)
@@ -26,6 +27,8 @@ SETS = [
     ('main', 'Highlights', 'The main settings so far, one line each.', [
         ('54 actions, long run (T43F54)', ['T43F54s1', 'T43F54s2', 'T43F54s3']),
         ('Button, stick and C-stick heads, long run (T43H510)', ['T43H510s1', 'T43H510s2', 'T43H510s3']),
+        ('54 actions from human replays, long run (T42HumF54)', ['T42HumF54s1', 'T42HumF54s2', 'T42HumF54s3']),
+        ('Button and stick heads, long run (T43H102, T42H102)', ['T43H102s1', 'T42H102s2', 'T42H102s3']),
         ('54 actions, 64 matches at once (T37Plain)', ['T37Plain7', 'T37Plain8']),
         ('54 actions, 128 matches at once (T40M128)', ['T40M128s7', 'T40M128s8']),
     ]),
@@ -33,7 +36,14 @@ SETS = [
      'training length.', [
         ('54 actions (T43F54)', ['T43F54s1', 'T43F54s2', 'T43F54s3']),
         ('Button, stick and C-stick heads (T43H510)', ['T43H510s1', 'T43H510s2', 'T43H510s3']),
-        ('Button and stick heads (T43H102)', ['T43H102s1']),
+        ('Button and stick heads (T43H102, T42H102)', ['T43H102s1', 'T42H102s2', 'T42H102s3']),
+    ]),
+    ('t42', 'Start from human replays, long runs (task T-42)', 'Runs that start from a network that copied human '
+     'replays against runs from scratch, 12 times the usual training length.', [
+        ('54 actions from scratch (T43F54)', ['T43F54s1', 'T43F54s2', 'T43F54s3']),
+        ('54 actions from human replays (T42HumF54)', ['T42HumF54s1', 'T42HumF54s2', 'T42HumF54s3']),
+        ('Three heads from scratch (T43H510)', ['T43H510s1', 'T43H510s2', 'T43H510s3']),
+        ('Three heads from human replays (T42HumH510)', ['T42HumH510s1', 'T42HumH510s2', 'T42HumH510s3']),
     ]),
     ('t37', 'Memory of past frames (task T-37)', 'Plain inputs against inputs that also hold earlier game states, '
      'twice the usual training length.', [
@@ -229,10 +239,12 @@ def _data(src):
             out[key] = {}
             continue
         if ys == 'elo':
-            path = src / 'logs' / 't43' / 'curves.csv'
-            if path.is_file():
+            # logs/t42/curves.csv is the same fit made again with the T-42 runs added: only those are taken from it
+            for path, only in ((src / 'logs' / 't43' / 'curves.csv', ''), (src / 'logs' / 't42' / 'curves.csv', 'T42')):
+                if not path.is_file():
+                    continue
                 for r in csv.DictReader(path.open(encoding='utf-8')):
-                    if r['run'] in runs:
+                    if r['run'] in runs and r['run'].startswith(only):
                         pts.setdefault(r['run'], []).append(
                             [round(float(r['decisions']) / 1e6, 2), round(float(r['elo']), 1),
                              round(float(r['se']), 1)])
