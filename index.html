@@ -135,11 +135,11 @@ input[type=range]{accent-color:var(--accent);vertical-align:middle;max-width:60v
 <section>
   <h2>Where it stands</h2>
   <ul class="facts">
-    <li><span class="lab">Newest result</span><div>Eight runs trained 12 times the usual length (578 million decisions, about 8.5 hours each). With the 54 actions, strength keeps rising in a straight line: about <b>100 Elo per doubling</b> of training, no ceiling yet (<a href="#long">chart below</a>).</div></li>
-    <li><span class="lab">Controller</span><div>The three-head controller (button, stick, C-stick) stayed about <b>330 Elo behind</b> the 54 actions and climbed at half the slope. Two heads (one run) caught up to the 54 actions at about 200 million decisions and stayed level. The 54 actions stay the default.</div></li>
-    <li><span class="lab">Against the game's CPU</span><div>Level 9 computer player in Dolphin, 50 games each: the long runs won <b>11 to 19</b>; the model started from human replays (usual length) won <b>21</b>. Older models without a reaction delay won up to 49. The in-game CPU is not a strong opponent, so these numbers separate models only loosely.</div></li>
+    <li><span class="lab">Newest result</span><div>Two batches of runs trained 12 times the usual length (578 million decisions each run, 3 runs per setting). With the 54 actions, strength keeps rising in a straight line: about <b>100 Elo per doubling</b> of training, no ceiling yet. The <b>human-replay start</b> keeps a lead of about <b>+125 Elo</b> for the 54 actions through the whole run, the strongest setting so far (<a href="#long">chart below</a>).</div></li>
+    <li><span class="lab">Controller</span><div>The three-head controller (button, stick, C-stick) stays far behind (end <b>-4 Elo</b> against <b>+322</b> for the 54 actions) and climbs at half the slope. A human-replay start does not rescue it (-62 Elo at the end). <b>Two heads match the 54 actions</b> over three runs (+362 Elo, 55% head to head). The 54 actions are still the default; switching to two heads, switching to the human start and parking three heads are <b>pending the owner's decision</b>.</div></li>
+    <li><span class="lab">Against the game's CPU</span><div>Level 9 computer player in Dolphin, 50 games each, one run per setting: two heads <b>30</b>, 54 actions from a human start <b>27</b>, three heads from a human start <b>4</b>; first-batch long runs won 5 to 19, and the earlier best (human start, usual length) won 21. Older models without a reaction delay won up to 49. The in-game CPU is not a strong opponent, so these numbers separate models only loosely.</div></li>
     <li><span class="lab">How it plays</span><div>Watched: better than random, well-timed aerials, recovers well, few follow-ups. The model started from human replays "looks much more human" (watched 13 Nov).</div></li>
-    <li><span class="lab">In progress</span><div>The T-42 batch finished training on 16 Nov and is being scored: the three-head controller started from imitation, more two-head seeds, all at 12 times length. <b>No results yet.</b></div></li>
+    <li><span class="lab">In progress</span><div>A further batch with larger networks (3 layers of 256 instead of 2 of 128) is running. <b>No results yet.</b></div></li>
     <li><span class="lab">Routine yardstick</span><div><b>Frozen pool 2</b> (four saved models; a model's score is its share of games won against them), plus the level 9 CPU in Dolphin. A setting's strength is reported as the <b>mean Elo curve of at least 3 seeds</b>; there is no single "peak" number.</div></li>
   </ul>
 </section>
@@ -151,7 +151,7 @@ input[type=range]{accent-color:var(--accent);vertical-align:middle;max-width:60v
   <div class="st"><h3><span>0</span>Where learning starts</h3><div>
     <p><span class="k">Done</span>Random start (the "zero line"). Imitation from human Melee Falcon replays (a private dataset of 1,264 Falcon-versus-Falcon games) built, with a second input layout that both the simulator and the replays can fill.</p>
     <p><span class="k">Result</span>Imitation alone plays badly (0 of 50 against the level 9 CPU). PPO started from it beat PPO from scratch (mean 62 against 48 wins of 100 on the first pool), and one run won 21 of 50 against the level 9 CPU. Holding PPO close to the imitation policy (a KL penalty) and frame history did not help.</p>
-    <p><span class="k now">Now</span>More seeds from the human start, to settle whether the gain is real (scored; the read of the results is pending).</p>
+    <p><span class="k">Result</span>At 12 times length (3 runs each) the human start for the 54 actions stays about +125 Elo above the same controller from scratch (+448 against +322 at the end). For three heads it does not help (-62 against -4). Making the human start the default is <b>pending the owner's decision</b>.</p>
   </div></div>
 
   <div class="st"><h3><span>1</span>The game</h3><div>
@@ -173,8 +173,8 @@ input[type=range]{accent-color:var(--accent);vertical-align:middle;max-width:60v
 
   <div class="st"><h3><span>4</span>The controller</h3><div>
     <p><span class="k">Done</span>One of 54 actions (9 stick positions times one button or none). New models choose <b>every frame</b> and each action arrives <b>11 frames (0.19 s) later</b>, like a human reaction time. At the usual length a delayed model scores far below an undelayed one, because its opponents have no delay.</p>
-    <p><span class="k">Tested</span>Two heads (button, then stick) and three heads (plus a C-stick, 510 combinations): both built. At 12 times length the 54 actions lead (see above); the three-head design is not dropped.</p>
-    <p><span class="k now">Now</span>Three heads started from human replays, and more two-head seeds (the T-42 batch, being scored).</p>
+    <p><span class="k">Tested</span>Two heads (button, then stick) and three heads (plus a C-stick, 510 combinations): both built. At 12 times length, over 3 runs each, two heads match the 54 actions (+362 against +322 Elo, 55% head to head); three heads stay far behind, also from a human start.</p>
+    <p><span class="k now">Now</span>Pending the owner's decision: two heads as the default controller, and parking three heads. Not decided yet.</p>
   </div></div>
 
   <div class="st"><h3><span>5</span>Reward and learning step</h3><div>
@@ -195,22 +195,24 @@ input[type=range]{accent-color:var(--accent);vertical-align:middle;max-width:60v
 
 <section id="long">
   <h2>The headline result</h2>
-  <p>Strength is an <b>Elo</b> score against a ladder of 13 fixed opponents (zero is the frozen opponent pool; 100 Elo more means winning about 64 games of 100), plotted against the logarithm of training. Each doubling of training is one step. Mean of 3 runs per controller, except two heads (1 run). Tested 14 to 15 Nov.</p>
+  <p>Strength is an <b>Elo</b> score against a ladder of 13 fixed opponents (zero is the frozen opponent pool; 100 Elo more means winning about 64 games of 100), plotted against the logarithm of training. Each doubling of training is one step. Mean of 3 runs per setting. "Human start" means the network was first trained on human replays, then by PPO. Tested 14 to 16 Nov.</p>
   <h3>Elo at the end of 12 times the usual length</h3>
   <div id="elo"></div>
   <table style="margin-top:12px">
-    <thead><tr><th>Controller</th><th>Elo at usual length</th><th>Elo at the end</th><th>Elo per doubling</th></tr></thead>
+    <thead><tr><th>Setting</th><th>Elo at usual length</th><th>Elo at the end</th><th>Elo per doubling</th></tr></thead>
     <tbody>
-      <tr><td>54 actions</td><td class="num">-11</td><td class="num">+332</td><td class="num">about 100</td></tr>
-      <tr><td>Three heads</td><td class="num">-200</td><td class="num">0</td><td class="num">49</td></tr>
-      <tr><td>Two heads (1 run)</td><td class="num">-107</td><td class="num">+299</td><td class="num">130</td></tr>
+      <tr><td>54 actions, human start</td><td class="num">+80</td><td class="num">+448</td><td class="num">95</td></tr>
+      <tr><td>Two heads</td><td class="num">-28</td><td class="num">+362</td><td class="num">119</td></tr>
+      <tr><td>54 actions, from scratch</td><td class="num">-15</td><td class="num">+322</td><td class="num">99</td></tr>
+      <tr><td>Three heads, from scratch</td><td class="num">-201</td><td class="num">-4</td><td class="num">49</td></tr>
+      <tr><td>Three heads, human start</td><td class="num">-113</td><td class="num">-62</td><td class="num">23</td></tr>
     </tbody>
   </table>
-  <p class="note" style="margin-top:8px">The 54-action mean is a straight line over 5.6 doublings, and the ladder is not used up (they win 36% against its top rung). Three heads won 21 of 100 head to head against 54-action runs of the same age. A line drawn through the usual-length part ends 67 to 141 Elo too low, so short runs do not predict long ones.</p>
+  <p class="note" style="margin-top:8px">The 54-action mean from scratch is a straight line over 5.6 doublings, and the ladder is not used up. The human start keeps its lead for the 54 actions through the whole run (about +125 Elo), the strongest setting so far. It does not rescue three heads: they end below three heads from scratch, and win 8% of games against the 54 actions with the same start. Two heads match the 54 actions over three runs (55% head to head at the end). A line drawn through the usual-length part ends 67 to 141 Elo too low (first batch), so short runs do not predict long ones.</p>
 
   <h3 style="margin-top:18px">Against the level 9 CPU in Dolphin (games won of 50)</h3>
   <div id="cpu"></div>
-  <p class="note" style="margin-top:6px">One end-of-run model per controller. Differences under about 7 wins say nothing. The 340 Elo gained on our own ladder shows only weakly here, and the controllers rank differently. All scores per model are on <a href="models.html">Models</a>.</p>
+  <p class="note" style="margin-top:6px">One end-of-run model per setting. Differences under about 7 wins say nothing. The Elo gained on our own ladder shows only weakly here, and the settings rank differently. All scores per model are on <a href="models.html">Models</a>.</p>
 
   <div class="sub">
     <h3>One score per skill: the scenario yardstick</h3>
@@ -367,8 +369,8 @@ input[type=range]{accent-color:var(--accent);vertical-align:middle;max-width:60v
       d.appendChild(lb); d.appendChild(tr); d.appendChild(v); box.appendChild(d);
     });
   }
-  bars('elo',[['54 actions (3 runs)',332,true],['Two heads (1 run)',299],['Three heads (3 runs)',0]],350,function(v){return (v>0?'+':'')+v;});
-  bars('cpu',[['Human start, usual length',21,true],['Long ladder run, 54 actions',19],['Long run, 54 actions',11],['Long run, three heads',11],['Long run, two heads',5],['Plain self-play, usual length',4]],50,function(v){return v;});
+  bars('elo',[['54 actions, human start (3 runs)',448,true],['Two heads (3 runs)',362],['54 actions (3 runs)',322],['Three heads (3 runs)',-4],['Three heads, human start (3 runs)',-62]],450,function(v){return (v>0?'+':'')+v;});
+  bars('cpu',[['Two heads, long run (second batch)',30,true],['54 actions, human start, long run',27],['Human start, usual length',21],['Long ladder run, 54 actions',19],['Long run, 54 actions',11],['Long run, three heads',11],['Long run, two heads (first batch)',5],['Three heads, human start, long run',4],['Plain self-play, usual length',4]],50,function(v){return v;});
 
   // ---- GAE weights: (gamma*lambda)^k for k decisions ahead ----
   var lamEl=document.getElementById('lam'), gb=document.getElementById('gbars');
@@ -428,12 +430,12 @@ input[type=range]{accent-color:var(--accent);vertical-align:middle;max-width:60v
       pts:[[C,C]].concat(ring(8,R)).concat(ring(8,R*0.5)), size:5.5,
       btns:[['A',''],['B',''],['X',''],['Z',''],['L',''],['none','']],
       text:'The network picks a button (6 choices), then a stick position given that button (17 choices): 102 combinations from two small choices.',
-      note:'Half tilts allow walking and tilt attacks. At the usual length the 54 actions beat it (74 of 100 head to head); at 12 times length one run was level with them.'},
+      note:'Half tilts allow walking and tilt attacks. At the usual length the 54 actions beat it (74 of 100 head to head); at 12 times length three runs were level with them (55% head to head).'},
     c:{title:'Button, main stick, then C-stick',
       pts:[[C,C]].concat(ring(8,R)).concat(ring(8,R*0.5)), size:5.5,
       btns:[['A',''],['B',''],['X',''],['Z',''],['L',''],['none',''],['C-stick: 5','c']],
       text:'The network picks a button (6), then a main-stick position given the button (17), then a C-stick position given both (centre, right, up, left, down): 510 combinations. The dots show the main stick only.',
-      note:'In the 12-times-length test it stayed behind the 54 actions and climbed at half the slope. A start from human replays is being scored.'},
+      note:'In the 12-times-length test it stayed behind the 54 actions and climbed at half the slope. A start from human replays did not help (-62 Elo at the end against -4 from scratch).'},
     faynt:{title:'728 button classes, 85 stick positions',
       pts:[[C,C]].concat(ring(4,R*0.3)).concat(ring(16,R*0.65)).concat(ring(64,R)), size:2.6,
       btns:[['A',''],['B',''],['X or Y',''],['Z',''],['L or R: off, light, full',''],['C-stick: 13','c']],

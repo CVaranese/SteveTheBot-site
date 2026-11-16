@@ -716,6 +716,9 @@ def build(here, src, head, site_style, pages=None):
             stop(where, 'named by two records ("%s" and "%s"): one write-up per record' % (used[where], e['title']))
         used[where] = e['title']
         text = path.read_text(encoding='utf-8')
+        if 'DRAFT' in text:
+            stop(where, 'still holds DRAFT (%d places): a draft from new_writeup.py is finished by hand first'
+                 % text.count('DRAFT'))
         m = records.FRONT.match(text)
         fm = yaml.safe_load(m[1]) if m else {}
         bad = set(fm) - {'expectation', 'setup', 'sources'}

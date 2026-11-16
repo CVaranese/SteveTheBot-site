@@ -195,6 +195,19 @@ accurate"). The experiments table stays the short form; an opened row links its 
   record's `writeup: <name>.md`. `writeups.py` builds `experiments/<name>.html` from it. Only this file and the
   record header are public; the plan body stays private. The record stays the source of title, date, variants,
   columns, verdict and decision.
+- **The process for a new experiment** (the user, 2026-11-16: "Is there a simplified process to do this whenever
+  we make a new experiment?"). After the record header is written and the scores are in the logs:
+  1. `python new_writeup.py <plan file> <record number> <name> --script research/<x>/batch.sh [--script ...]`
+     (in this repo). It writes the draft: the sections, the directives this record can fill, the `sources` list,
+     and one setup row per training setting with its source and quote already found (from the batch script where
+     the script passes the flag, from the trainer's default at the same commit otherwise).
+  2. Add `writeup: <name>.md` to the record. Replace every `DRAFT` in the draft (the build refuses the word):
+     word the values from their quotes, delete rows that do not apply (smoke and trial lines), copy the
+     expectation from the plan word for word, write the question, the scoring paragraph, Discussion and
+     Limitations.
+  3. `python build.py`, print the page as text, check every sentence against its tables, then publish as usual.
+  An experiment with no training script (a measurement, a tool) starts from the same command without `--script`
+  and gets its setup rows by hand, each with `source` and `quote`.
 - **Nothing is typed from memory.** The build stops on:
   - a setup row without `source: path@commit` and `quote:` (the text in that file, at that commit, the value was
     read from), or whose quote is not in the file. A value that can only be checked on the machine uses
