@@ -41,7 +41,10 @@ footer{color:var(--muted);font-size:.85rem}
 .ctl label{font-size:.88rem;color:var(--muted);display:flex;gap:5px;align-items:center;margin-left:4px}
 .count{font:.82rem var(--mono);color:var(--muted);margin:8px 0 0}
 .catw{overflow-x:auto}
-table.cat{width:100%;border-collapse:collapse;margin-top:4px}
+/* fixed layout: column widths come from the <col> elements, so opening a row never resizes the table */
+table.cat{width:100%;border-collapse:collapse;margin-top:4px;table-layout:fixed}
+.cat td{overflow-wrap:anywhere}
+.minih{overflow:hidden;text-overflow:ellipsis}
 .cat th{text-align:left;font:600 .74rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   padding:9px 10px 7px 0;border-bottom:1px solid var(--ink);cursor:pointer;white-space:nowrap;user-select:none}
 .cat th.ns{cursor:default}
@@ -139,7 +142,8 @@ a plot, the verdict, the decision made from it, and a sample game of each varian
 page was never recorded.</p></header>
 <section><div class="ctl" id="ctl"></div>
 <p class="count" id="count"></p>
-<table class="cat stack"><thead><tr>
+<table class="cat stack"><colgroup><col style="width:84px"><col style="width:110px"><col style="width:120px"><col>
+<col style="width:200px"><col style="width:176px"></colgroup><thead><tr>
 <th data-k="when">When<u></u></th><th data-k="task">Task<u></u></th><th data-k="topic">Category<u></u></th>
 <th data-k="title">Experiment and result<u></u></th><th class="ns">Scores</th><th class="ns">Watch</th></tr></thead>
 <tbody id="tb"></tbody></table></section>

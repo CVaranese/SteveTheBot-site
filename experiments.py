@@ -338,7 +338,8 @@ a plot, the verdict, the decision made from it, and a sample game of each varian
 page was never recorded.</p></header>
 <section><div class="ctl" id="ctl"></div>
 <p class="count" id="count"></p>
-<table class="cat stack"><thead><tr>
+<table class="cat stack"><colgroup><col style="width:84px"><col style="width:110px"><col style="width:120px"><col>
+<col style="width:200px"><col style="width:176px"></colgroup><thead><tr>
 <th data-k="when">When<u></u></th><th data-k="task">Task<u></u></th><th data-k="topic">Category<u></u></th>
 <th data-k="title">Experiment and result<u></u></th><th class="ns">Scores</th><th class="ns">Watch</th></tr></thead>
 <tbody id="tb"></tbody></table></section>

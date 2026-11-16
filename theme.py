@@ -76,7 +76,10 @@ CATALOG = """
 .ctl label{font-size:.88rem;color:var(--muted);display:flex;gap:5px;align-items:center;margin-left:4px}
 .count{font:.82rem var(--mono);color:var(--muted);margin:8px 0 0}
 .catw{overflow-x:auto}
-table.cat{width:100%;border-collapse:collapse;margin-top:4px}
+/* fixed layout: column widths come from the <col> elements, so opening a row never resizes the table */
+table.cat{width:100%;border-collapse:collapse;margin-top:4px;table-layout:fixed}
+.cat td{overflow-wrap:anywhere}
+.minih{overflow:hidden;text-overflow:ellipsis}
 .cat th{text-align:left;font:600 .74rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   padding:9px 10px 7px 0;border-bottom:1px solid var(--ink);cursor:pointer;white-space:nowrap;user-select:none}
 .cat th.ns{cursor:default}

@@ -8,11 +8,13 @@
      page must be opened over http (watch_scenarios.bat), not as a file. -->
 <script src="../viewer/index.js"></script>
 <style>
-:root{--bg:#f3f3f8;--surface:#fff;--ink:#1b1a2e;--muted:#5d5c74;--line:#d9d8e6;--bot:#4b3fb0;--good:#1f8f61;--bad:#c63b3b}
-@media (prefers-color-scheme: dark){:root{--bg:#14131f;--surface:#1e1d2e;--ink:#ecebf7;--muted:#a3a1bd;--line:#34334a;
-  --bot:#a79bff;--good:#4fcf9a;--bad:#f07a7a}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,sans-serif;padding:16px}
+/* The site's lab-notebook look (SteveTheBot-site theme.py): paper and ink, one red accent, no rounded corners. */
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--bot:#b3261e;--good:#1f8f61;--bad:#c63b3b}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;--line:#34352f;
+  --bot:#ff7a66;--good:#4fcf9a;--bad:#f07a7a}}
+*{box-sizing:border-box;border-radius:0 !important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,-apple-system,sans-serif;padding:16px}
+h1{font-family:"Newsreader",Georgia,serif}
 .wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 h1{font-size:1.25rem;margin:0}
 p{margin:0;color:var(--muted);font-size:.9rem}

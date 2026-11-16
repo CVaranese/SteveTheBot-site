@@ -13,8 +13,9 @@ Writes:
   scenarios/       old addresses of the block-drawn scenario pages, now forwarding to the animated ones
   experiments.html every experiment, newest first (experiments.py: text from the record headers of the main repo's
                    notes/experiments/*.md, read by records.py; scores from the score logs)
-  rankings.html    one ranking per opponent (rankings.py)
-  catalog.html     one model per change (catalog.py)
+  models.html      every model with its scores per opponent (models.py); curves.html is its second view
+  watch.html       every game and scenario page
+  roadmap.html, rankings.html, catalog.html   old addresses, forwarding
   index.html       the start page
 Every page gets the same bar at the top: links to the start page and the roadmap, and a page finder.
 Then commit and push; GitHub Pages serves the main branch.

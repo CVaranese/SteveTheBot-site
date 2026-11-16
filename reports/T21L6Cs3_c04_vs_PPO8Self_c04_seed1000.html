@@ -11,21 +11,26 @@
 <style>
 .anim { background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden; min-height:240px; }
 slippi-viewer { width:100%; display:block; }
-:root { --bg:#f6f5f1; --card:#ffffff; --fg:#1f2328; --mut:#667085; --line:#dcd9d1; --p1:#1d4ed8; --p2:#c2410c;
-        --locked:#b9bec7; --steer:#7fb2f5; --free:#2fa866; --did:#1f2328; --grid:#f0efea; --stage:#8a8f98;
+/* The site's lab-notebook look (SteveTheBot-site theme.py): paper and ink, hairlines, no rounded corners. The chart
+   colours (players, events) are this page's own. */
+:root { --bg:#faf8f3; --card:#faf8f3; --fg:#17181c; --mut:#62646b; --line:#d9d5ca; --p1:#1d4ed8; --p2:#c2410c;
+        --locked:#b9bec7; --steer:#7fb2f5; --free:#2fa866; --did:#17181c; --grid:#ebe7dc; --stage:#8a8f98;
         --hit:#2f9e44; --whiff:#e03131; --shield:#868e96; --win:rgba(29,78,216,.10); }
 @media (prefers-color-scheme: dark) {
-  :root { --bg:#14161a; --card:#1c1f25; --fg:#e7e9ec; --mut:#9aa3af; --line:#30353d; --p1:#7fb0ff; --p2:#ff9a4d;
-          --locked:#454b55; --steer:#4f86cf; --free:#33c472; --did:#e7e9ec; --grid:#22262d; --stage:#5c626c;
+  :root { --bg:#131416; --card:#131416; --fg:#e9e6df; --mut:#9b9a94; --line:#34352f; --p1:#7fb0ff; --p2:#ff9a4d;
+          --locked:#454b55; --steer:#4f86cf; --free:#33c472; --did:#e9e6df; --grid:#232421; --stage:#5c626c;
           --hit:#40c057; --whiff:#ff6b6b; --shield:#adb5bd; --win:rgba(127,176,255,.13); }
 }
-* { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+* { box-sizing:border-box; border-radius:0 !important; }
+.ev .dot { border-radius:50% !important; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:15px/1.45 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+h1, h2 { font-family:"Newsreader", Georgia, serif; }
 main { max-width:1100px; margin:0 auto; padding:20px 16px 60px; }
 h1 { font-size:22px; margin:0 0 4px; }
 h2 { font-size:16px; margin:0 0 6px; }
 .sub, .note { color:var(--mut); font-size:13px; }
-.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin-top:16px; }
+.card { border-top:1px solid var(--fg); padding:14px 0; margin-top:16px; }
 canvas { width:100%; display:block; touch-action:none; border-radius:6px; }
 .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0; }
 button, select { font:inherit; font-size:14px; padding:5px 11px; border:1px solid var(--line); border-radius:7px;

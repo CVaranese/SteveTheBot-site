@@ -152,7 +152,8 @@ shows one model per change made to the bot, in order. Only the copy saved at the
 listed.</p>%s</header>
 <section><div class="ctl" id="ctl"></div>
 <p class="count" id="count"></p>
-<div class="catw"><table class="cat"><thead><tr><th class="ns n">#</th><th data-k="name">Model<u></u></th>%s
+<div class="catw"><table class="cat" style="min-width:1180px"><colgroup><col style="width:40px"><col>%s
+<col style="width:176px"></colgroup><thead><tr><th class="ns n">#</th><th data-k="name">Model<u></u></th>%s
 <th class="ns">Watch</th></tr></thead><tbody id="tb"></tbody></table></div>
 <p class="note">Each model plays the same games (fixed seeds) against the same opponent. With 100 games, chance
 alone moves a win share by about 5 points; with 50 games (CPU 9), about 7. Models that act every frame with a
@@ -161,7 +162,7 @@ training length.</p></section>
 <section><details><summary>The opponents in the columns</summary><dl class="cols">%s</dl></details>
 <details><summary>How to read a model name</summary><dl class="cols">%s</dl></details></section>
 </main>%s</body></html>
-""" % (sub('models'), heads, opps, parts,
+""" % (sub('models'), '<col style="width:112px">' * len(COLS), heads, opps, parts,
        SCRIPT.replace('__LIB__', theme.CATALOG_JS).replace('__DATA__', blob))
     (here / 'models.html').write_text(page, encoding='utf-8')
     return raw
