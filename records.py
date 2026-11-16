@@ -42,6 +42,7 @@ import yaml
 
 FIELDS = {'title', 'date', 'time', 'tasks', 'topic', 'short', 'question', 'cols', 'variants', 'assessment', 'graphs',
           'facts', 'facts_file', 'watch', 'no_game', 'rescore', 'verdict', 'decision'}
+MAX_VERDICT = 450            # characters; the experiments page shows the numbers as a plot, the verdict reads them
 NEEDED = ('title', 'date', 'tasks', 'topic', 'short', 'question', 'verdict', 'decision')
 FRONT = re.compile(r'\A---[ \t]*\r?\n(.*?)\r?\n---[ \t]*(?:\r?\n|\Z)', re.S)
 
@@ -74,6 +75,10 @@ def _entry(rec, src, where):
         raise SystemExit('%s: record "%s": %s' % (where, rec.get('title'), '; '.join(
             x for x in ['unknown fields ' + ', '.join(bad) if bad else '',
                         'missing ' + ', '.join(miss) if miss else ''] if x)))
+    if len(str(rec['verdict'])) > MAX_VERDICT:
+        raise SystemExit('%s: record "%s": verdict is %d characters, the limit is %d (two or three sentences; '
+                         'detail belongs in the plan body)' % (where, rec['title'], len(str(rec['verdict'])),
+                                                               MAX_VERDICT))
     e = dict(title=str(rec['title']), date=str(rec['date']), tasks=[str(t) for t in rec['tasks']],
              topic=rec['topic'], short=rec['short'], question=rec['question'], verdict=rec['verdict'],
              decision=rec['decision'], source=where)
