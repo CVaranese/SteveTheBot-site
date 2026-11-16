@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Simulator against Dolphin: SteveTheBot experiment</title><style>
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--accent:#b3261e;
+  --bar:#3a3d45;--track:#ebe7dc;--off:#a9a59a;
+  --head:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;
+  --line:#34352f;--accent:#ff7a66;--bar:#c9c6bd;--track:#232421;--off:#5a5a54}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:20px 16px 64px}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font:700 2.3rem/1.1 var(--head);margin:8px 0 4px}
+h2{font:700 1.35rem/1.25 var(--head);margin:0 0 4px}
+h3{font:600 .78rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted)}
+header p{max-width:72ch}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+ul{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--ink)}
+li{padding:9px 0;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between;
+  border-bottom:1px solid var(--line)}
+li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block;font-family:var(--mono);font-size:.9rem}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
+details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.sub{display:flex;gap:18px;margin-top:10px;font-size:.95rem}
+.sub a{text-decoration:none;color:var(--muted);padding-bottom:2px}
+.sub a[aria-current]{color:var(--ink);box-shadow:0 2px 0 var(--accent)}
+
+main.paper{max-width:860px}
+main.paper>*{min-width:0;max-width:100%}
+.paper .crumb{font-size:.85rem;color:var(--muted)}
+.paper .crumb a{text-decoration:none} .paper .crumb a:hover{text-decoration:underline}
+.paper .meta{font:.82rem var(--mono);color:var(--muted);margin-top:6px}
+.paper h2{border-top:1px solid var(--ink);padding-top:14px;margin:26px 0 8px}
+.paper h3{margin:18px 0 6px}
+.paper p{color:var(--ink);max-width:70ch;margin:0 0 10px}
+.paper ul.md,.paper ol.md{border:0;margin:0 0 10px;padding-left:22px;max-width:70ch}
+.paper ul.md{list-style:disc} .paper ol.md{list-style:decimal}
+.paper .md li{display:list-item;border:0;padding:2px 0}
+.paper blockquote{margin:0 0 10px;padding:2px 0 2px 14px;border-left:2px solid var(--accent);max-width:70ch}
+.paper blockquote p{margin:0 0 6px}
+.paper code{font:.88em var(--mono)}
+.paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
+.paper .abs{font-size:1.05rem}
+.paper .abs p{max-width:74ch}
+.paper figure{margin:6px 0 18px}
+.paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
+.paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
+.paper .tb{overflow-x:auto;margin:0 0 4px}
+.paper table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+.paper th{font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:6px 12px 6px 0;vertical-align:bottom}
+.paper td{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono)}
+.paper td.n{white-space:nowrap} .paper th.n{min-width:4.6rem}
+.paper td:not(.n){min-width:9rem}
+.paper .m{font-family:var(--mono);font-size:.82rem}
+.paper td small{display:block;color:var(--muted);font:.76rem var(--mono)}
+.paper .tblock{margin:0 0 20px}
+.bars{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 3.2rem;gap:6px 10px;align-items:center;
+  font-size:.86rem}
+.bars .tr{position:relative;height:14px;background:var(--track)}
+.bars .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar)} .bars .f.top{background:var(--accent)}
+.bars .h{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.bars .t{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink)}
+.bars .v{font-family:var(--mono);text-align:right} .bars .na{color:var(--off)}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+@media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
+  --s6:#2f9a2f;--s7:#7c6be0;--s8:#e0504f}}
+.viz svg{display:block;width:100%;height:auto;max-width:760px}
+.viz .ax{stroke:var(--ink);stroke-width:1} .viz .gr{stroke:var(--line);stroke-width:1}
+.viz text{font:11px var(--mono);fill:var(--muted)} .viz text.al{font:12px var(--body);fill:var(--ink)}
+.viz path{fill:none;stroke-width:1.6;stroke-linejoin:round}
+.viz .lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.84rem;margin-top:6px}
+.viz .lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.paper .w{display:flex;gap:6px}
+.paper .w a,.paper .w span{font-size:.78rem;padding:2px 8px;border:1px solid var(--ink);text-decoration:none}
+.paper .w span{border:1px dashed var(--off);color:var(--off)}
+.paper .foot{border-top:1px solid var(--ink);padding-top:10px;font-size:.84rem;color:var(--muted)}
+.paper .foot p{color:var(--muted)}
+@media (max-width:640px){.bars{grid-template-columns:minmax(0,1fr) 3.2rem}.bars .lb{grid-column:1/-1}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet"><style>
+.stb-nav{--n-bg:#faf8f3;--n-ink:#17181c;--n-mut:#62646b;--n-acc:#b3261e;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:48px;background:var(--n-bg);
+  border-bottom:1px solid var(--n-ink);font:400 15px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#131416;--n-ink:#e9e6df;--n-mut:#9b9a94;--n-acc:#ff7a66}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1180px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  gap:22px;overflow-x:auto;scrollbar-width:none}
+.stb-nav a{color:var(--n-mut);text-decoration:none;white-space:nowrap;padding:6px 0}
+.stb-nav a:hover{color:var(--n-acc)}
+.stb-nav a.stb-home{color:var(--n-ink);font:700 20px/1 "Newsreader",Georgia,serif;margin-right:auto}
+.stb-nav a[aria-current="page"]{color:var(--n-ink);box-shadow:0 2px 0 var(--n-acc)}
+.stb-space{height:48px}
+html{scroll-padding-top:48px}
+@media (max-width:480px){.stb-nav .stb-in{gap:14px}.stb-nav{font-size:14px}.stb-nav a.stb-home{font-size:17px}}
+</style></head><body>
+<nav class="stb-nav" aria-label="Site"><div class="stb-in"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../index.html">Roadmap</a><a href="../experiments.html" aria-current="page">Experiments</a><a href="../models.html">Models</a><a href="../watch.html">Watch</a></div></nav><div class="stb-space"></div>
+
+<main class="paper">
+<header><p class="crumb"><a href="../experiments.html#x-2026-11-11-simulator-against-dolphin">Experiments</a> / full write-up</p>
+<h1>Simulator against Dolphin</h1>
+<p class="meta">11 Nov 2026 &middot; T-2, T-7 &middot; Speed</p></header>
+<article>
+<h2 id="abstract">Abstract</h2>
+<div class="abs"><p>Yes: 29 of 30 input columns are equal on every frame of a whole game.</p><p>One whole two-controller game (4,907 frames) replays in the simulator to the end; after a hitstun fix, 29 of 30 input columns are equal on every frame (the last differs in 27 idle frames). Games against the in-game CPU cannot be replayed this way.</p></div>
+<h2 id="question-and-hypothesis">Question and hypothesis</h2>
+<p>The project trains in a fast simulator of the game and then plays in the real game through the Dolphin emulator. That only works if the numbers the network is given (positions, damage, speeds, the current animation and so on) are the same in both. This experiment replays one recorded emulator game inside the simulator and compares those numbers on every frame.</p>
+<p class="cap">Written in the experiment plan on 11 Nov 2026, before the runs:</p><blockquote><p>Run 3 (whole game): every field equal on at least 99 percent of frames, and the trajectories do not drift apart (the same stocks lost on the same frames).</p></blockquote><blockquote><p>Prediction: at most 2 of the 14 scalar fields show any mismatch.</p></blockquote><blockquote><p>Expectation for run 4 and its replay (written before): the two sides stay together for the whole game (the same stocks lost on the same frames, positions equal throughout); every field except <code>hitstun</code> equal on at least 99.9 percent of frames; <code>hitstun</code> differs only on frames where the player is not in a hit reaction.</p></blockquote>
+<p>The first two quotes were written before any run, for a game against the game's own computer player. The third was written during the experiment, after that first game could not be replayed, and before the two-controller game was recorded. "Hitstun" is the count of frames a character stays stunned after being hit. A "field" is one of the numbers of the state.</p>
+<h2 id="setup">Setup</h2>
+<p>One game was recorded in the emulator with both characters driven through controllers, then replayed in the simulator from the recorded inputs. The state built on each side was compared per frame and per field. The comparison was run before and after a correction to the hitstun input. A second recorded game, against the game's own computer player, was replayed the same way.</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Setting</th><th>Value</th><th>Read from</th></tr></thead><tbody><tr><td>What is compared</td><td>The numbers the networks see (the state), built once from a recorded emulator game and once from the simulator fed the same controller inputs, frame by frame</td><td>research/sim_vs_dolphin/compare_state.py at commit bc09193</td></tr><tr><td>Emulator side</td><td>The recorded game file, read with the same parser that live play uses</td><td>research/sim_vs_dolphin/compare_state.py at commit bc09193</td></tr><tr><td>Simulator side</td><td>Both players&#x27; recorded controller inputs fed into the simulator frame by frame; the state built as in training</td><td>research/sim_vs_dolphin/compare_state.py at commit bc09193</td></tr><tr><td>Frame offset</td><td>The offset between a recorded input and the simulator step that uses it is tried at several values; the one with the longest run of equal frames is reported</td><td>research/sim_vs_dolphin/compare_state.py at commit bc09193</td></tr><tr><td>Tolerance</td><td>Two values count as equal when they differ by at most 0.0001</td><td>research/sim_vs_dolphin/compare_state.py at commit bc09193</td></tr><tr><td>Recorded game, two controllers</td><td>Both Captain Falcons driven through controllers with the bot&#x27;s 54 actions; port 1 random actions, port 2 the project&#x27;s scripted bot at level 3; one decision every 2 frames</td><td>research/sim_vs_dolphin/record_two_controllers.py at commit bc09193</td></tr><tr><td>The hitstun fix</td><td>The hitstun input is set to zero unless the character is in a hit-reaction action</td><td>dataFix.py at commit 1616e58</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Settings of the experiment. Each value was read from the named file of the project's code repository at the named commit; the site build checks that the line it was read from is in that file.</p></div>
+<p>The comparison covers 30 columns: 14 numbers and the animation id for each of the two players (one of the 14 is an unused slot). The script was committed after the runs of the same day.</p>
+<h2 id="results">Results</h2>
+<p>The two-controller game, before the hitstun fix:</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_two_controllers.txt</span>: "replay: stage FINAL_DESTINATION, bot CPTFALCON, opponent CPTFALCON, first in-game frame -123, last frame 4906, frames with state 4907"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_two_controllers.txt</span>: "offset +0: simulator first frames [-122, -121, -120], frames compared 4907, equal prefix 64 frames (bot half only: 64), mismatching cells 3165 (bot half 492)"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_two_controllers.txt</span>: "bot hitstun*.1: dolphin non-zero on 980 frames, simulator non-zero on 488 frames; mismatches while the simulator value is non-zero: 0"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_two_controllers.txt</span>: "opp hitstun*.1: dolphin non-zero on 3193 frames, simulator non-zero on 547 frames; mismatches while the simulator value is non-zero: 0"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_two_controllers.txt</span>: "opp action_frame*.02: dolphin non-zero on 4878 frames, simulator non-zero on 4878 frames; mismatches while the simulator value is non-zero: 27"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_two_controllers.txt</span>: "stock changes, dolphin frames:   [1437, 2258, 4138, 4906]"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_two_controllers.txt</span>: "stock changes, simulator frames: [1437, 2258, 4138, 4906]"</p>
+<p>The same game, after the hitstun fix:</p>
+<p class="cap">From the analysis output <span class="m">logs/t7_sim_vs_dolphin_two_controllers_after_fix.txt</span>: "offset +0: simulator first frames [-122, -121, -120], frames compared 4907, equal prefix 4172 frames (bot half only: 4907), mismatching cells 27 (bot half 0)"</p>
+<p>The game against the game's own computer player:</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_cpu3.txt</span>: "replay: stage FINAL_DESTINATION, bot CPTFALCON, opponent CPTFALCON, first in-game frame -123, last frame 10118, frames with state 10119"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_cpu3.txt</span>: "offset +0: simulator first frames [-122, -121, -120], frames compared 2691, equal prefix 0 frames (bot half only: 45), mismatching cells 22470 (bot half 9934)"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_cpu3.txt</span>: "stock changes, dolphin frames:   [166, 619]"</p>
+<p class="cap">From the analysis output <span class="m">logs/t2_sim_vs_dolphin_cpu3.txt</span>: "stock changes, simulator frames: [166, 619, 1928, 2301, 2572, 2630]"</p>
+<p>In these lines "bot" is the player on port 1 and "opp" the player on port 2; "equal prefix" is the number of frames from the start on which every compared column is equal; "mismatching cells" counts single differing values over all frames and columns.</p>
+<p class="cap">a frame-by-frame comparison of inputs, not of a model</p>
+<h2 id="discussion">Discussion</h2>
+<p><b>The two-controller game stays together to its last frame.</b> Stocks are lost on the same frames on both sides (the two "stock changes" lines of the first group), and the simulator replay covers every frame of the recording.</p>
+<p><b>Before the fix, the differences were in hitstun and in one animation counter.</b> The hitstun lines show that the emulator reports a non-zero hitstun on many more frames than the simulator, and that no mismatch falls on a frame where the simulator's value is non-zero. This is what the third quote expected: the two sides disagree only outside real hit reactions. The fix sets the input to zero outside hit-reaction actions.</p>
+<p><b>After the fix, the only differing cells are in the animation frame counter of one player.</b> The after-fix line reports the remaining mismatching cells, all outside the first player's half. They are the same count the before-fix report gives for the second player's animation counter. The expectation of the third quote for that field was missed: the frames counted in that line are a larger share of the game than the quote allowed.</p>
+<p><b>A game against the game's own computer player cannot be replayed this way.</b> In that replay the two sides share only the first stock losses, and the simulator's game ends long before the recording does (the last group of lines).</p>
+<h2 id="limitations">Limitations</h2>
+<ul class="md"><li>One game of each kind, one character, one stage.</li><li>The two-controller game was played by a random player and a scripted bot. Situations that such players rarely reach are covered thinly or not at all.</li><li>The comparison covers the inputs as the project builds them, not the full internal state of the game.</li><li>The cause of the animation counter difference was not established.</li><li>For the computer-player game, the comparison says only that this replay method fails; it does not test the state mapping after the two sides have drifted apart.</li></ul>
+<h2 id="decision">Decision</h2>
+<p>Training moved to the simulator; the hitstun fix is in the inputs.</p>
+<h2 id="reproduction">Reproduction</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>What</th><th>File in the code repository</th><th>Commit</th></tr></thead><tbody><tr><td>The frame-by-frame comparison</td><td><span class="m">research/sim_vs_dolphin/compare_state.py</span></td><td><span class="m">bc09193</span></td></tr><tr><td>Recording a two-controller game</td><td><span class="m">research/sim_vs_dolphin/record_two_controllers.py</span></td><td><span class="m">bc09193</span></td></tr><tr><td>Building the state, with the hitstun fix</td><td><span class="m">dataFix.py</span></td><td><span class="m">1616e58</span></td></tr></tbody></table></div><p class="cap"><b>Table 2.</b> The scripts and code of the experiment. The build checks that each file exists at its commit. A commit records the script; the runs used the working copy of that day.</p></div>
+<p>The comparison needs the Melee simulator the project runs on, which has no licence grant and is not published, and a copy of the game.</p>
+</article>
+<div class="foot"><p>Every number in the tables and figures is computed from the score and training logs when the site
+is built (last built 16 Nov 2026); none is typed. Setup values name the file and commit they were read from. The short
+form of this experiment is <a href="../experiments.html#x-2026-11-11-simulator-against-dolphin">its row in the experiments table</a>.</p></div>
+</main></body></html>

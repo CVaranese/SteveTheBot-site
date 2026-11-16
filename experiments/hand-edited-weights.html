@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hand-edited weights: SteveTheBot experiment</title><style>
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--accent:#b3261e;
+  --bar:#3a3d45;--track:#ebe7dc;--off:#a9a59a;
+  --head:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;
+  --line:#34352f;--accent:#ff7a66;--bar:#c9c6bd;--track:#232421;--off:#5a5a54}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:20px 16px 64px}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font:700 2.3rem/1.1 var(--head);margin:8px 0 4px}
+h2{font:700 1.35rem/1.25 var(--head);margin:0 0 4px}
+h3{font:600 .78rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted)}
+header p{max-width:72ch}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+ul{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--ink)}
+li{padding:9px 0;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between;
+  border-bottom:1px solid var(--line)}
+li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block;font-family:var(--mono);font-size:.9rem}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
+details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.sub{display:flex;gap:18px;margin-top:10px;font-size:.95rem}
+.sub a{text-decoration:none;color:var(--muted);padding-bottom:2px}
+.sub a[aria-current]{color:var(--ink);box-shadow:0 2px 0 var(--accent)}
+
+main.paper{max-width:860px}
+main.paper>*{min-width:0;max-width:100%}
+.paper .crumb{font-size:.85rem;color:var(--muted)}
+.paper .crumb a{text-decoration:none} .paper .crumb a:hover{text-decoration:underline}
+.paper .meta{font:.82rem var(--mono);color:var(--muted);margin-top:6px}
+.paper h2{border-top:1px solid var(--ink);padding-top:14px;margin:26px 0 8px}
+.paper h3{margin:18px 0 6px}
+.paper p{color:var(--ink);max-width:70ch;margin:0 0 10px}
+.paper ul.md,.paper ol.md{border:0;margin:0 0 10px;padding-left:22px;max-width:70ch}
+.paper ul.md{list-style:disc} .paper ol.md{list-style:decimal}
+.paper .md li{display:list-item;border:0;padding:2px 0}
+.paper blockquote{margin:0 0 10px;padding:2px 0 2px 14px;border-left:2px solid var(--accent);max-width:70ch}
+.paper blockquote p{margin:0 0 6px}
+.paper code{font:.88em var(--mono)}
+.paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
+.paper .abs{font-size:1.05rem}
+.paper .abs p{max-width:74ch}
+.paper figure{margin:6px 0 18px}
+.paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
+.paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
+.paper .tb{overflow-x:auto;margin:0 0 4px}
+.paper table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+.paper th{font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:6px 12px 6px 0;vertical-align:bottom}
+.paper td{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono)}
+.paper td.n{white-space:nowrap} .paper th.n{min-width:4.6rem}
+.paper td:not(.n){min-width:9rem}
+.paper .m{font-family:var(--mono);font-size:.82rem}
+.paper td small{display:block;color:var(--muted);font:.76rem var(--mono)}
+.paper .tblock{margin:0 0 20px}
+.bars{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 3.2rem;gap:6px 10px;align-items:center;
+  font-size:.86rem}
+.bars .tr{position:relative;height:14px;background:var(--track)}
+.bars .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar)} .bars .f.top{background:var(--accent)}
+.bars .h{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.bars .t{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink)}
+.bars .v{font-family:var(--mono);text-align:right} .bars .na{color:var(--off)}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+@media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
+  --s6:#2f9a2f;--s7:#7c6be0;--s8:#e0504f}}
+.viz svg{display:block;width:100%;height:auto;max-width:760px}
+.viz .ax{stroke:var(--ink);stroke-width:1} .viz .gr{stroke:var(--line);stroke-width:1}
+.viz text{font:11px var(--mono);fill:var(--muted)} .viz text.al{font:12px var(--body);fill:var(--ink)}
+.viz path{fill:none;stroke-width:1.6;stroke-linejoin:round}
+.viz .lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.84rem;margin-top:6px}
+.viz .lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.paper .w{display:flex;gap:6px}
+.paper .w a,.paper .w span{font-size:.78rem;padding:2px 8px;border:1px solid var(--ink);text-decoration:none}
+.paper .w span{border:1px dashed var(--off);color:var(--off)}
+.paper .foot{border-top:1px solid var(--ink);padding-top:10px;font-size:.84rem;color:var(--muted)}
+.paper .foot p{color:var(--muted)}
+@media (max-width:640px){.bars{grid-template-columns:minmax(0,1fr) 3.2rem}.bars .lb{grid-column:1/-1}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet"><style>
+.stb-nav{--n-bg:#faf8f3;--n-ink:#17181c;--n-mut:#62646b;--n-acc:#b3261e;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:48px;background:var(--n-bg);
+  border-bottom:1px solid var(--n-ink);font:400 15px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#131416;--n-ink:#e9e6df;--n-mut:#9b9a94;--n-acc:#ff7a66}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1180px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  gap:22px;overflow-x:auto;scrollbar-width:none}
+.stb-nav a{color:var(--n-mut);text-decoration:none;white-space:nowrap;padding:6px 0}
+.stb-nav a:hover{color:var(--n-acc)}
+.stb-nav a.stb-home{color:var(--n-ink);font:700 20px/1 "Newsreader",Georgia,serif;margin-right:auto}
+.stb-nav a[aria-current="page"]{color:var(--n-ink);box-shadow:0 2px 0 var(--n-acc)}
+.stb-space{height:48px}
+html{scroll-padding-top:48px}
+@media (max-width:480px){.stb-nav .stb-in{gap:14px}.stb-nav{font-size:14px}.stb-nav a.stb-home{font-size:17px}}
+</style></head><body>
+<nav class="stb-nav" aria-label="Site"><div class="stb-in"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../index.html">Roadmap</a><a href="../experiments.html" aria-current="page">Experiments</a><a href="../models.html">Models</a><a href="../watch.html">Watch</a></div></nav><div class="stb-space"></div>
+
+<main class="paper">
+<header><p class="crumb"><a href="../experiments.html#x-2026-11-11-hand-edited-weights">Experiments</a> / full write-up</p>
+<h1>Hand-edited weights</h1>
+<p class="meta">11 Nov 2026 &middot;  &middot; Method</p></header>
+<article>
+<h2 id="abstract">Abstract</h2>
+<div class="abs"><p>Yes: sharper choices and a wired-in recovery lose fewer stocks to the level 9 CPU.</p><p>Both edits lose fewer stocks to the level 9 CPU (2.05 to 1.62 and 1.34) and win more against frozen PPO8Self. Fully greedy play is worse: some randomness is needed, since the network cannot see its own last press.</p></div>
+<h2 id="question-and-hypothesis">Question and hypothesis</h2>
+<p>A trained network is a list of numbers, and those numbers can be changed directly. This experiment takes one trained model and edits its weights by hand, with no further training, in two ways that measurements of its play suggested: making its choices less random, and wiring in a fixed rule for returning to the stage. It asks whether either edit makes the model play better.</p>
+<p class="cap">Written in the experiment plan on 11 Nov 2026, before the runs:</p><blockquote><p>E2 (guess): sharpening with k between 1.5 and 2.5 lowers stocks lost per game against the level 3 scripted bot from about 1.16 to under 0.9 and shortens games; k of 4 or more is worse than the best k (stalls or timeouts).</p></blockquote><blockquote><p>E4 (guess): at least a third of lost stocks are failed recoveries or self-destructs rather than clean kills.</p></blockquote><blockquote><p>Expected (guess): level 9: the control near T-11's 3.96 taken / 2.10 lost, 48 of 50; the edits lose fewer stocks, 1.3 to 1.8 per game, and win at least 47 of 50.</p></blockquote>
+<p>In these quotes "k" is the factor the output layer is multiplied by, a "stock" is a life, "the control" is the unchanged model, and "T-11" is the earlier experiment that scored the unchanged model against the game's computer player. The first two quotes were written before any measurement; the third was added before the emulator games.</p>
+<h2 id="setup">Setup</h2>
+<p>Three models are compared: the unchanged model, the model with its output layer multiplied by 2.5, and the model with that sharpening plus a recovery circuit on added hidden units. The edits were chosen with other game seeds than the ones used for the scores below.</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Setting</th><th>Value</th><th>Read from</th></tr></thead><tbody><tr><td>Starting model</td><td>The end-of-run copy of the PPO model trained against the scripted bot (PPO8Bot); no training in this experiment</td><td>research/weight_surgery/make.py at commit 228cf7f</td></tr><tr><td>Edit 1, sharpening</td><td>The actor&#x27;s output layer multiplied by 2.5, which is the same policy sampled at a temperature of 1 / 2.5</td><td>research/weight_surgery/edits.py at commit 228cf7f</td></tr><tr><td>The sharpened model</td><td>Made with the factor 2.5</td><td>research/weight_surgery/run_save.sh at commit 228cf7f</td></tr><tr><td>Edit 2, recovery circuit</td><td>The same sharpening, then a hand-wired circuit for getting back to the stage</td><td>research/weight_surgery/run_save.sh at commit 228cf7f</td></tr><tr><td>Where the circuit lives</td><td>On 12 hidden units added to each of the two hidden layers, so the trained units are untouched</td><td>research/weight_surgery/edits.py at commit 228cf7f</td></tr><tr><td>Added units before the circuit is written</td><td>All weights zero, so the widened network computes what the original did</td><td>research/weight_surgery/edits.py at commit 228cf7f</td></tr><tr><td>Games against the game&#x27;s own computer player</td><td>50 games per model at level 9 in the Dolphin emulator, actions sampled; the unchanged model run again beside the edited ones as the control</td><td>research/weight_surgery/score_vs_cpu.sh at commit 228cf7f</td></tr><tr><td>Frozen-model yardstick</td><td>In the simulator, games against a saved copy of the self-play PPO model (PPO8Self)</td><td>sim/eval_vs_bot.py at commit 657bf07</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Settings of the experiment. Each value was read from the named file of the project's code repository at the named commit; the site build checks that the line it was read from is in that file.</p></div>
+<p>The scripts were committed about an hour after the emulator games.</p>
+<h2 id="results">Results</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th class="n">Runs scored</th><th class="n">Games</th><th class="n">Games won</th><th class="n">Won, %</th><th class="n">95% interval</th><th class="n">Each run, %</th><th class="n">Stocks taken per game</th><th class="n">Stocks lost per game</th></tr></thead><tbody><tr><td>Unchanged (PPO8Bot)</td><td class="n">1</td><td class="n">100</td><td class="n">94</td><td class="n">94.0</td><td class="n">88 to 97</td><td class="n">94</td><td class="n">3.94</td><td class="n">2.05</td></tr><tr><td>Choices sharpened (output times 2.5)</td><td class="n">1</td><td class="n">50</td><td class="n">49</td><td class="n">98.0</td><td class="n">90 to 100</td><td class="n">98</td><td class="n">3.98</td><td class="n">1.62</td></tr><tr><td>Sharpened plus a hand-wired recovery</td><td class="n">1</td><td class="n">50</td><td class="n">50</td><td class="n">100.0</td><td class="n">93 to 100</td><td class="n">100</td><td class="n">4.00</td><td class="n">1.34</td></tr></tbody></table></div><p class="cap"><b>Table 2.</b> Against <b>CPU 9, Dolphin</b>: Melee&#x27;s own level 9 computer player in Slippi Dolphin (the real game). All scored runs of a variant are pooled. The interval is the Wilson 95% interval of the pooled share: it covers chance between games, not the difference between training runs, which "Each run" shows.</p></div><div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th class="n">Runs scored</th><th class="n">Games</th><th class="n">Games won</th><th class="n">Won, %</th><th class="n">95% interval</th><th class="n">Each run, %</th><th class="n">Stocks taken per game</th><th class="n">Stocks lost per game</th></tr></thead><tbody><tr><td>Unchanged (PPO8Bot)</td><td class="n">1</td><td class="n">200</td><td class="n">76</td><td class="n">38.0</td><td class="n">32 to 45</td><td class="n">38</td><td class="n">3.12</td><td class="n">3.49</td></tr><tr><td>Choices sharpened (output times 2.5)</td><td class="n">1</td><td class="n">100</td><td class="n">70</td><td class="n">70.0</td><td class="n">60 to 78</td><td class="n">70</td><td class="n">3.62</td><td class="n">2.82</td></tr><tr><td>Sharpened plus a hand-wired recovery</td><td class="n">1</td><td class="n">100</td><td class="n">64</td><td class="n">64.0</td><td class="n">54 to 73</td><td class="n">64</td><td class="n">3.56</td><td class="n">2.97</td></tr></tbody></table></div><p class="cap"><b>Table 3.</b> Against <b>Frozen PPO8Self</b>: PPO8Self frozen: the yardstick of the early PPO models. All scored runs of a variant are pooled. The interval is the Wilson 95% interval of the pooled share: it covers chance between games, not the difference between training runs, which "Each run" shows.</p></div>
+<figure><div class="bars"><span class="lb">Unchanged (PPO8Bot)</span><div class="tr"><i class="h"></i><i class="f" style="width:94.0%"></i></div><span class="v">94%</span><span class="lb">Choices sharpened (output times 2.5)</span><div class="tr"><i class="h"></i><i class="f" style="width:98.0%"></i></div><span class="v">98%</span><span class="lb">Sharpened plus a hand-wired recovery</span><div class="tr"><i class="h"></i><i class="f top" style="width:100.0%"></i></div><span class="v">100%</span></div><figcaption><b>Figure 1.</b> Games won against <b>CPU 9, Dolphin</b>, in percent. Bar: the runs of a variant pooled (the highest in red); marks: single runs; dashed line: 50%.</figcaption></figure><figure><div class="bars"><span class="lb">Unchanged (PPO8Bot)</span><div class="tr"><i class="h"></i><i class="f" style="width:38.0%"></i></div><span class="v">38%</span><span class="lb">Choices sharpened (output times 2.5)</span><div class="tr"><i class="h"></i><i class="f top" style="width:70.0%"></i></div><span class="v">70%</span><span class="lb">Sharpened plus a hand-wired recovery</span><div class="tr"><i class="h"></i><i class="f" style="width:64.0%"></i></div><span class="v">64%</span></div><figcaption><b>Figure 2.</b> Games won against <b>Frozen PPO8Self</b>, in percent. Bar: the runs of a variant pooled (the highest in red); marks: single runs; dashed line: 50%.</figcaption></figure>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th>Watch</th></tr></thead><tbody><tr><td>Unchanged (PPO8Bot)<small>PPO8Bot</small></td><td><div class="w"><a href="../reports/PPO8Bot_c04_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_PPO8Bot_c04_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr><tr><td>Choices sharpened (output times 2.5)<small>PPO8Bot_edit</small></td><td><div class="w"><a href="../reports/PPO8Bot_c04_edit_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_PPO8Bot_c04_edit_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr><tr><td>Sharpened plus a hand-wired recovery<small>PPO8Bot_edit_rec</small></td><td><div class="w"><a href="../reports/PPO8Bot_c04_edit_rec_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_PPO8Bot_c04_edit_rec_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr></tbody></table></div><p class="cap"><b>Table 4.</b> Sample games: one whole game of a variant's first run, drawn with the animated viewer. A dashed label means that page was not recorded.</p></div>
+<h2 id="discussion">Discussion</h2>
+<p><b>Both edited models lose fewer stocks to the level 9 computer player.</b> Table 2 gives the stocks lost per game: the unchanged model loses the most, the sharpened model fewer, and the sharpened model with the recovery circuit the fewest. The third quote expected the edited models inside a stated range of stocks lost; Table 2 shows both in it.</p>
+<p><b>Games won against the computer player cannot separate the three.</b> The unchanged model already won 94% of its games there; the edited models won 98% and 100%.</p>
+<p><b>Against the frozen model both edits win clearly more games than the unchanged model.</b> The unchanged model won 38%, the sharpened model 70% and the sharpened model with the circuit 64%. On this yardstick the circuit did not add to the sharpening.</p>
+<h2 id="limitations">Limitations</h2>
+<ul class="md"><li>One model was edited. Whether the same edits help another model was tried only informally and is not shown here.</li><li>The size of the sharpening factor was chosen from a sweep against the scripted bot, and the abstract's remark that fully greedy play is worse comes from that sweep. The sweep is not shown on this page, and neither are the tests of the first two quotes.</li><li>The unchanged model's row pools two runs against the computer player (this experiment's control and the earlier experiment's run), and against the frozen model its score log holds the same games twice.</li><li>Stocks lost per game over this many games has a sampling error that the table does not show.</li><li>No training followed the edits.</li></ul>
+<h2 id="decision">Decision</h2>
+<p>The user watched it: it &quot;definitely flails less&quot;. Hand edits stay a one-off; temperature tuning before scoring is queued.</p>
+<h2 id="reproduction">Reproduction</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>What</th><th>File in the code repository</th><th>Commit</th></tr></thead><tbody><tr><td>The edits</td><td><span class="m">research/weight_surgery/edits.py</span></td><td><span class="m">228cf7f</span></td></tr><tr><td>Writing an edited model</td><td><span class="m">research/weight_surgery/make.py</span></td><td><span class="m">228cf7f</span></td></tr><tr><td>The two edited models as saved</td><td><span class="m">research/weight_surgery/run_save.sh</span></td><td><span class="m">228cf7f</span></td></tr><tr><td>Scoring against the in-game computer player</td><td><span class="m">research/weight_surgery/score_vs_cpu.sh</span></td><td><span class="m">228cf7f</span></td></tr><tr><td>Scoring in the simulator</td><td><span class="m">sim/eval_vs_bot.py</span></td><td><span class="m">657bf07</span></td></tr></tbody></table></div><p class="cap"><b>Table 5.</b> The scripts and code of the experiment. The build checks that each file exists at its commit. A commit records the script; the runs used the working copy of that day.</p></div>
+<p>The tools need the Melee simulator the project runs on, which has no licence grant and is not published.</p>
+</article>
+<div class="foot"><p>Every number in the tables and figures is computed from the score and training logs when the site
+is built (last built 16 Nov 2026); none is typed. Setup values name the file and commit they were read from. The short
+form of this experiment is <a href="../experiments.html#x-2026-11-11-hand-edited-weights">its row in the experiments table</a>.</p></div>
+</main></body></html>

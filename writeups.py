@@ -195,7 +195,7 @@ def _wilson(won, n):
     p = won / n
     mid = (p + z * z / (2 * n)) / (1 + z * z / n)
     half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
-    return 100 * (mid - half), 100 * (mid + half)
+    return max(0.0, 100 * (mid - half)), min(100.0, 100 * (mid + half))
 
 
 def _cell(models, col, sim, dol):
@@ -237,7 +237,9 @@ def _train_log(src, model):
     if not p.is_file():
         return None
     with p.open(encoding='utf-8') as f:
-        return list(csv.DictReader(f))
+        rows = list(csv.DictReader(f))
+    # only PPO trainer logs: the 2017 learner's log has other columns and is not drawn
+    return rows if rows and 'decisions' in rows[0] and 'rollout_s' in rows[0] else None
 
 
 def _mean(rows, key):
