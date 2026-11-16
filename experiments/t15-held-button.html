@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Does a held button stay held?: SteveTheBot experiment</title><style>
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--accent:#b3261e;
+  --bar:#3a3d45;--track:#ebe7dc;--off:#a9a59a;
+  --head:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;
+  --line:#34352f;--accent:#ff7a66;--bar:#c9c6bd;--track:#232421;--off:#5a5a54}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:20px 16px 64px}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font:700 2.3rem/1.1 var(--head);margin:8px 0 4px}
+h2{font:700 1.35rem/1.25 var(--head);margin:0 0 4px}
+h3{font:600 .78rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted)}
+header p{max-width:72ch}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+ul{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--ink)}
+li{padding:9px 0;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between;
+  border-bottom:1px solid var(--line)}
+li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block;font-family:var(--mono);font-size:.9rem}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
+details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.sub{display:flex;gap:18px;margin-top:10px;font-size:.95rem}
+.sub a{text-decoration:none;color:var(--muted);padding-bottom:2px}
+.sub a[aria-current]{color:var(--ink);box-shadow:0 2px 0 var(--accent)}
+
+main.paper{max-width:860px}
+main.paper>*{min-width:0;max-width:100%}
+.paper .crumb{font-size:.85rem;color:var(--muted)}
+.paper .crumb a{text-decoration:none} .paper .crumb a:hover{text-decoration:underline}
+.paper .meta{font:.82rem var(--mono);color:var(--muted);margin-top:6px}
+.paper h2{border-top:1px solid var(--ink);padding-top:14px;margin:26px 0 8px}
+.paper h3{margin:18px 0 6px}
+.paper p{color:var(--ink);max-width:70ch;margin:0 0 10px}
+.paper ul.md,.paper ol.md{border:0;margin:0 0 10px;padding-left:22px;max-width:70ch}
+.paper ul.md{list-style:disc} .paper ol.md{list-style:decimal}
+.paper .md li{display:list-item;border:0;padding:2px 0}
+.paper blockquote{margin:0 0 10px;padding:2px 0 2px 14px;border-left:2px solid var(--accent);max-width:70ch}
+.paper blockquote p{margin:0 0 6px}
+.paper code{font:.88em var(--mono)}
+.paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
+.paper .abs{font-size:1.05rem}
+.paper .abs p{max-width:74ch}
+.paper figure{margin:6px 0 18px}
+.paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
+.paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
+.paper .tb{overflow-x:auto;margin:0 0 4px}
+.paper table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+.paper th{font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:6px 12px 6px 0;vertical-align:bottom}
+.paper td{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono)}
+.paper td.n{white-space:nowrap} .paper th.n{min-width:4.6rem}
+.paper td:not(.n){min-width:9rem}
+.paper .m{font-family:var(--mono);font-size:.82rem}
+.paper td small{display:block;color:var(--muted);font:.76rem var(--mono)}
+.paper .tblock{margin:0 0 20px}
+.bars{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 3.2rem;gap:6px 10px;align-items:center;
+  font-size:.86rem}
+.bars .tr{position:relative;height:14px;background:var(--track)}
+.bars .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar)} .bars .f.top{background:var(--accent)}
+.bars .h{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.bars .t{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink)}
+.bars .v{font-family:var(--mono);text-align:right} .bars .na{color:var(--off)}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+@media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
+  --s6:#2f9a2f;--s7:#7c6be0;--s8:#e0504f}}
+.viz svg{display:block;width:100%;height:auto;max-width:760px}
+.viz .ax{stroke:var(--ink);stroke-width:1} .viz .gr{stroke:var(--line);stroke-width:1}
+.viz text{font:11px var(--mono);fill:var(--muted)} .viz text.al{font:12px var(--body);fill:var(--ink)}
+.viz path{fill:none;stroke-width:1.6;stroke-linejoin:round}
+.viz .lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.84rem;margin-top:6px}
+.viz .lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.paper .w{display:flex;gap:6px}
+.paper .w a,.paper .w span{font-size:.78rem;padding:2px 8px;border:1px solid var(--ink);text-decoration:none}
+.paper .w span{border:1px dashed var(--off);color:var(--off)}
+.paper .foot{border-top:1px solid var(--ink);padding-top:10px;font-size:.84rem;color:var(--muted)}
+.paper .foot p{color:var(--muted)}
+@media (max-width:640px){.bars{grid-template-columns:minmax(0,1fr) 3.2rem}.bars .lb{grid-column:1/-1}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet"><style>
+.stb-nav{--n-bg:#faf8f3;--n-ink:#17181c;--n-mut:#62646b;--n-acc:#b3261e;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:48px;background:var(--n-bg);
+  border-bottom:1px solid var(--n-ink);font:400 15px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#131416;--n-ink:#e9e6df;--n-mut:#9b9a94;--n-acc:#ff7a66}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1180px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  gap:22px;overflow-x:auto;scrollbar-width:none}
+.stb-nav a{color:var(--n-mut);text-decoration:none;white-space:nowrap;padding:6px 0}
+.stb-nav a:hover{color:var(--n-acc)}
+.stb-nav a.stb-home{color:var(--n-ink);font:700 20px/1 "Newsreader",Georgia,serif;margin-right:auto}
+.stb-nav a[aria-current="page"]{color:var(--n-ink);box-shadow:0 2px 0 var(--n-acc)}
+.stb-space{height:48px}
+html{scroll-padding-top:48px}
+@media (max-width:480px){.stb-nav .stb-in{gap:14px}.stb-nav{font-size:14px}.stb-nav a.stb-home{font-size:17px}}
+</style></head><body>
+<nav class="stb-nav" aria-label="Site"><div class="stb-in"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../index.html">Roadmap</a><a href="../experiments.html" aria-current="page">Experiments</a><a href="../models.html">Models</a><a href="../watch.html">Watch</a></div></nav><div class="stb-space"></div>
+
+<main class="paper">
+<header><p class="crumb"><a href="../experiments.html#x-2026-11-12-does-a-held-button-stay-held">Experiments</a> / full write-up</p>
+<h1>Does a held button stay held?</h1>
+<p class="meta">12 Nov 2026 &middot; T-15 &middot; Controls</p></header>
+<article>
+<h2 id="abstract">Abstract</h2>
+<div class="abs"><p>Yes, one long press: the bot cannot press a button twice in a row.</p><p>One continuous hold, in Dolphin and the simulator alike (identical traces): the bot cannot press a button twice without another action between.</p></div>
+<h2 id="question-and-hypothesis">Question and hypothesis</h2>
+<p>The bot chooses one of a fixed set of actions at every decision, and many of those actions include a button. If it chooses the same button at two decisions in a row, the game might see one long press or two separate presses. The difference matters: a jab combo or a double jump needs the button released and pressed again. This check was made before work on the bot's controls, in the real game (through the Dolphin emulator) and in the simulator.</p>
+<p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>Dolphin, A held: pad_A is 1 on 20 consecutive frames, no 0 between decisions; Falcon starts jab 1 (ATTACK_11) once and no jab 2.</p></blockquote><blockquote><p>Dolphin, A pulsed: pad_A alternates 1,1,0,0; jab 1 then jab 2 (ATTACK_12) and more.</p></blockquote><blockquote><p>X held: one jump (KNEE_BEND once), no double jump (JUMP_AERIAL_*). X pulsed: jump then double jump.</p></blockquote><blockquote><p>Simulator: the same action sequence in every block.</p></blockquote>
+<p>"pad_A" is the A button as the game reports it (1 pressed, 0 released). A "jab" is the standing A attack, whose second hit needs a second press. "KNEE_BEND" is the start of a jump from the ground.</p>
+<h2 id="setup">Setup</h2>
+<p>One scripted run in the emulator and one in the simulator, with the same schedule of inputs: a button held over ten decisions, then the same button alternated with no input, for the attack button and for the jump button.</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Setting</th><th>Value</th><th>Read from</th></tr></thead><tbody><tr><td>The test</td><td>One character follows a fixed schedule of the bot&#x27;s actions, one decision every 2 frames, pressed the way the bot&#x27;s emulator code presses; the other character stands still</td><td>research/t15_held_button/held_button.py at commit d69c73d</td></tr><tr><td>Block &quot;A held&quot;</td><td>The A button chosen at 10 decisions in a row (20 frames)</td><td>research/t15_held_button/held_button.py at commit d69c73d</td></tr><tr><td>Block &quot;A pulsed&quot;</td><td>A, then no button, five times</td><td>research/t15_held_button/held_button.py at commit d69c73d</td></tr><tr><td>Blocks &quot;X held&quot; and &quot;X pulsed&quot;</td><td>The same two schedules with the X button (jump)</td><td>research/t15_held_button/held_button.py at commit d69c73d</td></tr><tr><td>Between blocks</td><td>120 frames with no input</td><td>research/t15_held_button/held_button.py at commit d69c73d</td></tr><tr><td>What is recorded each frame</td><td>The A and X buttons as the game reports them, the name of the character&#x27;s action and its frame counter</td><td>research/t15_held_button/held_button.py at commit d69c73d</td></tr><tr><td>The summary</td><td>Per block, the button pattern over the first 24 frames and each action the character started, with the frame it started on</td><td>research/t15_held_button/summarize.py at commit d69c73d</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Settings of the experiment. Each value was read from the named file of the project's code repository at the named commit; the site build checks that the line it was read from is in that file.</p></div>
+<p>The table below is the output of the summary script on the two recorded traces. The summary was run again and saved on 16 Nov 2026 from the traces recorded on 12 Nov 2026.</p>
+<h2 id="results">Results</h2>
+<div class="tblock"><pre>== logs/t15/dolphin.csv
+A_held    pad_A first 24 frames: 111111111111111111110000
+          actions (frame offset:name): 0:NEUTRAL_ATTACK_1 21:STANDING 81:STANDING
+A_pulsed  pad_A first 24 frames: 110011001100110011000000
+          actions (frame offset:name): 0:NEUTRAL_ATTACK_1 8:NEUTRAL_ATTACK_2 16:NEUTRAL_ATTACK_3 28:LOOPING_ATTACK_START 33:LOOPING_ATTACK_MIDDLE 73:LOOPING_ATTACK_MIDDLE 79:LOOPING_ATTACK_END 88:STANDING
+X_held    pad_X first 24 frames: 111111111111111111110000
+          actions (frame offset:name): 0:KNEE_BEND 4:JUMPING_FORWARD 39:FALLING 47:FALLING 53:LANDING 83:STANDING
+X_pulsed  pad_X first 24 frames: 110011001100110011000000
+          actions (frame offset:name): 0:KNEE_BEND 4:JUMPING_ARIAL_FORWARD 47:LANDING 77:STANDING 137:STANDING
+== logs/t15/sim.csv
+A_held    pad_A first 24 frames: 111111111111111111110000
+          actions (frame offset:name): 0:NEUTRAL_ATTACK_1 21:STANDING 81:STANDING
+A_pulsed  pad_A first 24 frames: 110011001100110011000000
+          actions (frame offset:name): 0:NEUTRAL_ATTACK_1 8:NEUTRAL_ATTACK_2 16:NEUTRAL_ATTACK_3 28:LOOPING_ATTACK_START 33:LOOPING_ATTACK_MIDDLE 73:LOOPING_ATTACK_MIDDLE 79:LOOPING_ATTACK_END 88:STANDING
+X_held    pad_X first 24 frames: 111111111111111111110000
+          actions (frame offset:name): 0:KNEE_BEND 4:JUMPING_FORWARD 39:FALLING 47:FALLING 53:LANDING 83:STANDING
+X_pulsed  pad_X first 24 frames: 110011001100110011000000
+          actions (frame offset:name): 0:KNEE_BEND 4:JUMPING_ARIAL_FORWARD 47:LANDING 77:STANDING 137:STANDING</pre><p class="cap"><b>Table 2.</b> The two traces, summarised. First the emulator, then the simulator. A pattern is the button on each of the first 24 frames of a block; an action is listed with the frame offset it started on. Word for word, the output file <span class="m">logs/t15/summary_2026-11-16.txt</span>.</p></div>
+<p class="cap">a check of button traces, not of a model</p>
+<h2 id="discussion">Discussion</h2>
+<p><b>The same button at consecutive decisions is one continuous press.</b> In the "held" blocks the button reads 1 on all 20 frames with no 0 between decisions, the attack block starts the first jab once and no second jab, and the jump block starts one jump and no second jump (Table 2). This is what the first and third quotes expected.</p>
+<p><b>Alternating the button with no input gives separate presses.</b> In the "pulsed" blocks the pattern alternates, the attack block goes on from the first jab to the second and third and the rapid jab, and the jump block starts a jump and then a second jump in the air.</p>
+<p><b>The emulator and the simulator agree.</b> The two halves of Table 2 are the same line for line.</p>
+<p><b>Consequence for the bot.</b> With its action set, the bot cannot press a button twice in a row; it must choose a different action in between.</p>
+<h2 id="limitations">Limitations</h2>
+<ul class="md"><li>Two buttons, one character, one stage, standing on the ground at the start of each block.</li><li>One decision every 2 frames, the timing the bot used at that time. A decision every frame was not tested here.</li><li>The check shows what the game sees; it does not measure how much this limits a trained model.</li></ul>
+<h2 id="decision">Decision</h2>
+<p>Kept in mind for the controller work; no change made.</p>
+<h2 id="reproduction">Reproduction</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>What</th><th>File in the code repository</th><th>Commit</th></tr></thead><tbody><tr><td>The scheduled inputs and the trace</td><td><span class="m">research/t15_held_button/held_button.py</span></td><td><span class="m">d69c73d</span></td></tr><tr><td>The summary of a trace</td><td><span class="m">research/t15_held_button/summarize.py</span></td><td><span class="m">d69c73d</span></td></tr></tbody></table></div><p class="cap"><b>Table 3.</b> The scripts and code of the experiment. The build checks that each file exists at its commit. A commit records the script; the runs used the working copy of that day.</p></div>
+<p>The emulator run needs a copy of the game; the simulator run needs the Melee simulator the project runs on, which has no licence grant and is not published.</p>
+</article>
+<div class="foot"><p>Every number in the tables and figures is computed from the score and training logs when the site
+is built (last built 16 Nov 2026); none is typed. Setup values name the file and commit they were read from. The short
+form of this experiment is <a href="../experiments.html#x-2026-11-12-does-a-held-button-stay-held">its row in the experiments table</a>.</p></div>
+</main></body></html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scenario yardstick, version 1: SteveTheBot experiment</title><style>
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--accent:#b3261e;
+  --bar:#3a3d45;--track:#ebe7dc;--off:#a9a59a;
+  --head:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;
+  --line:#34352f;--accent:#ff7a66;--bar:#c9c6bd;--track:#232421;--off:#5a5a54}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:20px 16px 64px}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font:700 2.3rem/1.1 var(--head);margin:8px 0 4px}
+h2{font:700 1.35rem/1.25 var(--head);margin:0 0 4px}
+h3{font:600 .78rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted)}
+header p{max-width:72ch}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+ul{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--ink)}
+li{padding:9px 0;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between;
+  border-bottom:1px solid var(--line)}
+li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block;font-family:var(--mono);font-size:.9rem}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
+details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.sub{display:flex;gap:18px;margin-top:10px;font-size:.95rem}
+.sub a{text-decoration:none;color:var(--muted);padding-bottom:2px}
+.sub a[aria-current]{color:var(--ink);box-shadow:0 2px 0 var(--accent)}
+
+main.paper{max-width:860px}
+main.paper>*{min-width:0;max-width:100%}
+.paper .crumb{font-size:.85rem;color:var(--muted)}
+.paper .crumb a{text-decoration:none} .paper .crumb a:hover{text-decoration:underline}
+.paper .meta{font:.82rem var(--mono);color:var(--muted);margin-top:6px}
+.paper h2{border-top:1px solid var(--ink);padding-top:14px;margin:26px 0 8px}
+.paper h3{margin:18px 0 6px}
+.paper p{color:var(--ink);max-width:70ch;margin:0 0 10px}
+.paper ul.md,.paper ol.md{border:0;margin:0 0 10px;padding-left:22px;max-width:70ch}
+.paper ul.md{list-style:disc} .paper ol.md{list-style:decimal}
+.paper .md li{display:list-item;border:0;padding:2px 0}
+.paper blockquote{margin:0 0 10px;padding:2px 0 2px 14px;border-left:2px solid var(--accent);max-width:70ch}
+.paper blockquote p{margin:0 0 6px}
+.paper code{font:.88em var(--mono)}
+.paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
+.paper .abs{font-size:1.05rem}
+.paper .abs p{max-width:74ch}
+.paper figure{margin:6px 0 18px}
+.paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
+.paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
+.paper .tb{overflow-x:auto;margin:0 0 4px}
+.paper table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+.paper th{font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:6px 12px 6px 0;vertical-align:bottom}
+.paper td{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono)}
+.paper td.n{white-space:nowrap} .paper th.n{min-width:4.6rem}
+.paper td:not(.n){min-width:9rem}
+.paper .m{font-family:var(--mono);font-size:.82rem}
+.paper td small{display:block;color:var(--muted);font:.76rem var(--mono)}
+.paper .tblock{margin:0 0 20px}
+.bars{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 3.2rem;gap:6px 10px;align-items:center;
+  font-size:.86rem}
+.bars .tr{position:relative;height:14px;background:var(--track)}
+.bars .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar)} .bars .f.top{background:var(--accent)}
+.bars .h{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.bars .t{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink)}
+.bars .v{font-family:var(--mono);text-align:right} .bars .na{color:var(--off)}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+@media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
+  --s6:#2f9a2f;--s7:#7c6be0;--s8:#e0504f}}
+.viz svg{display:block;width:100%;height:auto;max-width:760px}
+.viz .ax{stroke:var(--ink);stroke-width:1} .viz .gr{stroke:var(--line);stroke-width:1}
+.viz text{font:11px var(--mono);fill:var(--muted)} .viz text.al{font:12px var(--body);fill:var(--ink)}
+.viz path{fill:none;stroke-width:1.6;stroke-linejoin:round}
+.viz .lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.84rem;margin-top:6px}
+.viz .lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.paper .w{display:flex;gap:6px}
+.paper .w a,.paper .w span{font-size:.78rem;padding:2px 8px;border:1px solid var(--ink);text-decoration:none}
+.paper .w span{border:1px dashed var(--off);color:var(--off)}
+.paper .foot{border-top:1px solid var(--ink);padding-top:10px;font-size:.84rem;color:var(--muted)}
+.paper .foot p{color:var(--muted)}
+@media (max-width:640px){.bars{grid-template-columns:minmax(0,1fr) 3.2rem}.bars .lb{grid-column:1/-1}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet"><style>
+.stb-nav{--n-bg:#faf8f3;--n-ink:#17181c;--n-mut:#62646b;--n-acc:#b3261e;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:48px;background:var(--n-bg);
+  border-bottom:1px solid var(--n-ink);font:400 15px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#131416;--n-ink:#e9e6df;--n-mut:#9b9a94;--n-acc:#ff7a66}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1180px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  gap:22px;overflow-x:auto;scrollbar-width:none}
+.stb-nav a{color:var(--n-mut);text-decoration:none;white-space:nowrap;padding:6px 0}
+.stb-nav a:hover{color:var(--n-acc)}
+.stb-nav a.stb-home{color:var(--n-ink);font:700 20px/1 "Newsreader",Georgia,serif;margin-right:auto}
+.stb-nav a[aria-current="page"]{color:var(--n-ink);box-shadow:0 2px 0 var(--n-acc)}
+.stb-space{height:48px}
+html{scroll-padding-top:48px}
+@media (max-width:480px){.stb-nav .stb-in{gap:14px}.stb-nav{font-size:14px}.stb-nav a.stb-home{font-size:17px}}
+</style></head><body>
+<nav class="stb-nav" aria-label="Site"><div class="stb-in"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../index.html">Roadmap</a><a href="../experiments.html" aria-current="page">Experiments</a><a href="../models.html">Models</a><a href="../watch.html">Watch</a></div></nav><div class="stb-space"></div>
+
+<main class="paper">
+<header><p class="crumb"><a href="../experiments.html#x-2026-11-12-scenario-yardstick-version-1">Experiments</a> / full write-up</p>
+<h1>Scenario yardstick, version 1</h1>
+<p class="meta">12 Nov 2026 &middot; T-28 &middot; Yardsticks</p></header>
+<article>
+<h2 id="abstract">Abstract</h2>
+<div class="abs"><p>Too loose: many starts were already decided. Replaced by version 2.</p><p>Recovery saturated; the edgeguard and follow-up tests were too loose (many starts already decided).</p></div>
+<h2 id="question-and-hypothesis">Question and hypothesis</h2>
+<p>Whole games give one number per model, and runs with the same settings differ widely on it. The idea here is to score single skills instead: put every model into the same saved situations and count how often it gets the result a good player would get. This first version covers three situations: finishing an opponent who has been knocked off the stage (edgeguard), getting back to the stage (recovery), and following up a first hit.</p>
+<p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>| random | 15% | 15% | 2 | 12% |</p></blockquote><blockquote><p>| plain 6e-4 constant (4 seeds) | 40% | 75% | 9 | 35% |</p></blockquote><blockquote><p>Order on every scenario: plain 6e-4 and embedding &gt; PPO8Self &gt; SimBase &gt; random.</p></blockquote><blockquote><p>Follow-up ending in the stock: under 8% for every model.</p></blockquote><blockquote><p>Repeat noise (same model, other random numbers): 4 points or less on the share scores with about 300 starts.</p></blockquote><blockquote><p>Spread between the four same-setting seeds: about 10 points on the share scores.</p></blockquote>
+<p>The first two quotes are rows of the plan's table of guesses; their four numbers are, in order, the edgeguard score, the recovery score, the extra damage of a follow-up and the share of openings with one more hit, all against the frozen opponent. "Plain 6e-4 constant" is the four strongest plain-input models of that day, "PPO8Self" an earlier PPO model, "SimBase" a model of the 2017 learner.</p>
+<h2 id="setup">Setup</h2>
+<p>Start positions were saved from games, then nine players (random play and eight models) were each put into the same 300 offstage starts and 300 opening starts, against two opponents: the frozen model T21L6Cs4 and the scripted bot at level 9.</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Setting</th><th>Value</th><th>Read from</th></tr></thead><tbody><tr><td>The idea</td><td>One score per skill, from the same saved start positions for every model</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Where start positions come from</td><td>The simulator can save and restore a whole match but cannot set up a position, so positions are saved from games between models and every tested model is then put into the same ones</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Games the positions were saved from</td><td>Five pairings of earlier models and the scripted bot</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Offstage start</td><td>One player is in the air off the stage, out of hitstun, and took damage in the last 2 seconds; the other stands on the stage. The tested model plays the player on the stage (edgeguard) or the player off it (recovery)</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Opening start</td><td>A player&#x27;s damage rises after 90 frames without damage; the tested model plays the attacker</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Edgeguard score</td><td>Share of starts where the offstage player loses the stock within 8 seconds and the tested model has not lost one first</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Recovery score</td><td>Share of starts where the tested model stands on the stage again within 8 seconds without losing the stock</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Follow-up scores</td><td>From the opening hit until the victim has been on the ground and in control for more than 45 frames, a stock is lost or 10 seconds pass; the extra damage, the share of starts with at least one more hit, and the share ending in the stock</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Repeats</td><td>Every model gets the same random numbers per start; each model is scored twice with different random numbers</td><td>sim/scenario_eval.py at commit ddccb57</td></tr><tr><td>Evaluation set</td><td>Half of the saved matches, kept apart from a half reserved for later training use</td><td>sim/scenario_eval.py at commit ddccb57</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Settings of the experiment. Each value was read from the named file of the project's code repository at the named commit; the site build checks that the line it was read from is in that file.</p></div>
+<p>All models of this experiment choose an action every second frame with no reaction delay; this version of the yardstick refuses other models. The tables below are the output files of the day, kept as dated copies. A score is the mean of the two repeats, followed by half the range between them.</p>
+<h2 id="results">Results</h2>
+<div class="tblock"><pre>T21L6Cs4_c04 vs T21L6Cs4_c04       offstage  162  opening 1106  (30 s)
+T21L6Cs3_c04 vs T22EmbSmall3_c04   offstage  168  opening 1264  (34 s)
+PPO8Self_c04 vs PPO8Bot_c04        offstage  149  opening 1260  (31 s)
+T22Base5_c04 vs 9                  offstage  198  opening 1507  (22 s)
+SimBase_c08 vs T22Base6_c04        offstage   85  opening  528  (20 s)
+logs/t28/states_offstage.pkl: 762 states (380 for evaluation), 52 MB
+logs/t28/states_opening.pkl: 5665 states (2766 for evaluation), 389 MB</pre><p class="cap"><b>Table 2.</b> The harvest: for each pairing the number of offstage and opening positions saved, then the totals. In a pairing "9" is the scripted bot at level 9. Word for word, lines 5 to 11 of the output file <span class="m">logs/t28/v1_2026-11-12/t28_harvest.txt</span>.</p></div>
+<div class="tblock"><pre>offstage: 300 evaluation starts
+opening: 300 evaluation starts
+opponent: T21L6Cs4_c04, 2 repeat(s)
+model                                edgeguard                  recovery    follow-up extra damage    follow-up one more hit           follow-up stock   (mean of repeats, +- half the range)
+random                            14.3 +-  1.0              18.7 +-  0.0               3.6 +-  0.3              30.2 +-  1.5               6.7 +-  0.0
+SimBase_c08                       13.8 +-  0.2              27.0 +-  1.3               3.3 +-  0.3              29.8 +-  1.2               6.0 +-  1.0
+PPO8Self_c04                      20.5 +-  0.8              83.3 +-  1.0               8.7 +-  0.4              46.7 +-  1.0              10.0 +-  0.3
+T21L6Cs3_c04                      27.5 +-  1.2              80.5 +-  1.2               9.4 +-  0.4              47.8 +-  0.5              11.3 +-  0.7
+T21L6Cs4_c04                      25.2 +-  1.2              85.7 +-  1.3               8.4 +-  0.4              43.2 +-  0.2              12.5 +-  0.8
+T22Base5_c04                      21.8 +-  0.5              83.3 +-  0.0               7.7 +-  0.8              40.3 +-  2.3              11.0 +-  0.0
+T22Base6_c04                      22.5 +-  2.2              83.3 +-  0.3              10.1 +-  0.4              47.7 +-  0.3               9.8 +-  0.5
+T22EmbSmall3_c04                  26.2 +-  0.8              83.8 +-  0.5              11.9 +-  0.9              51.8 +-  0.2              14.5 +-  0.8
+T22EmbSmall4_c04                  28.0 +-  0.7              83.7 +-  0.3              11.0 +-  0.8              46.7 +-  2.0              15.0 +-  0.7</pre><p class="cap"><b>Table 3.</b> Scores against the frozen model T21L6Cs4. Shares are in percent, extra damage in percent of damage. Word for word, lines 5 to 17 of the output file <span class="m">logs/t28/v1_2026-11-12/t28_score_frozen.txt</span>.</p></div>
+<div class="tblock"><pre>offstage: 300 evaluation starts
+opening: 300 evaluation starts
+opponent: scripted bot level 9, 2 repeat(s)
+model                                edgeguard                  recovery    follow-up extra damage    follow-up one more hit           follow-up stock   (mean of repeats, +- half the range)
+random                             8.7 +-  0.0              18.5 +-  0.2               3.4 +-  0.1              28.5 +-  0.5               6.0 +-  0.3
+SimBase_c08                        9.8 +-  1.2              26.3 +-  1.7               3.3 +-  0.2              27.0 +-  1.3               6.3 +-  0.0
+PPO8Self_c04                      21.8 +-  1.2              86.8 +-  1.5               8.8 +-  0.2              43.5 +-  0.5              14.8 +-  0.8
+T21L6Cs3_c04                      35.5 +-  1.2              78.0 +-  0.7              14.2 +-  0.1              52.0 +-  1.0              23.7 +-  0.3
+T21L6Cs4_c04                      37.8 +-  2.8              82.0 +-  0.3              19.5 +-  1.5              61.8 +-  3.2              26.0 +-  2.7
+T22Base5_c04                      23.2 +-  3.2              82.0 +-  0.7               8.9 +-  0.0              44.3 +-  1.3              18.0 +-  0.7
+T22Base6_c04                      27.5 +-  0.2              86.5 +-  0.2              15.8 +-  0.1              59.7 +-  0.0              19.5 +-  0.2
+T22EmbSmall3_c04                  30.7 +-  1.7              85.8 +-  0.2              12.8 +-  0.2              52.3 +-  0.3              22.0 +-  0.3
+T22EmbSmall4_c04                  31.3 +-  0.0              83.7 +-  0.3              15.0 +-  0.2              50.8 +-  0.5              23.3 +-  0.7</pre><p class="cap"><b>Table 4.</b> Scores against the scripted bot at level 9. Word for word, lines 5 to 17 of the output file <span class="m">logs/t28/v1_2026-11-12/t28_score_bot9.txt</span>.</p></div>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th>Watch</th></tr></thead><tbody><tr><td><span class="m">T21L6Cs4</span></td><td><div class="w"><a href="../reports/T21L6Cs4_c04_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_T21L6Cs4_c04_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr><tr><td><span class="m">T22EmbSmall3</span></td><td><div class="w"><a href="../reports/T22EmbSmall3_c04_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_T22EmbSmall3_c04_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr><tr><td><span class="m">SimBase</span></td><td><div class="w"><a href="../reports/SimBase_c08_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_SimBase_c08_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr></tbody></table></div><p class="cap"><b>Table 5.</b> Sample games: one whole game of a variant's first run, drawn with the animated viewer. A dashed label means that page was not recorded.</p></div>
+<h2 id="discussion">Discussion</h2>
+<p><b>Recovery does not separate the PPO models.</b> Against the frozen model every PPO model's recovery score is in a narrow band far above random play and the 2017-learner model (Table 3). The earlier model PPO8Self is level with the newer ones, against the order the third quote expected.</p>
+<p><b>The edgeguard scores are low for every model.</b> The best models are only modestly above random play (Table 3), and far below the guess in the second quote.</p>
+<p><b>Follow-ups: the floor is high.</b> Random play already gets one more hit in a large share of openings (Table 3), far more than the first quote guessed, so the trained models' lead on that measure is small. The share of follow-ups ending in the stock is above the mark of the fourth quote for the PPO models.</p>
+<p><b>Runs of the same setting are closer together here than on whole games.</b> The four plain models of the same setting (the two T21L6Cs and the two T22Base rows) differ by a few points on each share score against the frozen model, within the spread the last quote expected.</p>
+<h2 id="limitations">Limitations</h2>
+<ul class="md"><li>The abstract's judgement that the tests were too loose comes from watching the saved starts afterwards and from the next version of the yardstick, which found that many offstage starts were already decided. That is not shown on this page.</li><li>The start positions come from this project's own models' games.</li><li>An opening start can be the first hit of a move that hits several times, which counts as "one more hit".</li><li>The frozen opponent is also one of the tested models and meets itself.</li><li>Models with a reaction delay or a decision every frame could not be scored by this version.</li></ul>
+<h2 id="decision">Decision</h2>
+<p>The user found the scenarios &quot;pretty poor&quot; after watching them and asked for version 2 (above).</p>
+<h2 id="reproduction">Reproduction</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>What</th><th>File in the code repository</th><th>Commit</th></tr></thead><tbody><tr><td>The scenario yardstick</td><td><span class="m">sim/scenario_eval.py</span></td><td><span class="m">ddccb57</span></td></tr></tbody></table></div><p class="cap"><b>Table 6.</b> The scripts and code of the experiment. The build checks that each file exists at its commit. A commit records the script; the runs used the working copy of that day.</p></div>
+<p>The yardstick needs the Melee simulator the project runs on, which has no licence grant and is not published.</p>
+</article>
+<div class="foot"><p>Every number in the tables and figures is computed from the score and training logs when the site
+is built (last built 16 Nov 2026); none is typed. Setup values name the file and commit they were read from. The short
+form of this experiment is <a href="../experiments.html#x-2026-11-12-scenario-yardstick-version-1">its row in the experiments table</a>.</p></div>
+</main></body></html>
