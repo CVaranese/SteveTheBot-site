@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Do the long runs get worse against T4HumP1 late on?: SteveTheBot experiment</title><style>
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--accent:#b3261e;
+  --bar:#3a3d45;--track:#ebe7dc;--off:#a9a59a;
+  --head:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;
+  --line:#34352f;--accent:#ff7a66;--bar:#c9c6bd;--track:#232421;--off:#5a5a54}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:20px 16px 64px}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font:700 2.3rem/1.1 var(--head);margin:8px 0 4px}
+h2{font:700 1.35rem/1.25 var(--head);margin:0 0 4px}
+h3{font:600 .78rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted)}
+header p{max-width:72ch}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+ul{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--ink)}
+li{padding:9px 0;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between;
+  border-bottom:1px solid var(--line)}
+li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block;font-family:var(--mono);font-size:.9rem}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
+details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.sub{display:flex;gap:18px;margin-top:10px;font-size:.95rem}
+.sub a{text-decoration:none;color:var(--muted);padding-bottom:2px}
+.sub a[aria-current]{color:var(--ink);box-shadow:0 2px 0 var(--accent)}
+
+main.paper{max-width:860px}
+main.paper>*{min-width:0;max-width:100%}
+.paper .crumb{font-size:.85rem;color:var(--muted)}
+.paper .crumb a{text-decoration:none} .paper .crumb a:hover{text-decoration:underline}
+.paper .meta{font:.82rem var(--mono);color:var(--muted);margin-top:6px}
+.paper h2{border-top:1px solid var(--ink);padding-top:14px;margin:26px 0 8px}
+.paper h3{margin:18px 0 6px}
+.paper p{color:var(--ink);max-width:70ch;margin:0 0 10px}
+.paper ul.md,.paper ol.md{border:0;margin:0 0 10px;padding-left:22px;max-width:70ch}
+.paper ul.md{list-style:disc} .paper ol.md{list-style:decimal}
+.paper .md li{display:list-item;border:0;padding:2px 0}
+.paper blockquote{margin:0 0 10px;padding:2px 0 2px 14px;border-left:2px solid var(--accent);max-width:70ch}
+.paper blockquote p{margin:0 0 6px}
+.paper code{font:.88em var(--mono)}
+.paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
+.paper .abs{font-size:1.05rem}
+.paper .abs p{max-width:74ch}
+.paper figure{margin:6px 0 18px}
+.paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
+.paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
+.paper .tb{overflow-x:auto;margin:0 0 4px}
+.paper table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+.paper th{font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:6px 12px 6px 0;vertical-align:bottom}
+.paper td{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono)}
+.paper td.n{white-space:nowrap} .paper th.n{min-width:4.6rem}
+.paper td:not(.n){min-width:9rem}
+.paper .m{font-family:var(--mono);font-size:.82rem}
+.paper td small{display:block;color:var(--muted);font:.76rem var(--mono)}
+.paper .tblock{margin:0 0 20px}
+.bars{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 3.2rem;gap:6px 10px;align-items:center;
+  font-size:.86rem}
+.bars .tr{position:relative;height:14px;background:var(--track)}
+.bars .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar)} .bars .f.top{background:var(--accent)}
+.bars .h{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.bars .t{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink)}
+.bars .v{font-family:var(--mono);text-align:right} .bars .na{color:var(--off)}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+@media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
+  --s6:#2f9a2f;--s7:#7c6be0;--s8:#e0504f}}
+.viz svg{display:block;width:100%;height:auto;max-width:760px}
+.viz .ax{stroke:var(--ink);stroke-width:1} .viz .gr{stroke:var(--line);stroke-width:1}
+.viz text{font:11px var(--mono);fill:var(--muted)} .viz text.al{font:12px var(--body);fill:var(--ink)}
+.viz path{fill:none;stroke-width:1.6;stroke-linejoin:round}
+.viz .lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.84rem;margin-top:6px}
+.viz .lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.paper .w{display:flex;gap:6px}
+.paper .w a,.paper .w span{font-size:.78rem;padding:2px 8px;border:1px solid var(--ink);text-decoration:none}
+.paper .w span{border:1px dashed var(--off);color:var(--off)}
+.paper .foot{border-top:1px solid var(--ink);padding-top:10px;font-size:.84rem;color:var(--muted)}
+.paper .foot p{color:var(--muted)}
+@media (max-width:640px){.bars{grid-template-columns:minmax(0,1fr) 3.2rem}.bars .lb{grid-column:1/-1}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet"><style>
+.stb-nav{--n-bg:#faf8f3;--n-ink:#17181c;--n-mut:#62646b;--n-acc:#b3261e;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:48px;background:var(--n-bg);
+  border-bottom:1px solid var(--n-ink);font:400 15px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#131416;--n-ink:#e9e6df;--n-mut:#9b9a94;--n-acc:#ff7a66}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1180px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  gap:22px;overflow-x:auto;scrollbar-width:none}
+.stb-nav a{color:var(--n-mut);text-decoration:none;white-space:nowrap;padding:6px 0}
+.stb-nav a:hover{color:var(--n-acc)}
+.stb-nav a.stb-home{color:var(--n-ink);font:700 20px/1 "Newsreader",Georgia,serif;margin-right:auto}
+.stb-nav a[aria-current="page"]{color:var(--n-ink);box-shadow:0 2px 0 var(--n-acc)}
+.stb-space{height:48px}
+html{scroll-padding-top:48px}
+@media (max-width:480px){.stb-nav .stb-in{gap:14px}.stb-nav{font-size:14px}.stb-nav a.stb-home{font-size:17px}}
+</style></head><body>
+<nav class="stb-nav" aria-label="Site"><div class="stb-in"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../index.html">Roadmap</a><a href="../experiments.html" aria-current="page">Experiments</a><a href="../models.html">Models</a><a href="../watch.html">Watch</a></div></nav><div class="stb-space"></div>
+
+<main class="paper">
+<header><p class="crumb"><a href="../experiments.html#x-2026-11-15-do-the-long-runs-get-worse-against-t4hump1-late-on">Experiments</a> / full write-up</p>
+<h1>Do the long runs get worse against T4HumP1 late on?</h1>
+<p class="meta">15 Nov 2026 &middot; T-43 &middot; Yardsticks</p></header>
+<article>
+<h2 id="abstract">Abstract</h2>
+<div class="abs"><p>Late copies did win less (77% to 67%), but mostly in one run, and earlier copies swing as much; no clear decline with training.</p><p>Late copies won less against T4HumP1 (77% at 410 million decisions, 67% at the end), but most of the fall is one run (s2 fell 23 points, s1 fell 10, s3 rose 4) and earlier copies swing as much. Three runs cannot show a steady decline; the ladder Elo rose slightly over the same span. T4ImFull was dropped from the ladder the same day (every trained model beats it); no Elo value moved by more than 11.</p></div>
+<h2 id="question-and-hypothesis">Question and hypothesis</h2>
+<p>In the long batch, the runs with 54 actions kept rising on the project's ladder of fixed opponents. Against one of those opponents, T4HumP1, a model that started from human play, their later copies seemed to win less than copies from the middle of the run. If real, that would mean long self-play drifts away from what beats a human-style opponent even while it gets stronger against its own kind. This experiment plays new games to see whether the late dip is real.</p>
+<p class="cap">Written in the experiment plan on 15 Nov 2026, before the runs:</p><blockquote><p>c48 below c34 by 3 or more standard errors of the difference (pooled over 3 seeds, 600 games each, SE of the difference about 2.7 percentage points, so about 8 points): the late drop is real</p></blockquote><blockquote><p>Difference within about 2 SE: flat after c24, no drop -&gt; the seed-1000 dip was noise.</p></blockquote><blockquote><p>c48 above c34: still improving slowly against T4HumP1.</p></blockquote><blockquote><p>My guess: flat (within 2 SE), c34 and c48 both about 65% to 70%.</p></blockquote>
+<p>"c24", "c34" and "c48" are the 24th, 34th and last saved copy of a run. "SE" is the standard error of a difference of two shares. "The seed-1000 dip" is the dip seen in the games already played with the usual seeds.</p>
+<h2 id="setup">Setup</h2>
+<p>No training. Nine copies (three runs at three points of training) each played 200 new games against T4HumP1.</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Setting</th><th>Value</th><th>Read from</th></tr></thead><tbody><tr><td>The models scored</td><td>The three long runs with 54 actions, each at its 24th, 34th and 48th (last) saved copy</td><td>research/t43_peak/hump1_rescore.sh at commit 0911d1d</td></tr><tr><td>The opponent</td><td>The frozen model T4HumP1, a model of the usual length that started from human imitation</td><td>research/t43_peak/hump1_rescore.sh at commit 0911d1d</td></tr><tr><td>Games</td><td>200 new games per copy, with game seeds no earlier scoring had used</td><td>research/t43_peak/hump1_rescore.sh at commit 0911d1d</td></tr><tr><td>How new games are made</td><td>Game number g uses the seed base plus g; another base gives games independent of the usual ones</td><td>sim/eval_vs_bot.py at commit 0911d1d</td></tr><tr><td>The long runs</td><td>Self-play with 54 actions, training seeds 11, 12, 13</td><td>research/t43_peak/long_batch.sh at commit b8f2c60</td></tr><tr><td>Length of a long run</td><td>17,640 updates (12 times the usual 1,470), a copy saved every 368 (48 copies)</td><td>research/t43_peak/long_batch.sh at commit b8f2c60</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Settings of the experiment. Each value was read from the named file of the project's code repository at the named commit; the site build checks that the line it was read from is in that file.</p></div>
+<p>The table counts only the new games of this experiment, not the earlier ones with the usual seeds.</p>
+<h2 id="results">Results</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th class="n">Runs scored</th><th class="n">Games</th><th class="n">Games won</th><th class="n">Won, %</th><th class="n">95% interval</th><th class="n">Each run, %</th><th class="n">Stocks taken per game</th><th class="n">Stocks lost per game</th></tr></thead><tbody><tr><td>54 actions at 289 million decisions (copy 24 of 48)</td><td class="n">3</td><td class="n">600</td><td class="n">396</td><td class="n">66.0</td><td class="n">62 to 70</td><td class="n">50, 84, 64</td><td class="n">3.51</td><td class="n">2.87</td></tr><tr><td>54 actions at 410 million decisions (copy 34 of 48)</td><td class="n">3</td><td class="n">600</td><td class="n">462</td><td class="n">77.0</td><td class="n">73 to 80</td><td class="n">78, 86, 67</td><td class="n">3.68</td><td class="n">2.55</td></tr><tr><td>54 actions at 578 million decisions (the end)</td><td class="n">3</td><td class="n">600</td><td class="n">404</td><td class="n">67.3</td><td class="n">63 to 71</td><td class="n">69, 62, 70</td><td class="n">3.53</td><td class="n">2.83</td></tr></tbody></table></div><p class="cap"><b>Table 2.</b> Against <b>Frozen T4HumP1, 200 new games</b>: Head to head: games won against T4HumP1 (games with seed base 5000, not the usual 1000). All scored runs of a variant are pooled. The interval is the Wilson 95% interval of the pooled share: it covers chance between games, not the difference between training runs, which "Each run" shows.</p></div>
+<figure><div class="bars"><span class="lb">54 actions at 289 million decisions (copy 24 of 48)</span><div class="tr"><i class="h"></i><i class="f" style="width:66.0%"></i><i class="t" style="left:50.5%"></i><i class="t" style="left:84.0%"></i><i class="t" style="left:63.5%"></i></div><span class="v">66%</span><span class="lb">54 actions at 410 million decisions (copy 34 of 48)</span><div class="tr"><i class="h"></i><i class="f top" style="width:77.0%"></i><i class="t" style="left:78.5%"></i><i class="t" style="left:85.5%"></i><i class="t" style="left:67.0%"></i></div><span class="v">77%</span><span class="lb">54 actions at 578 million decisions (the end)</span><div class="tr"><i class="h"></i><i class="f" style="width:67.3%"></i><i class="t" style="left:69.0%"></i><i class="t" style="left:62.5%"></i><i class="t" style="left:70.5%"></i></div><span class="v">67%</span></div><figcaption><b>Figure 1.</b> Games won against <b>Frozen T4HumP1, 200 new games</b>, in percent. Bar: the runs of a variant pooled (the highest in red); marks: single runs; dashed line: 50%.</figcaption></figure>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th>Watch</th></tr></thead><tbody><tr><td>54 actions at 289 million decisions (copy 24 of 48)<small>T43F54s1, T43F54s2, T43F54s3</small></td><td><div class="w"><a href="../reports/T43F54s1_c48_vs_T4V2s3_c04_seed1000.html">Game</a><span title="No scenarios page was recorded">Scenarios</span></div></td></tr><tr><td>54 actions at 410 million decisions (copy 34 of 48)<small>T43F54s1, T43F54s2, T43F54s3</small></td><td><div class="w"><a href="../reports/T43F54s1_c48_vs_T4V2s3_c04_seed1000.html">Game</a><span title="No scenarios page was recorded">Scenarios</span></div></td></tr><tr><td>54 actions at 578 million decisions (the end)<small>T43F54s1, T43F54s2, T43F54s3</small></td><td><div class="w"><a href="../reports/T43F54s1_c48_vs_T4V2s3_c04_seed1000.html">Game</a><span title="No scenarios page was recorded">Scenarios</span></div></td></tr><tr><td>Graph: games won against T4HumP1 during training</td><td><div class="w"><a href="../curves.html#t43/hum">Graph</a></div></td></tr></tbody></table></div><p class="cap"><b>Table 3.</b> Sample games: one whole game of a variant's first run, drawn with the animated viewer. A dashed label means that page was not recorded.</p></div>
+<h2 id="discussion">Discussion</h2>
+<p><b>The copies at the end won a smaller share than the copies at 410 million decisions.</b> Pooled over the three runs the share is 77% at the middle point and 67% at the end. The first copy point, at 289 million decisions, is at 66%, about the level of the end.</p>
+<p><b>The fall is uneven between the runs.</b> "Each run" in Table 2 shows, for the three runs in order, the share at each point. One run falls a long way from the middle point to the end, one falls less, and one rises slightly. One run also rises from the first point to the middle point by more than the pooled fall that follows.</p>
+<p><b>Three runs do not establish a decline with training.</b> The pooled difference between the last two points is larger than the mark of the first quote, so for these copies it is not chance between games. But a single run moves between neighbouring points by as much as that difference, in both directions, so the result does not show a steady trend over training.</p>
+<h2 id="limitations">Limitations</h2>
+<ul class="md"><li>Three runs and three points of training. The points between and after were not played with new games.</li><li>One opponent. The ladder Elo over the same span, which the abstract mentions, is from the long batch's analysis and is not shown on this page.</li><li>The intervals in Table 2 cover chance between games, not the movement of a run from one copy to the next.</li><li>The abstract's last sentence, on dropping a ladder opponent the same day, is a separate change to the analysis and is not shown here.</li></ul>
+<h2 id="decision">Decision</h2>
+<p>Nothing changes. Strength is still read as the mean Elo curve of several runs.</p>
+<h2 id="reproduction">Reproduction</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>What</th><th>File in the code repository</th><th>Commit</th></tr></thead><tbody><tr><td>The new games against T4HumP1</td><td><span class="m">research/t43_peak/hump1_rescore.sh</span></td><td><span class="m">0911d1d</span></td></tr><tr><td>Scoring, with the seed base option</td><td><span class="m">sim/eval_vs_bot.py</span></td><td><span class="m">0911d1d</span></td></tr><tr><td>Training of the long runs</td><td><span class="m">research/t43_peak/long_batch.sh</span></td><td><span class="m">b8f2c60</span></td></tr></tbody></table></div><p class="cap"><b>Table 4.</b> The scripts and code of the experiment. The build checks that each file exists at its commit. A commit records the script; the runs used the working copy of that day.</p></div>
+<p>Playing the games needs the Melee simulator the project runs on, which has no licence grant and is not published.</p>
+</article>
+<div class="foot"><p>Every number in the tables and figures is computed from the score and training logs when the site
+is built (last built 16 Nov 2026); none is typed. Setup values name the file and commit they were read from. The short
+form of this experiment is <a href="../experiments.html#x-2026-11-15-do-the-long-runs-get-worse-against-t4hump1-late-on">its row in the experiments table</a>.</p></div>
+</main></body></html>
