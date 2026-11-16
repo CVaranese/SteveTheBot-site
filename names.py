@@ -125,6 +125,13 @@ PATTERNS += [
     (r'T43Lad', lambda m: 'Task T-43, the ladder run: a fourth run with the T43F54 settings (random seed 19). '
                           'Copies saved along its training serve as fixed opponents of rising strength; it is not '
                           'rated itself.'),
+    (r'T10([WD])(\d+)(?:L(\d+))?s(\d)', lambda m: 'Task T-10 (network size): today\'s settings at the usual length '
+        '(1,472 updates at 128 matches, 48 million decisions), with %s layers of %s units in the actor and critic, '
+        'learning rate %s; random seed 2%s.' % ('2' if m[1] == 'W' else '3', m[2],
+                                                {None: '6e-4', '3': '3e-4', '15': '1.5e-4'}[m[3]], m[4])),
+    (r'T46Hums(\d)', lambda m: 'Task T-46 (human start, more seeds): PPO from the imitation model T4ImFull at '
+                               'today\'s settings and the usual length (1,472 updates at 128 matches); random seed '
+                               '2%s.' % m[1]),
 ]
 
 # Runs scored both at the usual length (_c04, 2,940 updates) and continued to double length (_c08, 5,880 updates).
