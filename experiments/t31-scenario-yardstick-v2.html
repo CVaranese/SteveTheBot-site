@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scenario yardstick, version 2: SteveTheBot experiment</title><style>
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--accent:#b3261e;
+  --bar:#3a3d45;--track:#ebe7dc;--off:#a9a59a;
+  --head:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;
+  --line:#34352f;--accent:#ff7a66;--bar:#c9c6bd;--track:#232421;--off:#5a5a54}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:20px 16px 64px}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font:700 2.3rem/1.1 var(--head);margin:8px 0 4px}
+h2{font:700 1.35rem/1.25 var(--head);margin:0 0 4px}
+h3{font:600 .78rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted)}
+header p{max-width:72ch}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+ul{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--ink)}
+li{padding:9px 0;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between;
+  border-bottom:1px solid var(--line)}
+li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block;font-family:var(--mono);font-size:.9rem}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
+details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.sub{display:flex;gap:18px;margin-top:10px;font-size:.95rem}
+.sub a{text-decoration:none;color:var(--muted);padding-bottom:2px}
+.sub a[aria-current]{color:var(--ink);box-shadow:0 2px 0 var(--accent)}
+
+main.paper{max-width:860px}
+main.paper>*{min-width:0;max-width:100%}
+.paper .crumb{font-size:.85rem;color:var(--muted)}
+.paper .crumb a{text-decoration:none} .paper .crumb a:hover{text-decoration:underline}
+.paper .meta{font:.82rem var(--mono);color:var(--muted);margin-top:6px}
+.paper h2{border-top:1px solid var(--ink);padding-top:14px;margin:26px 0 8px}
+.paper h3{margin:18px 0 6px}
+.paper p{color:var(--ink);max-width:70ch;margin:0 0 10px}
+.paper ul.md,.paper ol.md{border:0;margin:0 0 10px;padding-left:22px;max-width:70ch}
+.paper ul.md{list-style:disc} .paper ol.md{list-style:decimal}
+.paper .md li{display:list-item;border:0;padding:2px 0}
+.paper blockquote{margin:0 0 10px;padding:2px 0 2px 14px;border-left:2px solid var(--accent);max-width:70ch}
+.paper blockquote p{margin:0 0 6px}
+.paper code{font:.88em var(--mono)}
+.paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
+.paper .abs{font-size:1.05rem}
+.paper .abs p{max-width:74ch}
+.paper figure{margin:6px 0 18px}
+.paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
+.paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
+.paper .tb{overflow-x:auto;margin:0 0 4px}
+.paper table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+.paper th{font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:6px 12px 6px 0;vertical-align:bottom}
+.paper td{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono)}
+.paper td.n{white-space:nowrap} .paper th.n{min-width:4.6rem}
+.paper td:not(.n){min-width:9rem}
+.paper .m{font-family:var(--mono);font-size:.82rem}
+.paper td small{display:block;color:var(--muted);font:.76rem var(--mono)}
+.paper .tblock{margin:0 0 20px}
+.bars{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 3.2rem;gap:6px 10px;align-items:center;
+  font-size:.86rem}
+.bars .tr{position:relative;height:14px;background:var(--track)}
+.bars .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar)} .bars .f.top{background:var(--accent)}
+.bars .h{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.bars .t{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink)}
+.bars .v{font-family:var(--mono);text-align:right} .bars .na{color:var(--off)}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+@media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
+  --s6:#2f9a2f;--s7:#7c6be0;--s8:#e0504f}}
+.viz svg{display:block;width:100%;height:auto;max-width:760px}
+.viz .ax{stroke:var(--ink);stroke-width:1} .viz .gr{stroke:var(--line);stroke-width:1}
+.viz text{font:11px var(--mono);fill:var(--muted)} .viz text.al{font:12px var(--body);fill:var(--ink)}
+.viz path{fill:none;stroke-width:1.6;stroke-linejoin:round}
+.viz .lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.84rem;margin-top:6px}
+.viz .lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.paper .w{display:flex;gap:6px}
+.paper .w a,.paper .w span{font-size:.78rem;padding:2px 8px;border:1px solid var(--ink);text-decoration:none}
+.paper .w span{border:1px dashed var(--off);color:var(--off)}
+.paper .foot{border-top:1px solid var(--ink);padding-top:10px;font-size:.84rem;color:var(--muted)}
+.paper .foot p{color:var(--muted)}
+@media (max-width:640px){.bars{grid-template-columns:minmax(0,1fr) 3.2rem}.bars .lb{grid-column:1/-1}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet"><style>
+.stb-nav{--n-bg:#faf8f3;--n-ink:#17181c;--n-mut:#62646b;--n-acc:#b3261e;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:48px;background:var(--n-bg);
+  border-bottom:1px solid var(--n-ink);font:400 15px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#131416;--n-ink:#e9e6df;--n-mut:#9b9a94;--n-acc:#ff7a66}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1180px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  gap:22px;overflow-x:auto;scrollbar-width:none}
+.stb-nav a{color:var(--n-mut);text-decoration:none;white-space:nowrap;padding:6px 0}
+.stb-nav a:hover{color:var(--n-acc)}
+.stb-nav a.stb-home{color:var(--n-ink);font:700 20px/1 "Newsreader",Georgia,serif;margin-right:auto}
+.stb-nav a[aria-current="page"]{color:var(--n-ink);box-shadow:0 2px 0 var(--n-acc)}
+.stb-space{height:48px}
+html{scroll-padding-top:48px}
+@media (max-width:480px){.stb-nav .stb-in{gap:14px}.stb-nav{font-size:14px}.stb-nav a.stb-home{font-size:17px}}
+</style></head><body>
+<nav class="stb-nav" aria-label="Site"><div class="stb-in"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../index.html">Roadmap</a><a href="../experiments.html" aria-current="page">Experiments</a><a href="../models.html">Models</a><a href="../watch.html">Watch</a></div></nav><div class="stb-space"></div>
+
+<main class="paper">
+<header><p class="crumb"><a href="../experiments.html#x-2026-11-12-scenario-yardstick-version-2">Experiments</a> / full write-up</p>
+<h1>Scenario yardstick, version 2</h1>
+<p class="meta">12 Nov 2026 &middot; T-31 &middot; Yardsticks</p></header>
+<article>
+<h2 id="abstract">Abstract</h2>
+<div class="abs"><p>Recovery is solved (83% to 92%); edgeguarding is absent (5% to 11%).</p><p>Recovery is solved and edgeguarding is absent: the bots barely go after an opponent offstage. Starts already lost or already safe are filtered out by playing them on first (170 of 380 kept). The shielding test favours random play because the starts are moments these models were hit.</p></div>
+<h2 id="question-and-hypothesis">Question and hypothesis</h2>
+<p>The first version of the scenario yardstick put every model into the same saved situations, but its edgeguard and follow-up scores were hard to trust: on watching the samples, many starts were already decided before the tested model could do anything. This second version judges edgeguard and recovery by what finally happens, removes starts that are already decided, and adds three tests of neutral play: punishing a missed attack, landing the first hit, and shielding an incoming move.</p>
+<p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>Replay equals the recording: 0 frames differ.</p></blockquote><blockquote><p>Offstage starts kept (recoverable unopposed): about 70% of the 380 evaluation starts.</p></blockquote><blockquote><p>Critic against rollouts: correlation about 0.5; its best threshold agrees with keep / drop about 75% of the time.</p></blockquote><blockquote><p>| random | 3% | 15% | 12% | 5% | -45 | 20% |</p></blockquote><blockquote><p>| plain 6e-4 constant | 12% | 92% | 35% | 20% | 0 | 30% |</p></blockquote><blockquote><p>First hit is the test I expect to separate PPO8Self from the newer models (it loses whole games to them but equalled them on the three version 1 scenarios).</p></blockquote>
+<p>The two table rows give the plan's guesses for random play and for the strongest plain-input models. Their six numbers are, in order: edgeguard, recovery, share of openings with one more hit, whiff punish, first hit by the model minus first hit by the opponent, and shield "not hit". The "critic" is the strong model's value network, tried as a cheap way to tell which starts are still open; the "rollouts" are the replays that actually decide it.</p>
+<h2 id="setup">Setup</h2>
+<p>The offstage and opening starts of version 1 were filtered, new starts for the three neutral tests were saved from recorded games, and random play and eight models were scored against the frozen model T21L6Cs4. The experiment was run twice on the same day: after the first run a watched sample showed that many offstage starts were already safe, the filter was made stricter, and edgeguard and recovery were scored again.</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Setting</th><th>Value</th><th>Read from</th></tr></thead><tbody><tr><td>Edgeguard and recovery, judged by outcome</td><td>An offstage start ends when the offstage player is back on the stage, on the ground and able to act, or loses the stock, whichever comes first; 20 seconds at most</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>Dropping starts that are already lost</td><td>Every offstage start is replayed with a strong model as the offstage player and an opponent that does nothing; starts where it gets back in fewer than half of the tries are dropped</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>Dropping starts that are already safe (second run)</td><td>A start is also dropped when the offstage player gets back with no input at all, or in under 60 frames</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>Dropping openings that are already decided</td><td>Openings are replayed with an attacker that does nothing and dropped when the victim still takes damage or loses the stock in half of the tries</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>The strong model used by the filter</td><td>T21L6Cs4, also the frozen opponent of the scores</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>How new starts are saved</td><td>Games are played and recorded, candidate moments are picked from the recording, and the games are replayed from the same seeds to save the matches at those moments</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>Whiff punish</td><td>The opponent has just missed with an attack and cannot act yet; the model is free and close. Success is hitting or grabbing the opponent before it can act again</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>First hit from neutral</td><td>Both stand free, 20 to 60 units apart, no damage for 90 frames; played for 5 seconds</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>Shielding a move</td><td>A start 8 or 9 frames before a recorded hit landed on a free model on the ground; the attacker repeats its recorded inputs. Success is not being hit in the next half second</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr><tr><td>Repeats and starts</td><td>Each model is scored twice with different random numbers, on up to 300 starts per scenario</td><td>sim/scenario_v2.py at commit 8f5babf</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Settings of the experiment. Each value was read from the named file of the project's code repository at the named commit; the site build checks that the line it was read from is in that file.</p></div>
+<p>All models here choose an action every second frame with no reaction delay. The tables are the output files of the day, kept as dated copies; a score is the mean of the two repeats, in percent (extra damage in percent of damage).</p>
+<h2 id="results">Results</h2>
+<div class="tblock"><pre>T21L6Cs4_c04 vs T21L6Cs4_c04       replay frames that differ: 0 | candidates {&#x27;whiff&#x27;: 300, &#x27;neutral&#x27;: 126, &#x27;shield&#x27;: 95} | kept {&#x27;whiff&#x27;: 154, &#x27;neutral&#x27;: 126, &#x27;shield&#x27;: 70}  (51 s)
+T21L6Cs3_c04 vs T22EmbSmall3_c04   replay frames that differ: 0 | candidates {&#x27;whiff&#x27;: 300, &#x27;neutral&#x27;: 137, &#x27;shield&#x27;: 283} | kept {&#x27;whiff&#x27;: 140, &#x27;neutral&#x27;: 137, &#x27;shield&#x27;: 252}  (56 s)
+PPO8Self_c04 vs PPO8Bot_c04        replay frames that differ: 0 | candidates {&#x27;whiff&#x27;: 300, &#x27;neutral&#x27;: 147, &#x27;shield&#x27;: 124} | kept {&#x27;whiff&#x27;: 165, &#x27;neutral&#x27;: 147, &#x27;shield&#x27;: 106}  (41 s)
+T22Base5_c04 vs 9                  replay frames that differ: 0 | candidates {&#x27;whiff&#x27;: 300, &#x27;neutral&#x27;: 235, &#x27;shield&#x27;: 300} | kept {&#x27;whiff&#x27;: 115, &#x27;neutral&#x27;: 235, &#x27;shield&#x27;: 225}  (29 s)
+SimBase_c08 vs T22Base6_c04        replay frames that differ: 0 | candidates {&#x27;whiff&#x27;: 300, &#x27;neutral&#x27;: 33, &#x27;shield&#x27;: 52} | kept {&#x27;whiff&#x27;: 154, &#x27;neutral&#x27;: 33, &#x27;shield&#x27;: 44}  (24 s)</pre><p class="cap"><b>Table 2.</b> Saving the starts for the neutral tests: per pairing, the frames on which the replay differs from the recording, the candidate moments and the starts kept. "9" is the scripted bot at level 9. Word for word, lines 5 to 9 of the output file <span class="m">logs/t28/v2_2026-11-12/t31_harvest.txt</span>.</p></div>
+<div class="tblock"><pre>offstage: 380 starts, 321 kept (V gets back unopposed in at least half of 6 tries); never back: 38, always back: 248
+critic of T21L6Cs4_c04 against the rollouts: correlation 0.59; best threshold -0.31 agrees with keep / drop on 90% of starts (always saying &quot;keep&quot; would agree on 84%)
+openings: 900 starts, 764 kept (dropped: more damage or a lost stock with an attacker that does nothing, in at least half of 4 tries)</pre><p class="cap"><b>Table 3.</b> The filter of the first run. Word for word, lines 5 to 7 of the output file <span class="m">logs/t28/v2_2026-11-12/t31_filter.txt</span>.</p></div>
+<div class="tblock"><pre>offstage: 380 starts; already lost 59; back with no input 84; back in under 60 frames 67
+offstage: 170 kept (V gets back unopposed in at least half of 6 tries, not without input, not in under 60 frames)
+critic of T21L6Cs4_c04 against &quot;recoverable&quot;: correlation 0.59; best threshold -0.31 agrees on 90% of starts (always saying &quot;recoverable&quot; would agree on 84%)
+openings: 900 starts, 764 kept (dropped: more damage or a lost stock with an attacker that does nothing, in at least half of 4 tries)</pre><p class="cap"><b>Table 4.</b> The stricter filter of the second run. Word for word, lines 5 to 8 of the output file <span class="m">logs/t28/v2_2026-11-12/t31b_filter.txt</span>.</p></div>
+<div class="tblock"><pre>starts: offstage 170, opening 300, whiff 300, neutral 300, shield 300
+opponent: T21L6Cs4_c04, 2 repeat(s); mean of repeats
+model               edgeguard v2 | edgeguard v2 unresolved | recovery v2 | recovery v2 unresolved | follow-up v2 extra damage | follow-up v2 one more hit | follow-up v2 stock | whiff punish | first hit by the model | first hit by the opponent | shield: not hit | shield: punished
+random                       5.9 |                     0.6 |         6.5 |                    0.0 |                       3.5 |                      25.2 |                2.8 |         16.0 |                   22.7 |                      73.0 |            34.5 |             12.5
+SimBase_c08                  6.8 |                     0.3 |         9.7 |                    0.0 |                       3.5 |                      26.3 |                2.7 |         14.3 |                   24.0 |                      71.8 |            30.7 |             10.3
+PPO8Self_c04                 9.4 |                     0.0 |        90.3 |                    0.0 |                       7.7 |                      39.0 |                6.2 |         20.7 |                   38.8 |                      56.7 |            14.7 |              5.7
+T21L6Cs3_c04                 9.7 |                     0.0 |        87.4 |                    0.0 |                       9.9 |                      41.8 |                7.5 |         26.8 |                   52.8 |                      39.2 |            19.5 |              9.5
+T21L6Cs4_c04                 7.1 |                     0.0 |        90.3 |                    0.0 |                       9.0 |                      42.8 |                8.3 |         26.2 |                   36.0 |                      38.2 |            23.7 |              9.8
+T22Base5_c04                 4.7 |                     0.0 |        83.2 |                    0.0 |                       8.1 |                      38.3 |                9.0 |         23.0 |                   34.5 |                      56.0 |            16.8 |             10.0
+T22Base6_c04                 8.5 |                     0.0 |        90.0 |                    0.3 |                      10.2 |                      45.5 |                7.0 |         29.0 |                   57.8 |                      36.8 |            17.8 |             10.7
+T22EmbSmall3_c04             6.8 |                     0.0 |        87.9 |                    0.0 |                      13.3 |                      52.7 |                9.8 |         24.3 |                   50.0 |                      47.2 |            15.5 |             11.0
+T22EmbSmall4_c04            10.9 |                     0.0 |        92.1 |                    0.0 |                      10.1 |                      42.5 |                9.3 |         23.7 |                   51.3 |                      44.7 |            22.7 |             10.7</pre><p class="cap"><b>Table 5.</b> Scores of the second run against the frozen model T21L6Cs4. These are the numbers of the abstract. Word for word, lines 5 to 16 of the output file <span class="m">logs/t28/v2_2026-11-12/t31b_score_frozen.txt</span>.</p></div>
+<div class="tblock"><pre>starts: offstage 300, opening 300, whiff 300, neutral 300, shield 300
+opponent: T21L6Cs4_c04, 2 repeat(s); mean of repeats
+model               edgeguard v2 | edgeguard v2 unresolved | recovery v2 | recovery v2 unresolved | follow-up v2 extra damage | follow-up v2 one more hit | follow-up v2 stock | whiff punish | first hit by the model | first hit by the opponent | shield: not hit | shield: punished
+random                       3.0 |                     0.3 |        22.7 |                    0.0 |                       3.5 |                      25.2 |                2.8 |         16.0 |                   22.7 |                      73.0 |            34.5 |             12.5
+SimBase_c08                  2.2 |                     0.0 |        30.8 |                    0.0 |                       3.5 |                      26.3 |                2.7 |         14.3 |                   24.0 |                      71.8 |            30.7 |             10.3
+PPO8Self_c04                 3.7 |                     0.0 |        93.2 |                    0.0 |                       7.7 |                      39.0 |                6.2 |         20.7 |                   38.8 |                      56.7 |            14.7 |              5.7
+T21L6Cs3_c04                 5.5 |                     0.0 |        91.5 |                    0.0 |                       9.9 |                      41.8 |                7.5 |         26.8 |                   52.8 |                      39.2 |            19.5 |              9.5
+T21L6Cs4_c04                 5.0 |                     0.0 |        93.0 |                    0.0 |                       9.0 |                      42.8 |                8.3 |         26.2 |                   36.0 |                      38.2 |            23.7 |              9.8
+T22Base5_c04                 4.0 |                     0.0 |        92.5 |                    0.0 |                       8.1 |                      38.3 |                9.0 |         23.0 |                   34.5 |                      56.0 |            16.8 |             10.0
+T22Base6_c04                 6.5 |                     0.0 |        93.8 |                    0.0 |                      10.2 |                      45.5 |                7.0 |         29.0 |                   57.8 |                      36.8 |            17.8 |             10.7
+T22EmbSmall3_c04             5.8 |                     0.0 |        91.7 |                    0.0 |                      13.3 |                      52.7 |                9.8 |         24.3 |                   50.0 |                      47.2 |            15.5 |             11.0
+T22EmbSmall4_c04             4.3 |                     0.0 |        95.0 |                    0.0 |                      10.1 |                      42.5 |                9.3 |         23.7 |                   51.3 |                      44.7 |            22.7 |             10.7</pre><p class="cap"><b>Table 6.</b> Scores of the first run, before the stricter filter. Only the edgeguard and recovery columns differ from the second run. Word for word, lines 5 to 16 of the output file <span class="m">logs/t28/v2_2026-11-12/t31_score_frozen.txt</span>.</p></div>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th>Watch</th></tr></thead><tbody><tr><td><span class="m">T21L6Cs4</span></td><td><div class="w"><a href="../reports/T21L6Cs4_c04_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_T21L6Cs4_c04_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr><tr><td><span class="m">PPO8Self</span></td><td><div class="w"><a href="../reports/PPO8Self_c04_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_PPO8Self_c04_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr><tr><td><span class="m">PPO8Bot</span></td><td><div class="w"><a href="../reports/PPO8Bot_c04_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_PPO8Bot_c04_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr><tr><td><span class="m">SimBase</span></td><td><div class="w"><a href="../reports/SimBase_c08_vs_PPO8Self_c04_seed1000.html">Game</a><a href="../anim/anim2_SimBase_c08_vs_T21L6Cs4_c04.html">Scenarios</a></div></td></tr></tbody></table></div><p class="cap"><b>Table 7.</b> Sample games: one whole game of a variant's first run, drawn with the animated viewer. A dashed label means that page was not recorded.</p></div>
+<h2 id="discussion">Discussion</h2>
+<p><b>Replaying a recorded game reproduces it exactly.</b> No frame differs in any of the five pairings (Table 2), as the first quote expected.</p>
+<p><b>Many saved offstage starts were already decided, in both directions.</b> The first filter dropped the starts that were already lost (Table 3). The second found that a large part of the rest were already safe: the offstage player got back with no input, or in under a second (Table 4). Fewer than half of the starts are left. The plan had only expected starts that were already lost.</p>
+<p><b>The critic is a weak stand-in for the rollouts.</b> Its best threshold agrees with the rollouts on most starts, but saying "recoverable" every time would agree on nearly as many (Tables 3 and 4).</p>
+<p><b>The models barely edgeguard.</b> On the filtered starts every model's edgeguard score is close to that of random play (Table 5), below even the modest guess in the fifth quote.</p>
+<p><b>Recovery separates trained models from untrained ones sharply.</b> The PPO models get back in the great majority of starts; random play and the 2017-learner model almost never do (Table 5). With the first filter the gap was smaller, because those starts included ones that are safe with no input (Table 6).</p>
+<p><b>The neutral tests have high floors, and the shield test is biased.</b> Random play already punishes a missed attack in a fair share of starts, so the models' lead there is small. In the shield test the models score below random play. The shield starts are moments at which the model then playing was hit, and most of those players are these same models, so the test selects situations they handle badly.</p>
+<p><b>First hit differs most between models.</b> The share of starts in which the model lands the first hit ranges widely across the PPO models, including between models trained with the same settings (Table 5).</p>
+<h2 id="limitations">Limitations</h2>
+<ul class="md"><li>All starts come from this project's own models' games; the shield starts in particular are selected against the tested models.</li><li>The edgeguard score now rests on fewer than half of the saved offstage starts.</li><li>Whether a start is "already decided" is judged with one strong model; another model might recover from starts it cannot, or the reverse.</li><li>The scores against the scripted bot were also made and are not shown on this page.</li><li>Models with a reaction delay or a decision every frame could not be scored by this version.</li></ul>
+<h2 id="decision">Decision</h2>
+<p>The user watched samples and accepted them (&quot;they&#x27;re just cut a little too long&quot;); the scenario pages on this site play them.</p>
+<h2 id="reproduction">Reproduction</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>What</th><th>File in the code repository</th><th>Commit</th></tr></thead><tbody><tr><td>Version 2 of the scenario yardstick, as of the second run</td><td><span class="m">sim/scenario_v2.py</span></td><td><span class="m">8f5babf</span></td></tr><tr><td>Version 2, as of the first run</td><td><span class="m">sim/scenario_v2.py</span></td><td><span class="m">4a4ef60</span></td></tr><tr><td>Version 1 (saved offstage and opening starts)</td><td><span class="m">sim/scenario_eval.py</span></td><td><span class="m">ddccb57</span></td></tr></tbody></table></div><p class="cap"><b>Table 8.</b> The scripts and code of the experiment. The build checks that each file exists at its commit. A commit records the script; the runs used the working copy of that day.</p></div>
+<p>The yardstick needs the Melee simulator the project runs on, which has no licence grant and is not published.</p>
+</article>
+<div class="foot"><p>Every number in the tables and figures is computed from the score and training logs when the site
+is built (last built 16 Nov 2026); none is typed. Setup values name the file and commit they were read from. The short
+form of this experiment is <a href="../experiments.html#x-2026-11-12-scenario-yardstick-version-2">its row in the experiments table</a>.</p></div>
+</main></body></html>

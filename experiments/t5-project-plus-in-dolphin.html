@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Project+ in Dolphin: SteveTheBot experiment</title><style>
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--accent:#b3261e;
+  --bar:#3a3d45;--track:#ebe7dc;--off:#a9a59a;
+  --head:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;
+  --line:#34352f;--accent:#ff7a66;--bar:#c9c6bd;--track:#232421;--off:#5a5a54}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:20px 16px 64px}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font:700 2.3rem/1.1 var(--head);margin:8px 0 4px}
+h2{font:700 1.35rem/1.25 var(--head);margin:0 0 4px}
+h3{font:600 .78rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted)}
+header p{max-width:72ch}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+ul{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--ink)}
+li{padding:9px 0;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between;
+  border-bottom:1px solid var(--line)}
+li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block;font-family:var(--mono);font-size:.9rem}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
+details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.sub{display:flex;gap:18px;margin-top:10px;font-size:.95rem}
+.sub a{text-decoration:none;color:var(--muted);padding-bottom:2px}
+.sub a[aria-current]{color:var(--ink);box-shadow:0 2px 0 var(--accent)}
+
+main.paper{max-width:860px}
+main.paper>*{min-width:0;max-width:100%}
+.paper .crumb{font-size:.85rem;color:var(--muted)}
+.paper .crumb a{text-decoration:none} .paper .crumb a:hover{text-decoration:underline}
+.paper .meta{font:.82rem var(--mono);color:var(--muted);margin-top:6px}
+.paper h2{border-top:1px solid var(--ink);padding-top:14px;margin:26px 0 8px}
+.paper h3{margin:18px 0 6px}
+.paper p{color:var(--ink);max-width:70ch;margin:0 0 10px}
+.paper ul.md,.paper ol.md{border:0;margin:0 0 10px;padding-left:22px;max-width:70ch}
+.paper ul.md{list-style:disc} .paper ol.md{list-style:decimal}
+.paper .md li{display:list-item;border:0;padding:2px 0}
+.paper blockquote{margin:0 0 10px;padding:2px 0 2px 14px;border-left:2px solid var(--accent);max-width:70ch}
+.paper blockquote p{margin:0 0 6px}
+.paper code{font:.88em var(--mono)}
+.paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
+.paper .abs{font-size:1.05rem}
+.paper .abs p{max-width:74ch}
+.paper figure{margin:6px 0 18px}
+.paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
+.paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
+.paper .tb{overflow-x:auto;margin:0 0 4px}
+.paper table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+.paper th{font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:6px 12px 6px 0;vertical-align:bottom}
+.paper td{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono)}
+.paper td.n{white-space:nowrap} .paper th.n{min-width:4.6rem}
+.paper td:not(.n){min-width:9rem}
+.paper .m{font-family:var(--mono);font-size:.82rem}
+.paper td small{display:block;color:var(--muted);font:.76rem var(--mono)}
+.paper .tblock{margin:0 0 20px}
+.bars{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 3.2rem;gap:6px 10px;align-items:center;
+  font-size:.86rem}
+.bars .tr{position:relative;height:14px;background:var(--track)}
+.bars .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar)} .bars .f.top{background:var(--accent)}
+.bars .h{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.bars .t{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink)}
+.bars .v{font-family:var(--mono);text-align:right} .bars .na{color:var(--off)}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+@media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
+  --s6:#2f9a2f;--s7:#7c6be0;--s8:#e0504f}}
+.viz svg{display:block;width:100%;height:auto;max-width:760px}
+.viz .ax{stroke:var(--ink);stroke-width:1} .viz .gr{stroke:var(--line);stroke-width:1}
+.viz text{font:11px var(--mono);fill:var(--muted)} .viz text.al{font:12px var(--body);fill:var(--ink)}
+.viz path{fill:none;stroke-width:1.6;stroke-linejoin:round}
+.viz .lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.84rem;margin-top:6px}
+.viz .lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.paper .w{display:flex;gap:6px}
+.paper .w a,.paper .w span{font-size:.78rem;padding:2px 8px;border:1px solid var(--ink);text-decoration:none}
+.paper .w span{border:1px dashed var(--off);color:var(--off)}
+.paper .foot{border-top:1px solid var(--ink);padding-top:10px;font-size:.84rem;color:var(--muted)}
+.paper .foot p{color:var(--muted)}
+@media (max-width:640px){.bars{grid-template-columns:minmax(0,1fr) 3.2rem}.bars .lb{grid-column:1/-1}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet"><style>
+.stb-nav{--n-bg:#faf8f3;--n-ink:#17181c;--n-mut:#62646b;--n-acc:#b3261e;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:48px;background:var(--n-bg);
+  border-bottom:1px solid var(--n-ink);font:400 15px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#131416;--n-ink:#e9e6df;--n-mut:#9b9a94;--n-acc:#ff7a66}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1180px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  gap:22px;overflow-x:auto;scrollbar-width:none}
+.stb-nav a{color:var(--n-mut);text-decoration:none;white-space:nowrap;padding:6px 0}
+.stb-nav a:hover{color:var(--n-acc)}
+.stb-nav a.stb-home{color:var(--n-ink);font:700 20px/1 "Newsreader",Georgia,serif;margin-right:auto}
+.stb-nav a[aria-current="page"]{color:var(--n-ink);box-shadow:0 2px 0 var(--n-acc)}
+.stb-space{height:48px}
+html{scroll-padding-top:48px}
+@media (max-width:480px){.stb-nav .stb-in{gap:14px}.stb-nav{font-size:14px}.stb-nav a.stb-home{font-size:17px}}
+</style></head><body>
+<nav class="stb-nav" aria-label="Site"><div class="stb-in"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../index.html">Roadmap</a><a href="../experiments.html" aria-current="page">Experiments</a><a href="../models.html">Models</a><a href="../watch.html">Watch</a></div></nav><div class="stb-space"></div>
+
+<main class="paper">
+<header><p class="crumb"><a href="../experiments.html#x-2026-11-12-project-in-dolphin">Experiments</a> / full write-up</p>
+<h1>Project+ in Dolphin</h1>
+<p class="meta">12 Nov 2026 &middot; T-5, T-23 &middot; Project+</p></header>
+<article>
+<h2 id="abstract">Abstract</h2>
+<div class="abs"><p>About 600 to 720 frames a second for one copy; a Melee model plays whole P+ games.</p><p>A Melee-trained model plays whole P+ games through a translator. A savestate bug in the scripting Dolphin ran P+ at double speed and dropped every second input; our fork fixes it.</p></div>
+<h2 id="question-and-hypothesis">Question and hypothesis</h2>
+<p>The project's target game is Project+, a mod of Super Smash Bros. Brawl, which has no fast simulator; it runs only in the Dolphin emulator. Three things had to be known before any work on it: how fast the game runs in an emulator that a script can drive, whether a script's inputs reach the game reliably, and whether a model trained in Melee can play Project+ at all when the game state is translated for it.</p>
+<p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>Run 1 (default video, speed 0, neutral inputs, 3,600 frameadvances): 150 to 500 frameadvances/s</p></blockquote><blockquote><p>Run 2 (as run 1, random inputs on both ports): within 20% of run 1.</p></blockquote><blockquote><p>Run 3 (as run 2 with <code>-v Null</code>): either refuses / ignores it, or 1.2 to 2 times run 2.</p></blockquote><blockquote><p>A: about half of the frames show a new value (every 2nd value is lost); the lag is one fixed number all run.</p></blockquote><blockquote><p>C: the same half-rate, but the lag or the parity shifts during the run in at least one copy.</p></blockquote>
+<p>"Frameadvances" are emulator frames stepped by the script. The first three quotes are about speed. The last two are about the input probe: run A is one copy of the emulator, run C four copies at once. No expectation was written down for the fix or for the games played by a Melee model.</p>
+<h2 id="setup">Setup</h2>
+<p>Four parts, all on 12 Nov 2026: timing runs with one copy of the emulator; the input probe with one and with four copies; the same probe after a fix to the emulator; and games in which a Melee-trained model plays Project+. The fix was made in a fork of the scriptable emulator build, which is a separate code base and not in the project's code repository.</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Setting</th><th>Value</th><th>Read from</th></tr></thead><tbody><tr><td>The timing script</td><td>Runs inside a scriptable build of the Dolphin emulator; loads a saved Captain Falcon against Captain Falcon match on Final Destination, runs a set number of emulator frames and times them</td><td>research/pplus_timing/time_match.py at commit d3a8131</td></tr><tr><td>Inputs during timing</td><td>None, or random inputs on both controllers with a new input every 6 frames</td><td>research/pplus_timing/time_match.py at commit d3a8131</td></tr><tr><td>What counts as a game frame</td><td>An emulator frame on which the first player&#x27;s action or animation frame changed</td><td>research/pplus_timing/time_match.py at commit d3a8131</td></tr><tr><td>The input probe</td><td>On every frame the script presses the buttons that spell a 4-bit code that counts up, then reads which code the game&#x27;s fighter saw; the lag is how many frames old that code is</td><td>research/pplus_timing/input_probe.py at commit a0091a4</td></tr><tr><td>The probe&#x27;s check for skipped inputs</td><td>Every write the game makes to the fighter&#x27;s button word is recorded, and the step between the codes of successive writes is counted</td><td>research/pplus_timing/input_probe.py at commit a0091a4</td></tr><tr><td>Playing a Melee model in Project+</td><td>A script in the emulator reads both fighters from the game&#x27;s memory at each decision and sends them to a helper program, which translates them into the form the Melee model expects, runs the model and answers with a button and stick position</td><td>research/pplus_play/play.py at commit e47f6cd</td></tr><tr><td>The translation</td><td>Each Project+ action is mapped to a Melee action by name; the helper counts how many decisions had an exact mapping, an approximate one, or none</td><td>research/pplus_play/helper.py at commit e47f6cd</td></tr><tr><td>Decisions in play</td><td>One every 2 frames, held for 2 frames</td><td>research/pplus_play/play.py at commit e47f6cd</td></tr><tr><td>Machine</td><td>Intel Core i7-14700KF (28 logical processors), NVIDIA GeForce RTX 4070 SUPER (12 GB), Windows</td><td>Checked on the machine: processor name and graphics card read on 16 Nov 2026, four days after the runs</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Settings of the experiment. Each value was read from the named file of the project's code repository at the named commit; the site build checks that the line it was read from is in that file.</p></div>
+<p>The tables below are lines of the log files the scripts wrote on the day, kept as dated copies.</p>
+<h2 id="results">Results</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Line of the output</th><th class="n"><span class="m">run1_default_neutral</span></th><th class="n"><span class="m">run2_default_random</span></th><th class="n"><span class="m">run3_null_random</span></th></tr></thead><tbody><tr><td>RESULT frames</td><td class="n">3600 seconds=4.99 dolphin_fps=721.0 game_frames=3600 game_fps=721.0 game_per_dolphin=1.000</td><td class="n">7200 seconds=11.67 dolphin_fps=616.7 game_frames=6957 game_fps=595.9 game_per_dolphin=0.966</td><td class="n">7200 seconds=10.77 dolphin_fps=668.5 game_frames=6957 game_fps=645.9 game_per_dolphin=0.966</td></tr></tbody></table></div><p class="cap"><b>Table 2.</b> Timing of one copy before the fix: no inputs, random inputs, and random inputs with the video output set to "Null". Each row is one line of the named output file, read when the site is built; a column is one file (<span class="m">logs/t5/frozen_2026-11-12</span>).</p></div>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Line of the output</th><th class="n"><span class="m">probeA_dual</span></th><th class="n"><span class="m">probe_x4_dual_copy1</span></th><th class="n"><span class="m">probe_x4_dual_copy2</span></th><th class="n"><span class="m">probe_x4_dual_copy4</span></th></tr></thead><tbody><tr><td>SUMMARY frames</td><td class="n">1800 seconds=2.50 fps=721.3 new_value_frames=900 (50.0%)</td><td class="n">3600 seconds=5.87 fps=613.1 new_value_frames=1800 (50.0%)</td><td class="n">3600 seconds=5.83 fps=617.8 new_value_frames=1800 (50.0%)</td><td class="n">3600 seconds=5.87 fps=613.2 new_value_frames=1800 (50.0%)</td></tr><tr><td>SUMMARY lag counts</td><td class="n">0:1, 1:1, 2:900, 3:898</td><td class="n">0:1, 1:1, 2:1800, 3:1798</td><td class="n">0:1, 1:1, 2:1800, 3:1798</td><td class="n">0:1, 1:1, 2:1800, 3:1798</td></tr></tbody></table></div><p class="cap"><b>Table 3.</b> The input probe before the fix: one copy, then three of four copies run at once (the fourth did not start). "new_value_frames" counts frames on which the fighter saw a new code; a lag count "2:900" means 900 frames saw a code 2 frames old. Each row is one line of the named output file, read when the site is built; a column is one file (<span class="m">logs/t5/frozen_2026-11-12</span>).</p></div>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Line of the output</th><th class="n"><span class="m">vifix_probe</span></th><th class="n"><span class="m">fix4_copy1</span></th><th class="n"><span class="m">fix4_copy2</span></th><th class="n"><span class="m">fix4_copy3</span></th><th class="n"><span class="m">fix4_copy4</span></th></tr></thead><tbody><tr><td>SUMMARY frames</td><td class="n">1800 seconds=2.89 fps=623.2 new_value_frames=1061 (58.9%)</td><td class="n">1800 seconds=4.00 fps=450.2 new_value_frames=1060 (58.9%)</td><td class="n">1800 seconds=3.99 fps=451.0 new_value_frames=1063 (59.1%)</td><td class="n">1800 seconds=3.99 fps=451.5 new_value_frames=1060 (58.9%)</td><td class="n">1800 seconds=3.86 fps=465.8 new_value_frames=1063 (59.1%)</td></tr><tr><td>SUMMARY lag counts</td><td class="n">0:1, 1:846, 2:953</td><td class="n">0:1, 1:849, 2:950</td><td class="n">0:1, 1:846, 2:953</td><td class="n">0:1, 1:849, 2:950</td><td class="n">0:1, 1:846, 2:953</td></tr></tbody></table></div><p class="cap"><b>Table 4.</b> The input probe with the fix: one copy, then four copies at once. Each row is one line of the named output file, read when the site is built; a column is one file (<span class="m">logs/t5/frozen_2026-11-12</span>).</p></div>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Line of the output</th><th class="n"><span class="m">fix4_copy1</span></th><th class="n"><span class="m">fix4_copy2</span></th><th class="n"><span class="m">fix4_copy3</span></th><th class="n"><span class="m">fix4_copy4</span></th></tr></thead><tbody><tr><td>SUMMARY code step between successive writes (1 = none skipped)</td><td class="n">{0: 901, 1: 1798}</td><td class="n">{0: 901, 1: 1798}</td><td class="n">{0: 901, 1: 1798}</td><td class="n">{0: 901, 1: 1798}</td></tr></tbody></table></div><p class="cap"><b>Table 5.</b> With the fix, the step between the codes of successive writes to the button word: 0 is the same code again, 1 the next code; a larger step would be a skipped input. Each row is one line of the named output file, read when the site is built; a column is one file (<span class="m">logs/t5/frozen_2026-11-12</span>).</p></div>
+<p>At normal speed, before the fix and with it:</p>
+<p class="cap">From the analysis output <span class="m">logs/t5/frozen_2026-11-12/probeE_speed1.log</span>: "SUMMARY frames=1800 seconds=15.02 fps=119.9 new_value_frames=900 (50.0%)"</p>
+<p class="cap">From the analysis output <span class="m">logs/t5/frozen_2026-11-12/vifix_speed1.log</span>: "RESULT frames=600 seconds=10.01 dolphin_fps=60.0 game_frames=396 game_fps=39.6 game_per_dolphin=0.660"</p>
+<p>A Melee model playing Project+, first against an opponent that stands still, then on both sides of a whole game:</p>
+<p class="cap">From the analysis output <span class="m">logs/t5/frozen_2026-11-12/play_helper1.txt</span>: "helper: 1800 decisions; P1 mapping classes (decisions): exact 1753 (97.4%), unmapped 46 (2.6%), approx 1 (0.1%)"</p>
+<p class="cap">From the analysis output <span class="m">logs/t5/frozen_2026-11-12/play_helper3.txt</span>: "helper: 2820 decisions; P1 mapping classes (decisions): exact 2572 (91.2%), approx 222 (7.9%), unmapped 20 (0.7%), special-by-id 6 (0.2%)"</p>
+<p class="cap">From the analysis output <span class="m">logs/t5/frozen_2026-11-12/play3_mirror.log</span>: "k=5640 GAME OVER: P1 won, P2 lost (deaths P1 2 P2 2)"</p>
+<p class="cap">speed measurements in Dolphin; no recording of the P+ games was kept</p>
+<h2 id="discussion">Discussion</h2>
+<p><b>The game runs many times faster than real time in one copy.</b> Table 2 gives the game frames per second of three whole runs; real time is 60. The first quote guessed a much lower speed. Turning the video output off gained little, less than the third quote's lower bound.</p>
+<p><b>Before the fix, only every second scripted input reached the game.</b> In Table 3 a new code is seen on half of the frames, and every code seen is two or three frames old. The pattern is the same with four copies at once: the fifth quote expected it to shift under load, and it did not.</p>
+<p><b>Before the fix the game was also running at twice its normal rate.</b> At normal speed the unfixed emulator stepped about twice as many frames per second as the fixed one (the two lines after Table 5).</p>
+<p><b>With the fix every input lands.</b> In Table 4 every code seen is one or two frames old, and Table 5 shows no step larger than one between successive codes, so no input was skipped, in one copy and in four at once.</p>
+<p><b>A Melee-trained model plays whole games of Project+.</b> With the model on both sides, one game ran to its end, and the helper found an exact Melee counterpart for most of the decisions in it (the play lines above). Against an opponent that stands still the exact share was higher.</p>
+<h2 id="limitations">Limitations</h2>
+<ul class="md"><li>The speeds in Tables 2 and 3 were measured before the fix, while the game ran at twice its normal rate; the speeds with the fix (Table 4) come from short probe runs that include start-up.</li><li>Whole-run speeds in Table 2 include the end of a match; speeds inside a match were somewhat higher and are not shown.</li><li>One of the four copies did not start in the unfixed four-copy run. Start-up hangs were looked at separately and are not shown here.</li><li>The fix lives in a fork of the emulator outside the project's code repository; its source is not cited here.</li><li>The games played by the Melee model were not recorded, and how well it played was not measured; the page shows only that games complete and how much of the state maps.</li><li>One character on both sides, one stage.</li></ul>
+<h2 id="decision">Decision</h2>
+<p>Falcon against Falcon on Battlefield or Final Destination; no Melee level is required first.</p>
+<h2 id="reproduction">Reproduction</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>What</th><th>File in the code repository</th><th>Commit</th></tr></thead><tbody><tr><td>The timing script</td><td><span class="m">research/pplus_timing/time_match.py</span></td><td><span class="m">d3a8131</span></td></tr><tr><td>The input probe</td><td><span class="m">research/pplus_timing/input_probe.py</span></td><td><span class="m">a0091a4</span></td></tr><tr><td>The launcher</td><td><span class="m">research/pplus_timing/launch.py</span></td><td><span class="m">40b4257</span></td></tr><tr><td>Playing a model, the emulator side</td><td><span class="m">research/pplus_play/play.py</span></td><td><span class="m">e47f6cd</span></td></tr><tr><td>Playing a model, the helper and translator</td><td><span class="m">research/pplus_play/helper.py</span></td><td><span class="m">e47f6cd</span></td></tr></tbody></table></div><p class="cap"><b>Table 6.</b> The scripts and code of the experiment. The build checks that each file exists at its commit. A commit records the script; the runs used the working copy of that day.</p></div>
+<p>The scripts need a scriptable build of the Dolphin emulator, Project+ and a copy of the game.</p>
+</article>
+<div class="foot"><p>Every number in the tables and figures is computed from the score and training logs when the site
+is built (last built 16 Nov 2026); none is typed. Setup values name the file and commit they were read from. The short
+form of this experiment is <a href="../experiments.html#x-2026-11-12-project-in-dolphin">its row in the experiments table</a>.</p></div>
+</main></body></html>

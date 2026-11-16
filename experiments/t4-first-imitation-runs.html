@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>First imitation runs: SteveTheBot experiment</title><style>
+:root{--bg:#faf8f3;--surface:#faf8f3;--ink:#17181c;--muted:#62646b;--line:#d9d5ca;--accent:#b3261e;
+  --bar:#3a3d45;--track:#ebe7dc;--off:#a9a59a;
+  --head:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#131416;--surface:#131416;--ink:#e9e6df;--muted:#9b9a94;
+  --line:#34352f;--accent:#ff7a66;--bar:#c9c6bd;--track:#232421;--off:#5a5a54}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:20px 16px 64px}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font:700 2.3rem/1.1 var(--head);margin:8px 0 4px}
+h2{font:700 1.35rem/1.25 var(--head);margin:0 0 4px}
+h3{font:600 .78rem var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted)}
+header p{max-width:72ch}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:hover{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+ul{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--ink)}
+li{padding:9px 0;display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:space-between;
+  border-bottom:1px solid var(--line)}
+li span{color:var(--muted);font-size:.85rem}
+.legend li{display:block}
+.legend b{display:block;font-family:var(--mono);font-size:.9rem}
+.legend span{display:block;color:var(--muted);font-size:.9rem}
+details{margin-top:10px} summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.sub{display:flex;gap:18px;margin-top:10px;font-size:.95rem}
+.sub a{text-decoration:none;color:var(--muted);padding-bottom:2px}
+.sub a[aria-current]{color:var(--ink);box-shadow:0 2px 0 var(--accent)}
+
+main.paper{max-width:860px}
+main.paper>*{min-width:0;max-width:100%}
+.paper .crumb{font-size:.85rem;color:var(--muted)}
+.paper .crumb a{text-decoration:none} .paper .crumb a:hover{text-decoration:underline}
+.paper .meta{font:.82rem var(--mono);color:var(--muted);margin-top:6px}
+.paper h2{border-top:1px solid var(--ink);padding-top:14px;margin:26px 0 8px}
+.paper h3{margin:18px 0 6px}
+.paper p{color:var(--ink);max-width:70ch;margin:0 0 10px}
+.paper ul.md,.paper ol.md{border:0;margin:0 0 10px;padding-left:22px;max-width:70ch}
+.paper ul.md{list-style:disc} .paper ol.md{list-style:decimal}
+.paper .md li{display:list-item;border:0;padding:2px 0}
+.paper blockquote{margin:0 0 10px;padding:2px 0 2px 14px;border-left:2px solid var(--accent);max-width:70ch}
+.paper blockquote p{margin:0 0 6px}
+.paper code{font:.88em var(--mono)}
+.paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
+.paper .abs{font-size:1.05rem}
+.paper .abs p{max-width:74ch}
+.paper figure{margin:6px 0 18px}
+.paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
+.paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
+.paper .tb{overflow-x:auto;margin:0 0 4px}
+.paper table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+.paper th{font:600 .7rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:6px 12px 6px 0;vertical-align:bottom}
+.paper td{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono)}
+.paper td.n{white-space:nowrap} .paper th.n{min-width:4.6rem}
+.paper td:not(.n){min-width:9rem}
+.paper .m{font-family:var(--mono);font-size:.82rem}
+.paper td small{display:block;color:var(--muted);font:.76rem var(--mono)}
+.paper .tblock{margin:0 0 20px}
+.bars{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr) 3.2rem;gap:6px 10px;align-items:center;
+  font-size:.86rem}
+.bars .tr{position:relative;height:14px;background:var(--track)}
+.bars .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar)} .bars .f.top{background:var(--accent)}
+.bars .h{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px dashed var(--muted)}
+.bars .t{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink)}
+.bars .v{font-family:var(--mono);text-align:right} .bars .na{color:var(--off)}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+@media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
+  --s6:#2f9a2f;--s7:#7c6be0;--s8:#e0504f}}
+.viz svg{display:block;width:100%;height:auto;max-width:760px}
+.viz .ax{stroke:var(--ink);stroke-width:1} .viz .gr{stroke:var(--line);stroke-width:1}
+.viz text{font:11px var(--mono);fill:var(--muted)} .viz text.al{font:12px var(--body);fill:var(--ink)}
+.viz path{fill:none;stroke-width:1.6;stroke-linejoin:round}
+.viz .lg{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.84rem;margin-top:6px}
+.viz .lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.paper .w{display:flex;gap:6px}
+.paper .w a,.paper .w span{font-size:.78rem;padding:2px 8px;border:1px solid var(--ink);text-decoration:none}
+.paper .w span{border:1px dashed var(--off);color:var(--off)}
+.paper .foot{border-top:1px solid var(--ink);padding-top:10px;font-size:.84rem;color:var(--muted)}
+.paper .foot p{color:var(--muted)}
+@media (max-width:640px){.bars{grid-template-columns:minmax(0,1fr) 3.2rem}.bars .lb{grid-column:1/-1}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet"><style>
+.stb-nav{--n-bg:#faf8f3;--n-ink:#17181c;--n-mut:#62646b;--n-acc:#b3261e;
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:48px;background:var(--n-bg);
+  border-bottom:1px solid var(--n-ink);font:400 15px/1 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--n-ink);box-sizing:border-box}
+@media (prefers-color-scheme: dark){.stb-nav{--n-bg:#131416;--n-ink:#e9e6df;--n-mut:#9b9a94;--n-acc:#ff7a66}}
+.stb-nav *{box-sizing:border-box}
+.stb-nav .stb-in{max-width:1180px;height:100%;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  gap:22px;overflow-x:auto;scrollbar-width:none}
+.stb-nav a{color:var(--n-mut);text-decoration:none;white-space:nowrap;padding:6px 0}
+.stb-nav a:hover{color:var(--n-acc)}
+.stb-nav a.stb-home{color:var(--n-ink);font:700 20px/1 "Newsreader",Georgia,serif;margin-right:auto}
+.stb-nav a[aria-current="page"]{color:var(--n-ink);box-shadow:0 2px 0 var(--n-acc)}
+.stb-space{height:48px}
+html{scroll-padding-top:48px}
+@media (max-width:480px){.stb-nav .stb-in{gap:14px}.stb-nav{font-size:14px}.stb-nav a.stb-home{font-size:17px}}
+</style></head><body>
+<nav class="stb-nav" aria-label="Site"><div class="stb-in"><a class="stb-home" href="../index.html">SteveTheBot</a><a href="../index.html">Roadmap</a><a href="../experiments.html" aria-current="page">Experiments</a><a href="../models.html">Models</a><a href="../watch.html">Watch</a></div></nav><div class="stb-space"></div>
+
+<main class="paper">
+<header><p class="crumb"><a href="../experiments.html#x-2026-11-12-first-imitation-runs">Experiments</a> / full write-up</p>
+<h1>First imitation runs</h1>
+<p class="meta">12 Nov 2026 &middot; T-4 &middot; Replays</p></header>
+<article>
+<h2 id="abstract">Abstract</h2>
+<div class="abs"><p>No: it repeats its last input and loses every game.</p><p>Not on its own. It learns to repeat its last input (84% accuracy, the same as &quot;repeat the last input&quot;) and loses every game, mostly by falling off the stage without using up-B. Weighting input changes makes it predict them (24%) but does not fix recovery: the network reaches positions humans rarely show. Trained on 254 games.</p></div>
+<h2 id="question-and-hypothesis">Question and hypothesis</h2>
+<p>Every model so far learned by playing against itself or a bot. Human play is another source: a dataset of recorded human games of the same character on the same stage. This experiment trains the bot's network to predict what the human pressed, and asks whether a network that only copies humans can play a game on its own.</p>
+<p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>Expected (guesses, written before the run): held-out accuracy 0.87 to 0.89 against 0.854 for "repeat the last queued input"; accuracy on frames where the human changes input 0.25 to 0.35; held-out loss still falling at the end (a 2x128 network without memory underfits).</p></blockquote><blockquote><p>level 9 scripted bot 10 to 60 wins.</p></blockquote><blockquote><p>Expected (written before): accuracy on changes 0.15 to 0.25, overall 0.80 to 0.83, at most 10 of 40 deaths self-destructs, some up-B offstage.</p></blockquote>
+<p>"Held-out" games are games the network never trained on. "Repeat the last queued input" is the trivial prediction that the human keeps pressing what they pressed last; humans change input on a small share of frames, so it is right most of the time. A "self-destruct" is a lost stock with no damage taken shortly before. "Up-B" is the special move the character uses to get back to the stage.</p>
+<h2 id="setup">Setup</h2>
+<p>Two networks were trained on the first 300 games of the dataset: one with plain cross-entropy, and one in which frames where the human changes input are weighted five times. Each was then played against the scripted bot at level 9.</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Setting</th><th>Value</th><th>Read from</th></tr></thead><tbody><tr><td>What is trained</td><td>The same actor and critic networks the PPO trainer uses, taught to copy human controller inputs from recorded games, and saved as an ordinary model</td><td>sim/imitate.py at commit 643dc59</td></tr><tr><td>One training sample</td><td>One frame of one player of one game</td><td>sim/imitate.py at commit 643dc59</td></tr><tr><td>Input of a sample</td><td>The game state on that frame and the human&#x27;s inputs for the next 11 frames (the queue a bot with an 11-frame reaction delay would hold)</td><td>sim/imitate.py at commit 643dc59</td></tr><tr><td>Target of the actor</td><td>The human&#x27;s input 12 frames later, the action a delayed bot would be choosing now</td><td>sim/imitate.py at commit 643dc59</td></tr><tr><td>How human inputs become the bot&#x27;s actions</td><td>Each frame&#x27;s buttons and stick are mapped to one of the bot&#x27;s 54 actions</td><td>research/t4_replays/labels.py at commit 64d705f</td></tr><tr><td>Held-out games</td><td>The dataset&#x27;s own validation and test games, never trained on, scored at intervals</td><td>sim/imitate.py at commit 643dc59</td></tr><tr><td>The &quot;repeat&quot; baseline</td><td>The accuracy of always predicting the last input in the queue</td><td>sim/imitate.py at commit 643dc59</td></tr><tr><td>Batch size</td><td>4,096</td><td>sim/imitate.py at commit 643dc59</td></tr><tr><td>Learning rate</td><td>0.0003</td><td>sim/imitate.py at commit 643dc59</td></tr><tr><td>Second run, weighting input changes</td><td>Samples where the human changes input count more in the actor&#x27;s loss (5 times in this run); held-out scores stay unweighted</td><td>sim/imitate.py at commit 643dc59</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Settings of the experiment. Each value was read from the named file of the project's code repository at the named commit; the site build checks that the line it was read from is in that file.</p></div>
+<p>The two training runs were started by hand; their length and the number of games are not recorded in a script. The lines below are from the training console logs of the day, kept as dated copies. In a log line "ce" is the cross-entropy, "acc" the accuracy on held-out games, "repeat" the baseline, and "on changes" the accuracy on frames where the human changes input.</p>
+<h2 id="results">Results</h2>
+<p>The plain run:</p>
+<p class="cap">From the analysis output <span class="m">logs/t4/frozen_2026-11-13/T4Im300_console.log</span>: "46 of 300 games skipped: non-finite state values"</p>
+<p class="cap">From the analysis output <span class="m">logs/t4/frozen_2026-11-13/T4Im300_console.log</span>: "games: 300 training, 28 held out; samples 4393304 and 458334; loaded in 15 s"</p>
+<p class="cap">From the analysis output <span class="m">logs/t4/frozen_2026-11-13/T4Im300_console.log</span>: "update 6000 | train ce 0.650 value 0.1203 | held out ce 0.660 acc 0.837 (repeat 0.835, on changes 0.045) value 0.1241 entropy 0.66 | 68 s"</p>
+<p>The run with input changes weighted five times:</p>
+<p class="cap">From the analysis output <span class="m">logs/t4/frozen_2026-11-13/T4Im300W5_console.log</span>: "update 6000 | train ce 1.380 value 0.1216 | held out ce 0.847 acc 0.784 (repeat 0.835, on changes 0.239) value 0.1236 entropy 1.31 | 47 s"</p>
+<p>In play:</p>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th class="n">Runs scored</th><th class="n">Games</th><th class="n">Games won</th><th class="n">Won, %</th><th class="n">95% interval</th><th class="n">Each run, %</th><th class="n">Stocks taken per game</th><th class="n">Stocks lost per game</th></tr></thead><tbody><tr><td>Copy the replays</td><td class="n">1</td><td class="n">50</td><td class="n">0</td><td class="n">0.0</td><td class="n">0 to 7</td><td class="n">0</td><td class="n">0.14</td><td class="n">4.00</td></tr><tr><td>Copy the replays, input changes weighted 5 times</td><td class="n">1</td><td class="n">50</td><td class="n">0</td><td class="n">0.0</td><td class="n">0 to 7</td><td class="n">0</td><td class="n">0.70</td><td class="n">4.00</td></tr></tbody></table></div><p class="cap"><b>Table 2.</b> Against <b>Scripted bot 9</b>: The hand-written Falcon at level 9. All scored runs of a variant are pooled. The interval is the Wilson 95% interval of the pooled share: it covers chance between games, not the difference between training runs, which "Each run" shows.</p></div>
+<div class="tblock"><div class="tb"><table><thead><tr><th>Variant</th><th>Watch</th></tr></thead><tbody><tr><td>Copy the replays<small>T4Im300</small></td><td><div class="w"><a href="../reports/T4Im300_c02_vs_T4V2s3_c04_seed1000.html">Game</a><span title="No scenarios page was recorded">Scenarios</span></div></td></tr><tr><td>Copy the replays, input changes weighted 5 times<small>T4Im300W5</small></td><td><div class="w"><a href="../reports/T4Im300W5_c01_vs_T4V2s3_c04_seed1000.html">Game</a><span title="No scenarios page was recorded">Scenarios</span></div></td></tr></tbody></table></div><p class="cap"><b>Table 3.</b> Sample games: one whole game of a variant's first run, drawn with the animated viewer. A dashed label means that page was not recorded.</p></div>
+<h2 id="discussion">Discussion</h2>
+<p><b>The plain network learned to repeat its last input.</b> Its held-out accuracy at the end is within a fraction of a point of the "repeat" baseline, and its accuracy on frames where the human changes input is a few percent (the first "update 6000" line). The first quote expected both clearly higher.</p>
+<p><b>Weighting the changes made the network predict them, at a cost in overall accuracy.</b> In the second "update 6000" line the accuracy on changes is several times higher and the overall accuracy is lower than the baseline. The accuracy on changes is inside the range of the third quote; the overall accuracy is below it.</p>
+<p><b>Neither network can play.</b> Both lost every scored game against the scripted bot (0 of 50 games and 0 of 50 games), against the second quote's expectation; the stocks columns of Table 2 show how little either took.</p>
+<h2 id="limitations">Limitations</h2>
+<ul class="md"><li>The game count in the log line "games: 300 training" is taken before games with missing values are skipped; the line above it gives the number skipped.</li><li>The abstract's account of how the models lose (falling off the stage without using the recovery move) comes from an analysis whose output was not saved to a file, so it is not shown on this page.</li><li>One run of each kind, trained on a part of the dataset, with a short training length.</li><li>A model saved by this trainer acts every frame with an 11-frame reaction delay, so it plays the scripted bot at a disadvantage that the earlier models without delay did not have.</li><li>The dataset is another project's collection of human games; it is used privately and is not redistributed.</li></ul>
+<h2 id="decision">Decision</h2>
+<p>The user chose the next step: imitation on all games, then PPO from that start (above).</p>
+<h2 id="reproduction">Reproduction</h2>
+<div class="tblock"><div class="tb"><table><thead><tr><th>What</th><th>File in the code repository</th><th>Commit</th></tr></thead><tbody><tr><td>The imitation trainer</td><td><span class="m">sim/imitate.py</span></td><td><span class="m">643dc59</span></td></tr><tr><td>Human inputs as the bot&#x27;s 54 actions</td><td><span class="m">research/t4_replays/labels.py</span></td><td><span class="m">64d705f</span></td></tr><tr><td>Decoding a recorded game</td><td><span class="m">research/t4_replays/decode_game.py</span></td><td><span class="m">50456b1</span></td></tr><tr><td>How a model loses its stocks</td><td><span class="m">research/t4_replays/deaths.py</span></td><td><span class="m">62adb3d</span></td></tr></tbody></table></div><p class="cap"><b>Table 4.</b> The scripts and code of the experiment. The build checks that each file exists at its commit. A commit records the script; the runs used the working copy of that day.</p></div>
+<p>The trainer needs the replay dataset; playing a model needs the Melee simulator the project runs on, which has no licence grant and is not published.</p>
+</article>
+<div class="foot"><p>Every number in the tables and figures is computed from the score and training logs when the site
+is built (last built 16 Nov 2026); none is typed. Setup values name the file and commit they were read from. The short
+form of this experiment is <a href="../experiments.html#x-2026-11-12-first-imitation-runs">its row in the experiments table</a>.</p></div>
+</main></body></html>

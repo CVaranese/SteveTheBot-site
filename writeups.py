@@ -246,6 +246,14 @@ def _train_log(src, model):
     return rows if rows and 'decisions' in rows[0] and 'rollout_s' in rows[0] else None
 
 
+def _median(rows, key):
+    """The middle value of a log column: a few updates with a faulty clock reading do not move it."""
+    v = sorted(float(r[key]) for r in rows if r.get(key) not in (None, ''))
+    if not v:
+        return None
+    return v[len(v) // 2] if len(v) % 2 else (v[len(v) // 2 - 1] + v[len(v) // 2]) / 2
+
+
 def _mean(rows, key):
     v = [float(r[key]) for r in rows if r.get(key) not in (None, '')]
     return sum(v) / len(v) if v else None
@@ -439,13 +447,13 @@ class Page:
                     '%g' % lr0 if lr0 == lr1 else '%g to %g' % (lr0, lr1),
                     _num(_mean(log[:100], 'entropy'), 2), _num(_mean(log[-100:], 'entropy'), 2),
                     _num(_mean(log[-100:], 'approx_kl'), 4), _num(secs / 3600, 2),
-                    _num(_mean(log, 'decisions_per_s')), ctl])
+                    _num(_median(log, 'decisions_per_s')), ctl])
         if not rows:
             return '<p class="cap">No training logs of these runs are stored.</p>'
         head = ['Run', 'Variant', 'Updates', 'Decisions by one player, million',
                 'Learning rate, first to last update', 'Entropy, first 100 updates', 'Entropy, last 100 updates',
                 'Policy change (approx. KL), last 100 updates', 'Hours in rollouts and updates',
-                'Decisions per second, mean', 'Controls saved with the model']
+                'Decisions per second, median update', 'Controls saved with the model']
         if all(r[-1] is None for r in rows):       # no model folder on the build machine: nothing to read
             head, rows = head[:-1], [r[:-1] for r in rows]
         else:
