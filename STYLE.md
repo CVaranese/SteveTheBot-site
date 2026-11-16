@@ -42,8 +42,8 @@ Defined once, in `theme.py` (`STYLE`); page builders add only what is theirs.
 - Plot bars are neutral (`--bar`), the best one accent; a missing value is a dash in `--off`. Game reports keep
   their own chart palette (player 1 blue, player 2 orange). The animated viewer always draws port 1 red and port
   2 blue; any page that shows it says which player is which colour under the viewer.
-- Not yet in this look: the roadmap, the game report template and the scenario template (their own styles, in the
-  main repo).
+- The roadmap, the game report template and the scenario template (main repo) carry their own copy of these
+  tokens and fonts in their `<style>`: change them there too when `theme.py` changes.
 
 ## Layout
 
@@ -57,6 +57,9 @@ The experiments and models pages are the same kind of table:
 
 - One row per thing, the result readable without opening it. Tap a row to open its detail under it; tap again to
   close. Tap a column heading to sort (the arrow shows the column and direction).
+- **Fixed column widths.** The table uses `table-layout:fixed` and every column but the main one gets its width
+  from a `<col>` element, so opening a row never resizes the columns (the user's report, 2026-11-16). A new
+  column needs its `<col>`.
 - Filters above the table: category buttons with counts, a search box, "Can be watched".
 - **Watch buttons:** "Game" and "Scenarios" on every row. A page that exists is a solid button; one that does not
   is a dashed grey label with the reason as its tooltip. Never leave the button out.
@@ -112,8 +115,8 @@ resizes or reflows. For every interactive page:
   there to make it a milestone).
 - A row's detail: what the model is, its milestone, the experiment it came from, games and stock lead per
   opponent, the six scenario scores, watch links.
-- `rankings.py` and `catalog.py` are now libraries (score loaders, `BOARDS`, `CATALOG`, scenario scores); their
-  own page builders are no longer called.
+- `rankings.py` and `catalog.py` are libraries (score loaders, `BOARDS`, `CATALOG`, scenario scores); they build
+  no page.
 - A new opponent: a `BOARDS` row, an `OPP` entry, a `COLS` key.
 
 ## Training curves *(build)*
