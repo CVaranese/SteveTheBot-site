@@ -13,6 +13,8 @@ and 'site' is a list, so one plan file can hold several records. Fields of one r
 
   title     a few words
   date      day the results came in (YYYY-MM-DD); entries are listed newest first
+  time      optional time of day the results came in ('HH:MM', quoted); without it the page uses the last score
+            row of the record's models on that day, so only records with no scored games need it
   tasks     task ids the record covers, e.g. [T-37]; the first is shown
   topic     what was being tested: a key of experiments.TOPICS
   short     the result in one line
@@ -38,7 +40,7 @@ from pathlib import Path
 
 import yaml
 
-FIELDS = {'title', 'date', 'tasks', 'topic', 'short', 'question', 'cols', 'variants', 'assessment', 'graphs',
+FIELDS = {'title', 'date', 'time', 'tasks', 'topic', 'short', 'question', 'cols', 'variants', 'assessment', 'graphs',
           'facts', 'facts_file', 'watch', 'no_game', 'rescore', 'verdict', 'decision'}
 NEEDED = ('title', 'date', 'tasks', 'topic', 'short', 'question', 'verdict', 'decision')
 FRONT = re.compile(r'\A---[ \t]*\r?\n(.*?)\r?\n---[ \t]*(?:\r?\n|\Z)', re.S)
@@ -93,7 +95,7 @@ def _entry(rec, src, where):
     for k in ('watch',):
         if rec.get(k):
             e[k] = [str(m) for m in rec[k]]
-    for k in ('no_game', 'assessment'):
+    for k in ('no_game', 'assessment', 'time'):
         if rec.get(k):
             e[k] = str(rec[k])
     e['rescore'] = bool(rec.get('rescore'))

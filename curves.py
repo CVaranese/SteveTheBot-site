@@ -197,7 +197,7 @@ def _landmarks(src, pages):
     card = ('<section class="card viz" id="landmarks"><h2>Landmarks: one model per change</h2>'
             '<p class="about">Every change made to the bot, oldest first, each as one model scored against the '
             'same opponent. The small number is the step from the scored model above it. Hover a row for what '
-            'the change was; the full table is the <a href="catalog.html">catalog</a>.</p>'
+            'the change was; the full table is the <a href="models.html">catalog</a>.</p>'
             '<div class="tabs" id="lmtabs" role="tablist" aria-label="Opponent">%s</div><div class="stack">%s</div>'
             '<p class="small">One model per change, mostly one training run, so a step under about 10 points '
             'can be chance. The changes were not made one at a time under equal conditions: later models also '
@@ -253,17 +253,17 @@ def _data(src):
 STYLE = """
 main{max-width:1100px}
 .viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948;
-  --grid:#e6e5ef;--axis:#b9b8cc}
+  --grid:#e6e2d6;--axis:#b9b5a8}
 @media (prefers-color-scheme: dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;
-  --s6:#0ca30c;--s7:#9085e9;--s8:#e66767;--grid:#2a2940;--axis:#4a4964}}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+  --s6:#0ca30c;--s7:#9085e9;--s8:#e66767;--grid:#2a2b27;--axis:#4c4d46}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:0;padding:14px}
 .row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
 .row label{font-size:.85rem;color:var(--muted)}
 select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);
-  border-radius:6px;padding:6px 8px;max-width:100%}
+  border-radius:0;padding:6px 8px;max-width:100%}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .tabs button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--surface);
-  border:1px solid var(--line);border-radius:16px;padding:5px 12px;cursor:pointer}
+  border:1px solid var(--line);border-radius:0;padding:5px 12px;cursor:pointer}
 .tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 .stack{display:grid} .stack>*{grid-area:1/1;min-width:0} .stack>.off{visibility:hidden}
 .about{font-size:.9rem;margin-top:10px}
@@ -273,7 +273,7 @@ select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);
 .plot text.lab{fill:var(--ink);font-size:12.5px;paint-order:stroke;stroke:var(--surface);stroke-width:3px;
   stroke-linejoin:round}
 .tip{position:absolute;top:8px;pointer-events:none;background:var(--surface);border:1px solid var(--line);
-  border-radius:6px;padding:8px 10px;font-size:.82rem;line-height:1.45;box-shadow:0 2px 10px rgba(0,0,0,.15);
+  border-radius:0;padding:8px 10px;font-size:.82rem;line-height:1.45;box-shadow:0 2px 10px rgba(0,0,0,.15);
   min-width:170px;max-width:280px;display:none;font-variant-numeric:tabular-nums}
 .tip b{display:block;margin-bottom:2px}
 .tip div{display:flex;gap:6px;align-items:baseline}
@@ -281,7 +281,7 @@ select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);
 .tip span{color:var(--muted)} .tip em{font-style:normal;margin-left:auto;padding-left:10px;font-weight:600}
 .leg{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:2px 14px;margin-top:12px}
 .leg button{display:flex;gap:9px;align-items:flex-start;text-align:left;font:inherit;font-size:.92rem;
-  line-height:1.3;color:var(--ink);background:none;border:0;border-radius:6px;padding:6px 4px;cursor:pointer;
+  line-height:1.3;color:var(--ink);background:none;border:0;border-radius:0;padding:6px 4px;cursor:pointer;
   min-width:0}
 .leg button:hover:not(:disabled){background:var(--grid)}
 .leg .box{flex:none;width:17px;height:17px;margin-top:1px;border-radius:4px;border:2px solid var(--c);
@@ -295,7 +295,7 @@ select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);
 .card{min-width:0}
 .opts{margin-left:auto;font-size:.85rem;color:var(--muted);display:flex;gap:6px;align-items:center}
 .small{font-size:.85rem;margin-top:8px}
-.tw{overflow-x:auto;margin-top:8px;border:1px solid var(--line);border-radius:6px}
+.tw{overflow-x:auto;margin-top:8px;border:1px solid var(--line);border-radius:0}
 table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
 th,td{padding:6px 9px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
 thead th{border-top:0;color:var(--muted);font-weight:600;font-size:.8rem;white-space:normal;vertical-align:bottom}
@@ -509,10 +509,11 @@ def build(here, src, head, site_style, pages):
     land, land_names = _landmarks(src, pages)
     page = head.replace('</head>', '<title>SteveTheBot training curves</title><style>%s%s</style></head>' % (
         site_style, STYLE)) + """<main>
-<header><h1>Training curves</h1>
+<header><h1>Models</h1>
+<div class="sub" style="margin:0 0 12px"><a href="models.html">All models</a><a href="curves.html" aria-current="page">Training curves</a></div>
 <p>How strong a run is at each point of its training. Every saved copy of a model (a checkpoint) is one point; a
 line is one setting. Pick which runs to compare, then switch the benchmark (usually: which opponent) with the
-buttons. Below it, <a href="#landmarks">the landmarks</a>: one model per change made to the bot, on one page. Rebuilt %s from the same score logs as the <a href="rankings.html">rankings</a>.</p></header>
+buttons. Below it, <a href="#landmarks">the landmarks</a>: one model per change made to the bot, on one page. Rebuilt %s from the same score logs as the <a href="models.html">rankings</a>.</p></header>
 <section class="card viz">
 <div class="row"><label for="set">Runs</label><select id="set"></select>
 <label class="opts"><input type="checkbox" id="log"> Even steps per doubling of training</label></div>
@@ -535,7 +536,7 @@ opponents that no longer change.</dd>
 setting differ by about 10 wins of 100, so a setting is judged by the mean of its runs.</dd>
 <dt>Not on this page</dt><dd>Models whose checkpoints were never scored one by one, and the earliest runs, whose
 checkpoints were saved by the clock, not by amount of training. Their end results are in the
-<a href="rankings.html">rankings</a> and the <a href="catalog.html">catalog</a>.</dd>
+<a href="models.html">rankings</a> and the <a href="models.html">catalog</a>.</dd>
 </dl></section>
 </main><script>%s</script></body></html>
 """ % (time.strftime('%d %b %Y'), land, SCRIPT.replace('__DATA__', data))
