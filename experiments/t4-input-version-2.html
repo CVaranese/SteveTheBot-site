@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">12 Nov 2026 &middot; T-4 &middot; Inputs</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p>No cost: input 2 wins 54 to 69 of 100 against input 1 runs.</p><p>No cost: input 2 runs as fast and wins 54 to 69 of 100 against input 1 runs (part of the same-batch margin is seed luck).</p></div>
+<div class="abs"><p><b>Question.</b> Do inputs built only from what both the simulator and human replays record cost PPO anything?</p><p><b>Finding.</b> No cost: input 2 runs as fast and wins 54 to 69 of 100 against input 1 runs (part of the same-batch margin is seed luck).</p><p><b>Decision.</b> Input 2 is used for both lines: PPO from scratch and PPO from imitation. The four T4V2 runs became the frozen yardstick for models with the current controls.</p></div>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>To learn from recorded human games, the network must be given the same inputs from a replay as from the simulator. Some of the inputs used so far cannot be read from the replay dataset (for example the game's own animation frame counter, or hitstun). A second version of the inputs was therefore defined, built only from fields that both sources record. Before using it, this experiment asks whether it costs anything for ordinary training by self-play.</p>
 <p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>On every frame where a replay is still exactly together in the simulator, v2 built from the simulator equals v2 built from the replay arrays, all 796 numbers (tolerance 1e-4).</p></blockquote><blockquote><p>Building v2 in simbatch costs under 10% of rollout speed (guess).</p></blockquote>

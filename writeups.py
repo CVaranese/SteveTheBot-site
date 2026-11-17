@@ -22,7 +22,7 @@ Front matter of a write-up:
 
 Block directives (a line of their own):
 
-  {{abstract}}      the record's 'short' and 'verdict'
+  {{abstract}}      the record's 'question', 'verdict' and 'decision', labelled
   {{expectation}}   the quotes above, as block quotes with the day they were written
   {{setup}}         the setup table (setting, value, source)
   {{runs}}          one row per training run, read from logs/<run>_train.csv and models/<model>/controls.json
@@ -409,7 +409,12 @@ class Page:
 
     # ---- block directives
     def d_abstract(self, _a, _cap):
-        return '<div class="abs"><p>%s</p><p>%s</p></div>' % (esc(self.e['short']), esc(self.e['verdict']))
+        # Question, finding, decision: the short catalog line is not used here (it answers the question
+        # without stating it, and the verdict repeats it).
+        parts = [('Question', self.e.get('question')), ('Finding', self.e.get('verdict')),
+                 ('Decision', self.e.get('decision'))]
+        return '<div class="abs">%s</div>' % ''.join(
+            '<p><b>%s.</b> %s</p>' % (k, esc(str(v).strip())) for k, v in parts if v)
 
     def d_decision(self, _a, _cap):
         return '<p>%s</p>' % esc(self.e['decision'])

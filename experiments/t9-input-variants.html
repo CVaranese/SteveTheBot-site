@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">11 Nov 2026 &middot; T-9 &middot; Inputs</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p>Previous action 72 against plain 54 of 100, one seed each (not confirmed by the second seed).</p><p>Previous action 72 and embedding with previous action 69, against 54 for plain inputs; the embedding alone 32. One seed each.</p></div>
+<div class="abs"><p><b>Question.</b> Do a learned animation embedding, or the bot&#x27;s own previous action, make better inputs?</p><p><b>Finding.</b> Previous action 72 and embedding with previous action 69, against 54 for plain inputs; the embedding alone 32. One seed each.</p><p><b>Decision.</b> Checked with a second seed (T-12, above).</p></div>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>The network sees the game as a list of numbers. Most of that list is two large one-hot blocks that say which animation each character is in. This experiment tries two changes to the input at the same training budget: replacing each animation block by a short list of learned numbers (an embedding), and telling the network which action it chose at its previous decision.</p>
 <p class="cap">Written in the experiment plan on 11 Nov 2026, before the runs:</p><blockquote><p>Baseline noise: T9Base and PPO8Self within about 10 wins of each other against the frozen model.</p></blockquote><blockquote><p>T9Emb: about equal to the baseline (an embedding is a factorised first layer; it mainly saves weights).</p></blockquote><blockquote><p>T9Prev: a small gain, 5 to 10 wins against the frozen model (the bot can keep a move going).</p></blockquote><blockquote><p>No variant loses more than 10 wins to the baseline.</p></blockquote>

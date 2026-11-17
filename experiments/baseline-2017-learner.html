@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">11 Nov 2026 &middot; T-1 &middot; Method</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p>Barely above random: it never wins a game.</p><p>Barely above random: it never wins a game and its choices stay close to random. Models trained only in the simulator play at least as well against the real CPU as the one trained in Dolphin.</p></div>
+<div class="abs"><p><b>Question.</b> How good is the original 2017 learner, in Dolphin and in the simulator?</p><p><b>Finding.</b> Barely above random: it never wins a game and its choices stay close to random. Models trained only in the simulator play at least as well against the real CPU as the one trained in Dolphin.</p><p><b>Decision.</b> The baseline came first, on the user&#x27;s instruction; PPO was the first change of method.</p></div>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>The project began in 2017 with an actor-critic learner that trained against the game's own computer player in the Dolphin emulator. In November 2026 that learner was ported to current tools and also moved, unchanged, onto a fast simulator of the game. Before any change of method, this experiment measured how well the original learner plays, so that later methods have a baseline.</p>
 <p>No expectation was written down before these runs. They predate the project's experiment plans, and the record was written afterwards from the logs.</p>
