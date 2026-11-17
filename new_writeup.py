@@ -13,7 +13,7 @@ row per training setting:
 
 The commit of a script is the last one that changed it on or before the record's date (--at overrides). Each
 value starts with DRAFT and the site build refuses a write-up that still holds that word, so every row is read
-and worded by hand before it can be published. What is left to type: the wording of the values, the expectation
+and worded by hand before it can be published. What is left to type: the abstract, the wording of the values, the expectation
 quotes (copied from the plan), the question, the scoring paragraph, Discussion and Limitations. Rules: STYLE.md,
 "Write-ups".
 """
@@ -141,7 +141,10 @@ def main():
     if scripts:
         fm.append('- {what: The trainer, file: %s, commit: %s}' % (a.trainer, scripts[0][1]))
     fm.append('---')
-    body = ['## Abstract', '', '{{abstract}}', '', '## Question and hypothesis', '',
+    body = ['## Abstract', '',
+            'DRAFT one prose paragraph of about 120 to 220 words, written last: why the question matters, what was '
+            'done (runs, seeds, length, opponents), the main results (scores only as {{win C V}}, {{won C V}}, '
+            '{{fact R C}}, {{cell path n R C}}), what they mean. Nothing the page below does not support.', '','## Question and hypothesis', '',
             'DRAFT the question in two or three sentences, for a reader who does not know the project.', '',
             '{{expectation}}', '', 'DRAFT what the terms in the quotes mean.', '', '## Setup', '',
             'DRAFT the design in two or three sentences: the variants, the runs of each, the control.', '',
