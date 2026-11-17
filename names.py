@@ -128,6 +128,10 @@ PATTERNS += [
     (r'T42HumH510s(\d)', lambda m: 'Task T-42: as T43H510 (the three-head controller, 12 times the usual length), '
                                    'but started from T42ImH510, a three-head network that copied human replays; '
                                    'random seed 1%s.' % m[1]),
+    (r'T42D256(F54|H510)s(\d)', lambda m: 'Task T-42 (network size): %s with a larger network (3 layers of 256, '
+        'learning rate 1.5e-4), from scratch. Planned for 12 times the usual length and stopped after the usual '
+        'length, so only its first four saved copies exist as scored models; random seed 1%s.'
+        % ({'F54': 'the usual 54 actions', 'H510': 'the three-head controller'}[m[1]], m[2])),
     (r'T42H102s(\d)', lambda m: 'Task T-42: a further run of T43H102 (the two-head controller from scratch, 12 '
                                 'times the usual length); random seed 1%s.' % m[1]),
     (r'T42ImH510', lambda m: 'Task T-42: a three-head network (button, stick, C-stick) trained only to copy human '
