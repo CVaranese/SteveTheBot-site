@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">12 Nov 2026 &middot; T-17 &middot; Controls</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> Does choosing a button, then a stick position (102 combinations) beat the 54 fixed actions?</p><p><b>Finding.</b> The 54 actions win: they beat both 102-action versions about 3 games in 4; two heads and one list are about even (48 of 100). All act every frame with an 11-frame delay and lose to the undelayed yardsticks.</p><p><b>Decision.</b> The 54 actions stay the default; two heads is an option.</p></div>
+<p class="abs">The bot acts by choosing one of 54 fixed combinations of a button and a stick direction. That set has only full stick tilts, so the bot cannot walk slowly or use the attacks that need a half tilt. This experiment adds eight half tilts, making 102 combinations, and asks whether more stick positions help at the usual training length, and whether it helps to choose the button first and the stick second (two "heads") rather than from one list of 102. One batch of six self-play runs, two per controller, all deciding every frame with an 11-frame reaction delay, played each other head to head, and also the scripted bot and Melee's level 9 computer player, which have no delay. The 54 actions beat both larger controllers: they won 72% of their games against the 102 actions in one list and 74% against the two heads, with both 54-action runs above even against both. Two heads and one list were about level (48% for two heads). Against the opponents without delay every model lost almost every game. At this length the larger action set does not pay, and neither does splitting the choice into two heads; whether they catch up with more training was left to a later, much longer experiment.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>The bot acts by choosing one of 54 fixed combinations of a button and a stick direction. That set has only full stick tilts, so the bot cannot walk slowly or use the attacks that need a half tilt. This experiment adds eight half tilts, which makes 102 combinations, and asks two things: do more stick positions help at the usual training length, and does it help to choose the button first and the stick second (two "heads") instead of choosing from one list of 102?</p>
 <p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>Delay-11 models are weak against undelayed opponents (T-16 delay 15: 0 of 100 vs frozen T21L6Cs4, 1 to 2 vs level 9 scripted). Guess: all six below 15 of 100 vs frozen, so the head-to-heads between the six are the main yardstick.</p></blockquote><blockquote><p>T17H102 vs T17F54 head-to-head: mean above 55 of 100 (finer stick control; guess, could be lower if 102 actions learn slower).</p></blockquote><blockquote><p>T17H102 vs T17F102: within noise (same-setting seeds differ by 12 to 13 wins), slight edge to two heads (guess).</p></blockquote>

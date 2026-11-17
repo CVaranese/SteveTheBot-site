@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">11 Nov 2026 &middot; T-2, T-7 &middot; Speed</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> Does the simulator build the same inputs as the real game, frame for frame?</p><p><b>Finding.</b> One whole two-controller game (4,907 frames) replays in the simulator to the end; after a hitstun fix, 29 of 30 input columns are equal on every frame (the last differs in 27 idle frames). Games against the in-game CPU cannot be replayed this way.</p><p><b>Decision.</b> Training moved to the simulator; the hitstun fix is in the inputs.</p></div>
+<p class="abs">The project trains in a fast simulator of Melee and then plays the real game through the Dolphin emulator. That only works if the numbers the network is given, such as positions, damage, speeds and the current animation, are the same in both. This experiment recorded one emulator game with both characters driven through controllers, replayed it in the simulator from the recorded inputs, and compared the network's 30 input columns on every frame. The replay stayed together to the game's last frame, with stocks lost on the same frames on both sides. Before a fix, the differences were in hitstun, which the emulator reports outside real hit reactions, and in one animation frame counter. After the hitstun input was set to zero outside hit reactions, all but one of the 30 columns were equal on every frame, and the remaining differences were in that animation counter of one player. A game against the game's own computer player could not be replayed this way: the two sides drifted apart and the simulator's game ended long before the recording. The simulator's inputs therefore match the emulator's closely enough for models trained in the simulator to play in the real game.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>The project trains in a fast simulator of the game and then plays in the real game through the Dolphin emulator. That only works if the numbers the network is given (positions, damage, speeds, the current animation and so on) are the same in both. This experiment replays one recorded emulator game inside the simulator and compares those numbers on every frame.</p>
 <p class="cap">Written in the experiment plan on 11 Nov 2026, before the runs:</p><blockquote><p>Run 3 (whole game): every field equal on at least 99 percent of frames, and the trajectories do not drift apart (the same stocks lost on the same frames).</p></blockquote><blockquote><p>Prediction: at most 2 of the 14 scalar fields show any mismatch.</p></blockquote><blockquote><p>Expectation for run 4 and its replay (written before): the two sides stay together for the whole game (the same stocks lost on the same frames, positions equal throughout); every field except <code>hitstun</code> equal on at least 99.9 percent of frames; <code>hitstun</code> differs only on frames where the player is not in a hit reaction.</p></blockquote>

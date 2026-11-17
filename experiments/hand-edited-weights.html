@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">11 Nov 2026 &middot;  &middot; Method</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> Can editing a trained network by hand (sharper choices, a wired-in recovery) make it play better?</p><p><b>Finding.</b> Both edits lose fewer stocks to the level 9 CPU (2.05 to 1.62 and 1.34) and win more against frozen PPO8Self. Fully greedy play is worse: some randomness is needed, since the network cannot see its own last press.</p><p><b>Decision.</b> The user watched it: it &quot;definitely flails less&quot;. Hand edits stay a one-off; temperature tuning before scoring is queued.</p></div>
+<p class="abs">A trained network is a list of numbers, and those numbers can be changed directly. This experiment edited one trained PPO model by hand, with no further training, in two ways that measurements of its play suggested: sharpening its choices by multiplying the output layer by 2.5, and adding a hand-wired recovery circuit on extra hidden units. The unchanged model, the sharpened model and the sharpened model with the circuit each played Melee's level 9 computer player in the Dolphin emulator and a frozen PPO model in the simulator. Against the computer player both edits lost fewer stocks per game, the model with the circuit fewest, but games won cannot separate them, since the unchanged model already won 94% of its games. Against the frozen model both edits won clearly more: 70% sharpened and 64% with the circuit, against 38% unchanged, so on this yardstick the circuit added nothing to the sharpening. Fully greedy play was worse than the unchanged model: some randomness is needed, because the network cannot see its own last button press. Hand edits can therefore improve a trained policy without training, within limits set by what the network can see.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>A trained network is a list of numbers, and those numbers can be changed directly. This experiment takes one trained model and edits its weights by hand, with no further training, in two ways that measurements of its play suggested: making its choices less random, and wiring in a fixed rule for returning to the stage. It asks whether either edit makes the model play better.</p>
 <p class="cap">Written in the experiment plan on 11 Nov 2026, before the runs:</p><blockquote><p>E2 (guess): sharpening with k between 1.5 and 2.5 lowers stocks lost per game against the level 3 scripted bot from about 1.16 to under 0.9 and shortens games; k of 4 or more is worse than the best k (stalls or timeouts).</p></blockquote><blockquote><p>E4 (guess): at least a third of lost stocks are failed recoveries or self-destructs rather than clean kills.</p></blockquote><blockquote><p>Expected (guess): level 9: the control near T-11's 3.96 taken / 2.10 lost, 48 of 50; the edits lose fewer stocks, 1.3 to 1.8 per game, and win at least 47 of 50.</p></blockquote>

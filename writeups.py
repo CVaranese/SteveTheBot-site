@@ -22,7 +22,8 @@ Front matter of a write-up:
 
 Block directives (a line of their own):
 
-  {{abstract}}      the record's 'question', 'verdict' and 'decision', labelled
+  (abstract)        not a directive: one typed prose paragraph under '## Abstract' (motivation, what was done, main
+                    results with scores from inline directives, what they mean); the build stops without one
   {{expectation}}   the quotes above, as block quotes with the day they were written
   {{setup}}         the setup table (setting, value, source)
   {{runs}}          one row per training run, read from logs/<run>_train.csv and models/<model>/controls.json
@@ -96,7 +97,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -409,12 +410,8 @@ class Page:
 
     # ---- block directives
     def d_abstract(self, _a, _cap):
-        # Question, finding, decision: the short catalog line is not used here (it answers the question
-        # without stating it, and the verdict repeats it).
-        parts = [('Question', self.e.get('question')), ('Finding', self.e.get('verdict')),
-                 ('Decision', self.e.get('decision'))]
-        return '<div class="abs">%s</div>' % ''.join(
-            '<p><b>%s.</b> %s</p>' % (k, esc(str(v).strip())) for k, v in parts if v)
+        stop(self.where, '{{abstract}} is retired: write the abstract as one prose paragraph under "## Abstract" '
+                         '(motivation, what was done, main results with scores from inline directives, meaning)')
 
     def d_decision(self, _a, _cap):
         return '<p>%s</p>' % esc(self.e['decision'])
@@ -688,6 +685,7 @@ class Page:
     # ---- blocks
     def render(self):
         out, lines, i = [], self.body.splitlines(), 0
+        section, abstract = None, 0
         while i < len(lines):
             s = lines[i].rstrip()
             if not s.strip():
@@ -704,6 +702,8 @@ class Page:
             elif re.match(r'#{2,3} ', s):
                 n = len(s) - len(s.lstrip('#'))
                 text = s[n:].strip()
+                if n == 2:
+                    section = text
                 out.append('<h%d id="%s">%s</h%d>' % (n, re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-'),
                                                       self.inline(text), n))
                 i += 1
@@ -741,8 +741,13 @@ class Page:
                 elif kind == 'tb':
                     stop(self.where, 'typed tables are not allowed in a write-up: numbers come from the logs '
                                      '({{scores}}, {{runs}}, {{table path n | caption}}, {{facts}})')
+                elif section == 'Abstract':
+                    abstract += 1
+                    out.append('<p class="abs">%s</p>' % self.inline(' '.join(b.strip() for b in block)))
                 else:
                     out.append('<p>%s</p>' % self.inline(' '.join(b.strip() for b in block)))
+        if abstract != 1:
+            stop(self.where, 'the "## Abstract" section must hold exactly one prose paragraph (found %d)' % abstract)
         return '\n'.join(out)
 
 

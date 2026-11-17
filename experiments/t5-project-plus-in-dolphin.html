@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">12 Nov 2026 &middot; T-5, T-23 &middot; Project+</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> How fast does P+ run in a scriptable Dolphin, and can a Melee model play it?</p><p><b>Finding.</b> A Melee-trained model plays whole P+ games through a translator. A savestate bug in the scripting Dolphin ran P+ at double speed and dropped every second input; our fork fixes it.</p><p><b>Decision.</b> Falcon against Falcon on Battlefield or Final Destination; no Melee level is required first.</p></div>
+<p class="abs">The project's target game is Project+, a mod of Super Smash Bros. Brawl, which has no fast simulator and runs only in the Dolphin emulator. Before any work on it, three things had to be known: how fast the game runs in an emulator a script can drive, whether a script's inputs reach the game reliably, and whether a model trained in Melee can play Project+ when the game state is translated for it. Timing runs with one copy of the scriptable emulator, an input probe with one and four copies, the same probe after a fix, and games in which a Melee-trained model plays Project+ were all run on one day. The game runs many times faster than real time in one copy. Before the fix only every second scripted input reached the game, and the game ran at twice its normal rate. A fix in a fork of the emulator corrected both: with it every input lands, in one copy and in four at once. A Melee-trained model played whole games of Project+ through a translator, which found an exact Melee counterpart for most of its decisions. Project+ can therefore be driven by a script at useful speed, and Melee models can be carried into it.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>The project's target game is Project+, a mod of Super Smash Bros. Brawl, which has no fast simulator; it runs only in the Dolphin emulator. Three things had to be known before any work on it: how fast the game runs in an emulator that a script can drive, whether a script's inputs reach the game reliably, and whether a model trained in Melee can play Project+ at all when the game state is translated for it.</p>
 <p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>Run 1 (default video, speed 0, neutral inputs, 3,600 frameadvances): 150 to 500 frameadvances/s</p></blockquote><blockquote><p>Run 2 (as run 1, random inputs on both ports): within 20% of run 1.</p></blockquote><blockquote><p>Run 3 (as run 2 with <code>-v Null</code>): either refuses / ignores it, or 1.2 to 2 times run 2.</p></blockquote><blockquote><p>A: about half of the frames show a new value (every 2nd value is lost); the lag is one fixed number all run.</p></blockquote><blockquote><p>C: the same half-rate, but the lag or the parity shifts during the run in at least one copy.</p></blockquote>

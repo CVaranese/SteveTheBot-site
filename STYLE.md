@@ -237,7 +237,9 @@ accurate"). The experiments table stays the short form; an opened row links its 
   - {what: Training, file: research/t10_size/batch.sh, commit: 75e4ccf}
   ---
   ## Abstract
-  {{abstract}}
+  One unlabelled prose paragraph, about 120 to 220 words: why the question matters, what was done (runs, seeds,
+  length, opponents), the main results (scores only as inline directives), what they mean and what follows.
+  Every claim must also be on the page below it; no new facts.
   ## Question and hypothesis
   The question in two or three sentences; then {{expectation}} and what its terms mean.
   ## Setup
@@ -257,7 +259,7 @@ accurate"). The experiments table stays the short form; an opened row links its 
   ## Reproduction
   {{sources}}
   ```
-- Directives (the full list is the docstring of `writeups.py`): `{{abstract}}`, `{{expectation}}`, `{{setup}}`,
+- Directives (the full list is the docstring of `writeups.py`): `{{expectation}}`, `{{setup}}`,
   `{{runs}}` (per run from `logs/<run>_train.csv` and `models/<model>/controls.json`), `{{scores}}` (games, games
   won, share with its Wilson 95% interval, each run, stocks), `{{plots}}`, `{{training <column> | caption}}`
   (entropy, approx_kl, reward_per_min, explained_var, lr), `{{curve <csv> <column> | caption}}`,

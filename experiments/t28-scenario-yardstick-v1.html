@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">12 Nov 2026 &middot; T-28 &middot; Yardsticks</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> First try at scoring edgeguard, follow-up and recovery from saved positions.</p><p><b>Finding.</b> Recovery saturated; the edgeguard and follow-up tests were too loose (many starts already decided).</p><p><b>Decision.</b> The user found the scenarios &quot;pretty poor&quot; after watching them and asked for version 2 (above).</p></div>
+<p class="abs">Whole games give one number per model, and runs of the same settings differ widely on it. This experiment builds a yardstick of single skills instead: every model is put into the same saved situations and scored on how often it gets the result a good player would. The first version covers three situations: finishing an opponent knocked off the stage (edgeguard), getting back to the stage (recovery), and following up a first hit. Start positions were saved from games, and random play and eight models were each put into the same 300 offstage and 300 opening starts, against a frozen model and against the scripted bot. Recovery does not separate the PPO models: all of them sit in a narrow band far above random play. Edgeguard scores are low for every model, only modestly above random play. For follow-ups the floor is high, since random play already lands one more hit in a large share of openings. Runs of the same setting are closer together here than on whole games. Watching the saved starts afterwards showed that the edgeguard and follow-up tests were too loose, because many starts were already decided, which led to a second version of the yardstick.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>Whole games give one number per model, and runs with the same settings differ widely on it. The idea here is to score single skills instead: put every model into the same saved situations and count how often it gets the result a good player would get. This first version covers three situations: finishing an opponent who has been knocked off the stage (edgeguard), getting back to the stage (recovery), and following up a first hit.</p>
 <p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>| random | 15% | 15% | 2 | 12% |</p></blockquote><blockquote><p>| plain 6e-4 constant (4 seeds) | 40% | 75% | 9 | 35% |</p></blockquote><blockquote><p>Order on every scenario: plain 6e-4 and embedding &gt; PPO8Self &gt; SimBase &gt; random.</p></blockquote><blockquote><p>Follow-up ending in the stock: under 8% for every model.</p></blockquote><blockquote><p>Repeat noise (same model, other random numbers): 4 points or less on the share scores with about 300 starts.</p></blockquote><blockquote><p>Spread between the four same-setting seeds: about 10 points on the share scores.</p></blockquote>

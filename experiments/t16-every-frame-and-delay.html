@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">12 Nov 2026 &middot; T-16 &middot; Controls</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> Does a decision every frame, and a human-like reaction delay, change how well the bot learns?</p><p><b>Finding.</b> Every frame without delay plays about as well as every 2 frames. A 15-frame delay costs a lot at this training length: it wins 10 of 50 against the level 9 CPU, the others 42 to 46.</p><p><b>Decision.</b> The user made every frame with an 11-frame delay (0.19 s) the default after watching: the bot should play with human reactions, even if scores drop.</p></div>
+<p class="abs">Until this experiment the bot chose an action every second frame, and its choice took effect at once. A human can act on any frame but reacts to events only after about a fifth of a second. This experiment changes both: a decision every frame, and a reaction delay of 15 frames between choosing an action and the controller receiving it, and asks what each change costs at the usual training length. One batch of six self-play runs, two per setting (every 2 frames, every frame, every frame with the delay), covered equal game time. Each run played a frozen PPO model and the scripted bot at level 9 in the simulator, and one model per setting played Melee's level 9 computer player in the Dolphin emulator; none of these opponents has a delay. Deciding every frame without delay cost little: against the computer player it won 46 of 50 games against 42 of 50 games for every 2 frames, and the two were level against the scripted bot. The delay cost a great deal at this length: the delayed runs won 0% against the frozen model and 2% against the scripted bot, and the delayed model won 10 of 50 games against the computer player. Because the delayed models face opponents that react instantly, these scores give the cost of the delay against such opponents, not which setting learns best against its own kind.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>Until this experiment the bot chose an action every second frame and its choice took effect at once. A human player can act on any frame, but reacts to what happens only after about a fifth of a second. This experiment changes both: a decision every frame, and a reaction delay of 15 frames (a quarter of a second) between choosing an action and the controller receiving it. It asks what each change costs at the usual training length.</p>
 <p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>T16F1 vs T16Base: about equal or better per game second of experience (finer control, guess).</p></blockquote><blockquote><p>T16F1D15: clearly weaker on every yardstick against undelayed opponents (Firoiu et al. 2018: performance falls sharply with delay); vs frozen T21L6Cs4_c04 below 20 wins of 100, level 9 scripted below the base runs.</p></blockquote>

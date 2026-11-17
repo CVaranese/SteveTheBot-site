@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">11 Nov 2026 &middot; T-12, T-22 &middot; Inputs</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> At the larger learning rate, which input variants still beat plain inputs?</p><p><b>Finding.</b> The embedding beats plain inputs in this batch (50 against 12 of 100); rescaling does not help; doubling the rate again is not better. T21L6Cs4 itself turned out to be an unusually strong seed.</p><p><b>Decision.</b> The user set the rule (a variant becomes default if it beats plain runs from the same batch by 10 or more, with no run below the lowest plain run) and made the embedding default, then dropped it after the double-length runs (above).</p></div>
+<p class="abs">Doubling the learning rate and holding it constant had just made every model much stronger, so input variants compared at the old rate were tested again at the new one: a learned embedding of the animation inputs, and a rescaling of the largest inputs. The same batch asks whether doubling the rate once more helps. Eight self-play runs were trained, two per setting (plain inputs, the embedding, rescaled inputs, plain inputs at twice the rate), and each played a frozen copy of the strongest model so far. The plain runs scored far below expectation, winning 12% together; the frozen opponent has their settings and another seed, so it turned out to be an unusually strong run. The embedding runs won 50%, each above each plain run. Rescaling made no clear difference (21%), and twice the rate again was not clearly better and less steady (25%, with one run ending far less random than any other). In this batch the embedding leads, but two runs per setting differ widely, and the lead did not hold in the next experiment, which ran the same comparison at twice the length.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>The learning rate had just been doubled and held constant, which made every model much stronger. Input variants that had been compared at the old rate were therefore tested again at the new one: a learned embedding of the animation inputs, and a rescaling of the largest inputs. The same batch asks whether doubling the rate once more helps.</p>
 <p class="cap">Written in the experiment plan on 11 Nov 2026, before the runs:</p><blockquote><p>Baseline (6e-4 constant, 4 seeds) vs frozen T21L6Cs4: mean about 45 (T21L6Cs4 is one of them, at the top).</p></blockquote><blockquote><p>Embedding: about +5 over the baseline (its old edge was small and the faster rate may cover the same ground).</p></blockquote><blockquote><p>Rescaling: about +5 (helps the first layer; small network, guess).</p></blockquote><blockquote><p>1.2e-3 constant: about +10 over 6e-4 constant; approx_kl about 0.008; risk of collapse (entropy below 2).</p></blockquote>

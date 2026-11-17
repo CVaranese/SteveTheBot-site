@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">11 Nov 2026 &middot; T-9 &middot; Inputs</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> Do a learned animation embedding, or the bot&#x27;s own previous action, make better inputs?</p><p><b>Finding.</b> Previous action 72 and embedding with previous action 69, against 54 for plain inputs; the embedding alone 32. One seed each.</p><p><b>Decision.</b> Checked with a second seed (T-12, above).</p></div>
+<p class="abs">The network sees the game as a list of numbers, most of which are two large one-hot blocks saying which animation each character is in. This experiment tries two changes to the input at the same training budget: replacing each animation block with a short list of learned numbers (an embedding), and telling the network which action it chose at its previous decision. Four self-play runs of equal length were trained, one per variant (plain inputs, the previous action, the embedding, and both together), and each played a frozen PPO model and the scripted bot at level 9. The two runs with the previous action scored highest against the frozen model: 72% for the previous action and 69% for both together, against 54% for plain inputs. The embedding alone scored lowest, against expectation: 32% against the frozen model and 42% against the scripted bot. With a single run per variant these differences are not established; a follow-up with a second seed did not confirm the gain of the previous action.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>The network sees the game as a list of numbers. Most of that list is two large one-hot blocks that say which animation each character is in. This experiment tries two changes to the input at the same training budget: replacing each animation block by a short list of learned numbers (an embedding), and telling the network which action it chose at its previous decision.</p>
 <p class="cap">Written in the experiment plan on 11 Nov 2026, before the runs:</p><blockquote><p>Baseline noise: T9Base and PPO8Self within about 10 wins of each other against the frozen model.</p></blockquote><blockquote><p>T9Emb: about equal to the baseline (an embedding is a factorised first layer; it mainly saves weights).</p></blockquote><blockquote><p>T9Prev: a small gain, 5 to 10 wins against the frozen model (the bot can keep a move going).</p></blockquote><blockquote><p>No variant loses more than 10 wins to the baseline.</p></blockquote>

@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">12 Nov 2026 &middot; T-4 &middot; Inputs</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> Do inputs built only from what both the simulator and human replays record cost PPO anything?</p><p><b>Finding.</b> No cost: input 2 runs as fast and wins 54 to 69 of 100 against input 1 runs (part of the same-batch margin is seed luck).</p><p><b>Decision.</b> Input 2 is used for both lines: PPO from scratch and PPO from imitation. The four T4V2 runs became the frozen yardstick for models with the current controls.</p></div>
+<p class="abs">To learn from recorded human games, the network must be given the same inputs from a replay as from the simulator, and some of the inputs used so far, such as the game's animation frame counter and hitstun, cannot be read from the replay dataset. A second version of the inputs was therefore built only from fields that both sources record. Before using it, this experiment asks whether it costs anything in ordinary self-play training. One batch of six runs was trained, four with input version 2 and two with version 1, and two version 1 runs of an earlier batch served as a second reference. Every version 2 model played every version 1 model, and all played the scripted bot. Input version 2 cost no training speed: its runs made as many decisions per second as the version 1 runs. Head to head it was at least level, winning 68% of its games against the version 1 runs of the same batch and 54% against the earlier ones; the gap between those two numbers shows how much the result depends on which runs are the opponents. Against the scripted bot, which has no reaction delay, every model won few or no games. Input version 2 is therefore free to use, which opens training from human replays.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>To learn from recorded human games, the network must be given the same inputs from a replay as from the simulator. Some of the inputs used so far cannot be read from the replay dataset (for example the game's own animation frame counter, or hitstun). A second version of the inputs was therefore defined, built only from fields that both sources record. Before using it, this experiment asks whether it costs anything for ordinary training by self-play.</p>
 <p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>On every frame where a replay is still exactly together in the simulator, v2 built from the simulator equals v2 built from the replay arrays, all 796 numbers (tolerance 1e-4).</p></blockquote><blockquote><p>Building v2 in simbatch costs under 10% of rollout speed (guess).</p></blockquote>

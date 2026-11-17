@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">12 Nov 2026 &middot; T-15 &middot; Controls</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> When the bot picks the same button twice in a row, is it one long press or two?</p><p><b>Finding.</b> One continuous hold, in Dolphin and the simulator alike (identical traces): the bot cannot press a button twice without another action between.</p><p><b>Decision.</b> Kept in mind for the controller work; no change made.</p></div>
+<p class="abs">The bot chooses one of a fixed set of actions at every decision, and many of them include a button. If it chooses the same button at two decisions in a row, the game could see one long press or two separate presses, and the difference matters: a jab combo or a double jump needs the button released and pressed again. Before work on the bot's controls, a scripted schedule of inputs was played once in the real game, through the Dolphin emulator, and once in the simulator: the attack button and the jump button were each held over ten decisions, then alternated with no input. The same button at consecutive decisions was one continuous press: the attack started only the first jab and the jump only one jump. Alternating the button with no input gave separate presses, a full jab sequence and a second jump in the air. The emulator and the simulator traces agree line for line. With its action set, then, the bot cannot press a button twice in a row; it has to choose a different action in between, and the simulator reproduces this behaviour of the game exactly.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>The bot chooses one of a fixed set of actions at every decision, and many of those actions include a button. If it chooses the same button at two decisions in a row, the game might see one long press or two separate presses. The difference matters: a jab combo or a double jump needs the button released and pressed again. This check was made before work on the bot's controls, in the real game (through the Dolphin emulator) and in the simulator.</p>
 <p class="cap">Written in the experiment plan on 12 Nov 2026, before the runs:</p><blockquote><p>Dolphin, A held: pad_A is 1 on 20 consecutive frames, no 0 between decisions; Falcon starts jab 1 (ATTACK_11) once and no jab 2.</p></blockquote><blockquote><p>Dolphin, A pulsed: pad_A alternates 1,1,0,0; jab 1 then jab 2 (ATTACK_12) and more.</p></blockquote><blockquote><p>X held: one jump (KNEE_BEND once), no double jump (JUMP_AERIAL_*). X pulsed: jump then double jump.</p></blockquote><blockquote><p>Simulator: the same action sequence in every block.</p></blockquote>

@@ -46,7 +46,7 @@ main.paper>*{min-width:0;max-width:100%}
 .paper code{font:.88em var(--mono)}
 .paper pre{font:.8rem/1.45 var(--mono);overflow-x:auto;border:1px solid var(--line);padding:10px;margin:0 0 10px}
 .paper .abs{font-size:1.05rem}
-.paper .abs p{max-width:74ch}
+.paper .abs p,.paper p.abs{max-width:74ch}
 .paper figure{margin:6px 0 18px}
 .paper figcaption,.paper .cap{font-size:.84rem;color:var(--muted);max-width:78ch;margin:6px 0 0}
 .paper .cap b,.paper figcaption b{color:var(--ink);font-weight:600}
@@ -108,7 +108,7 @@ html{scroll-padding-top:48px}
 <p class="meta">13 Nov 2026 &middot; T-4 &middot; Replays</p></header>
 <article>
 <h2 id="abstract">Abstract</h2>
-<div class="abs"><p><b>Question.</b> Does frame history help a network predict what a human presses next?</p><p><b>Finding.</b> Barely: 0.008 lower cross-entropy, steady across checkpoints but well under the 0.02 to 0.10 expected. Both networks mostly learn to repeat the last input; changes of input are the hard part (right about 1 time in 12). 1,177 Falcon ditto games on Final Destination (59 of 1,236 skipped for missing values), 20.6 million samples.</p><p><b>Decision.</b> Both networks were trained on with PPO (the human line, above) to compare in play.</p></div>
+<p class="abs">A network that sees only the current frame cannot tell what happened in the last half second, and a human's next input often depends on that. Giving past frames to a network trained by self-play had not helped, but imitation is where memory should matter most. This experiment trained two networks on all recorded human games with this character on both sides on this stage, with the same budget and seed: one sees the current frame only, the other adds three past frames. Both were judged on how well they predict the human's next input on games they never trained on. Frame history lowered the prediction error only slightly, from 0.620 to 0.612; the gap kept its sign at the half-way point but was well under the expected size. Both networks mostly repeat the last input: their accuracy, 0.840 and 0.841, is barely above that of always repeating it. On the frames where the human changes input both are right only 0.083 and 0.087 of the time, as a share of one. Stacked past frames therefore add little to imitation, and changes of input remain the hard part of copying human play.</p>
 <h2 id="question-and-hypothesis">Question and hypothesis</h2>
 <p>A network that sees only the current frame cannot tell what happened in the last half second, and a human's next input often depends on that. An earlier experiment found that giving past frames to a network trained by self-play did not help. Imitation is where memory should matter most, so this experiment trains two networks on the same human games, one with the current frame only and one with three past frames added, and compares how well each predicts the human's next input on games it has not seen.</p>
 <p class="cap">Written in the experiment plan on 13 Nov 2026, before the runs:</p><blockquote><p>Expected (guesses, written before): the twin's held-out cross-entropy lower by 0.02 to 0.10; accuracy on input changes higher by 0.02 to 0.06; overall accuracy within 0.01 of the plain run (the copy-the-queue shortcut dominates it).</p></blockquote><blockquote><p>T4ImFull itself: held-out accuracy 0.84 to 0.86, on changes 0.05 to 0.15 (more data than T4Im300's 254 games).</p></blockquote>
